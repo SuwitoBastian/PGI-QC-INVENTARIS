@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1">
+
+    <title>Monitoring QC IT Support</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/app.css">
+
+</head>
+
+<body>
+
+<%- include("partials/navbar") %>
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card">
+
+                <div class="card-body p-4">
+
+                    <div class="mb-4">
+
+    <h2 class="page-title">
+
+        <i class="bi bi-upload me-2"></i>
+
+        Import Data Inventaris
+
+    </h2>
+
+    <p class="text-muted mb-0">
+
+        Upload file Excel untuk membuat Batch baru atau menambahkan inventaris ke Batch aktif.
+
+    </p>
+
+</div>
+
+                    <% if(activeBatch){ %>
+<div class="card border-success shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start">
+
+            <div>
+
+                <span class="badge bg-success mb-3">
+
+                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                    BATCH ACTIVE
+
+                </span>
+
+                <h3 class="fw-bold mb-1">
+
+                    <%= activeBatch.batch_code %>
+
+                </h3>
+
+                <p class="text-muted mb-3">
+
+                    <%= activeBatch.batch_name %>
+
+                </p>
+
+                <div class="small text-secondary">
+
+                    Semua data inventaris yang diimport akan otomatis
+                    ditambahkan ke Batch ini.
+
+                </div>
+
+            </div>
+
+            <div class="text-success">
+
+                <i class="bi bi-box-seam fs-1"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+                    <% } %>
+
+                    <form
+                        action="/batch/import"
+                        method="POST"
+                        enctype="multipart/form-data">
+
+                        <% if(activeBatch){ %>
+
+                            <div class="alert alert-primary border-0 shadow-sm">
+
+                                <h5 class="fw-bold mb-3">
+
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+
+                                    Informasi
+
+                                </h5>
+
+                                <ul class="mb-0">
+
+                                    <li>
+                                        Data dengan <strong>NF yang sudah ada</strong>
+                                        akan dilewati secara otomatis.
+                                    </li>
+
+                                    <li class="mt-2">
+                                        Data baru akan otomatis
+                                        ditambahkan ke
+                                        <strong>Batch Aktif</strong>.
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                            <input
+                                type="hidden"
+                                name="importType"
+                                value="append">
+
+                        <% } else { %>
+
+         <div class="card border-warning shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start">
+
+            <div>
+
+                <span class="badge bg-warning text-dark mb-3">
+
+                    <i class="bi bi-plus-circle me-2"></i>
+
+                    BATCH BARU
+
+                </span>
+
+                <h3 class="fw-bold mb-2">
+
+                    Belum Ada Batch Aktif
+
+                </h3>
+
+                <p class="text-muted mb-3">
+
+                    Import pertama akan otomatis membuat
+                    <strong>Batch Baru</strong>.
+
+                </p>
+
+                <div class="small text-secondary">
+
+                    Batch baru akan dibuat berdasarkan nama file Excel
+                    yang diupload.
+
+                </div>
+
+            </div>
+
+            <div class="text-warning">
+
+                <i class="bi bi-folder-plus fs-1"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+                            <input
+                                type="hidden"
+                                name="importType"
+                                value="new">
+
+                        <% } %>
+<div class="alert alert-primary border-0 shadow-sm mb-4">
+
+    <div class="d-flex align-items-center">
+
+        <i class="bi bi-buildings fs-2 me-3"></i>
+
+        <div>
+
+            <div class="fw-bold">
+
+                Office
+
+            </div>
+
+            <div>
+
+                <%= company === "PGI"
+                    ? "Pusat Gadai Indonesia"
+                    : "Pusat Emas Indonesia" %>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+
+    <div class="card-body p-4">
+
+        <label
+    for="excelFile"
+    class="upload-area">
+
+    <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
+
+    <h5 class="mt-3">
+
+        Upload File Excel
+
+    </h5>
+
+    <p class="text-muted mb-2">
+
+        Klik di sini untuk memilih file Excel
+
+    </p>
+
+    <small class="text-secondary">
+
+        Format :
+        .xlsx & .xls
+
+    </small>
+
+    <input
+        id="excelFile"
+        type="file"
+        name="excel"
+        accept=".xlsx,.xls"
+        hidden
+        required>
+
+</label>
+
+<div
+    id="selectedFile"
+    class="text-center mt-3 text-success fw-semibold">
+
+</div>
+
+    </div>
+
+</div>
+
+                        <div class="d-flex gap-3 mt-4">
+
+                            <button
+                             type="submit"
+                             class="btn <%= activeBatch ? 'btn-primary' : 'btn-success' %> px-4">
+
+                                <i class="bi bi-upload me-2"></i>
+
+                                <%= activeBatch ? "Import Tambahan" : "Buat Batch Baru" %>
+
+                            </button>
+
+                  <a
+                    href="/"
+                    class="btn btn-outline-secondary px-4">
+
+                   <i class="bi bi-arrow-left me-2"></i>
+
+                    Kembali ke Dashboard
+
+                  </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ========================= -->
+<!-- HISTORY BATCH -->
+<!-- ========================= -->
+
+<% if(history && history.length){ %>
+
+    <div class="row justify-content-center mt-4">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-light">
+
+                    <h5 class="mb-0">
+
+                        <i class="bi bi-clock-history me-2"></i>
+
+                        Riwayat Batch
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <% history.forEach(batch => { %>
+
+<div class="card border-0 shadow-sm mb-3">
+
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start">
+
+            <div>
+
+                <h5 class="fw-bold mb-1">
+
+                    <i class="bi bi-box-seam me-2"></i>
+
+                    <%= batch.batch_code %>
+
+                </h5>
+
+                <div class="text-muted">
+
+                    <i class="bi bi-file-earmark-excel me-1"></i>
+
+                    <%= batch.batch_name %>
+
+                </div>
+
+                <small class="text-secondary">
+
+                    <i class="bi bi-calendar-event me-1"></i>
+
+                    Closed :
+                    <%= batch.closed_at %>
+
+                </small>
+
+            </div>
+
+            <span class="badge bg-success">
+
+                FINISHED
+
+            </span>
+
+        </div>
+
+        <!-- Statistik -->
+
+        <div class="row text-center mt-4">
+
+            <div class="col-3">
+
+                <div class="border rounded py-3">
+
+                    <div class="fs-4 fw-bold">
+
+                        <%= batch.total %>
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        Total
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-3">
+
+                <div class="border rounded py-3">
+
+                    <div class="fs-4 fw-bold text-success">
+
+                        <%= batch.done %>
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        Done
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-3">
+
+                <div class="border rounded py-3">
+
+                    <div class="fs-4 fw-bold text-danger">
+
+                        <%= batch.reject %>
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        Reject
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-3">
+
+                <div class="border rounded py-3">
+
+                    <div class="fs-4 fw-bold text-warning">
+
+                        <%= batch.pending %>
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        Pending
+
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+
+            <a
+                href="/batch/<%= batch.id %>"
+                class="btn btn-outline-primary btn-sm">
+
+                <i class="bi bi-eye me-1"></i>
+
+                Detail
+
+            </a>
+
+           <a
+                href="/export/batch/<%= batch.id %>"
+                class="btn btn-outline-success">
+
+                <i class="bi bi-file-earmark-excel me-1"></i>
+
+                Excel
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+                    <% }) %>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<% } %>
+<%- include("partials/footer") %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+document
+.querySelector("form")
+.addEventListener("submit",function(){
+
+    const btn=this.querySelector("button");
+
+    btn.disabled=true;
+
+    btn.innerHTML=
+    '<span class="spinner-border spinner-border-sm me-2"></span>Mengimpor...';
+
+});
+const fileInput =
+document.getElementById("excelFile");
+
+const selected =
+document.getElementById("selectedFile");
+
+fileInput.addEventListener("change",()=>{
+
+    if(fileInput.files.length){
+
+        selected.innerHTML=
+        `<i class="bi bi-check-circle-fill me-2"></i>${fileInput.files[0].name}`;
+
+    }
+
+});
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<nav class="navbar navbar-expand-lg navbar-dark navbar-enterprise">
+
+    <div class="container-fluid px-4">
+
+        <!-- ==========================================
+             BRAND
+        =========================================== -->
+
+        <a class="navbar-brand d-flex align-items-center" href="/">
+
+            <img
+                src="/images/logo-navbar.png"
+                alt="Logo"
+                class="navbar-logo">
+
+            <div class="ms-3">
+
+                <div class="brand-title">
+
+                    Monitoring QC IT Support
+
+                </div>
+
+                <div class="brand-subtitle">
+
+                    Pusat Gadai Indonesia
+
+                </div>
+
+            </div>
+
+        </a>
+
+        <!-- Mobile Button -->
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarQC">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <!-- ==========================================
+             MENU
+        =========================================== -->
+
+        <div
+            class="collapse navbar-collapse"
+            id="navbarQC">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                <!-- Dashboard -->
+
+                <li class="nav-item">
+
+    <a href="/"
+       class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
+
+        <i class="bi bi-house-fill me-1"></i>
+
+        Dashboard
+
+    </a>
+
+</li>
+
+                <!-- Inventaris -->
+
+                <li class="nav-item">
+
+    <a href="/inventaris"
+       class="nav-link <%= currentPage === 'inventaris' ? 'active' : '' %>">
+
+        <i class="bi bi-list-ul me-1"></i>
+
+        Inventaris
+
+    </a>
+
+</li>
+
+                <!-- Import -->
+
+                <li class="nav-item">
+
+  <% if(currentBatch){ %>
+
+<a class="nav-link" href="/batch">
+
+    <i class="bi bi-upload me-2"></i>
+
+    Import Tambahan
+
+</a>
+
+<% } else { %>
+
+<a class="nav-link" href="/batch">
+
+    <i class="bi bi-plus-circle me-2"></i>
+
+    Import Batch Baru
+
+</a>
+
+<% } %>
+
+</li>
+
+<!-- Company Switcher -->
+<li class="nav-item dropdown ms-lg-3">
+
+    <a
+        class="nav-link dropdown-toggle d-flex align-items-center"
+        href="#"
+        role="button"
+        data-bs-toggle="dropdown">
+
+        <i class="bi bi-buildings me-2"></i>
+
+        <strong><%= company %></strong>
+
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end shadow">
+
+        <li>
+            <h6 class="dropdown-header">
+                Office
+            </h6>
+        </li>
+
+        <li>
+
+            <form action="/company" method="POST" class="m-0">
+
+                <input
+                    type="hidden"
+                    name="company"
+                    value="PGI">
+
+                <button
+                    type="submit"
+                    class="dropdown-item d-flex justify-content-between align-items-center">
+
+                    <span>
+                        PGI - Pusat Gadai Indonesia
+                    </span>
+
+                    <% if(company==="PGI"){ %>
+                        <i class="bi bi-check-lg text-success"></i>
+                    <% } %>
+
+                </button>
+
+            </form>
+
+        </li>
+
+        <li>
+
+            <form action="/company" method="POST" class="m-0">
+
+                <input
+                    type="hidden"
+                    name="company"
+                    value="PEI">
+
+                <button
+                    type="submit"
+                    class="dropdown-item d-flex justify-content-between align-items-center">
+
+                    <span>
+                        PEI - Pusat Emas Indonesia
+                    </span>
+
+                    <% if(company==="PEI"){ %>
+                        <i class="bi bi-check-lg text-success"></i>
+                    <% } %>
+
+                </button>
+
+            </form>
+
+        </li>
+
+        <li>
+            <hr class="dropdown-divider">
+        </li>
+
+        <li>
+
+            <span class="dropdown-item-text text-muted">
+
+                Edition v1.1
+
+            </span>
+
+        </li>
+
+    </ul>
+
+</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>

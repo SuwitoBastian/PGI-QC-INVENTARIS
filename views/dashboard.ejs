@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Monitoring QC IT Support</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet"
+          href="/css/app.css">
+
+    <link rel="stylesheet"
+          href="/css/dashboard.css">
+
+</head>
+
+<body>
+
+<%- include("partials/navbar") %>
+
+<div class="container py-4">
+
+<% if(summary){ %>
+
+<!-- =========================
+     PAGE HEADER
+========================= -->
+
+<div class="page-header mb-4">
+
+    <h2>
+
+        <i class="bi bi-house-fill me-2"></i>
+
+        Dashboard
+
+    </h2>
+
+    <p>
+
+        Ringkasan kondisi inventaris pada batch aktif.
+
+    </p>
+
+</div>
+
+<!-- =========================
+     SUMMARY
+========================= -->
+
+<div class="row g-3">
+
+    <!-- TOTAL -->
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="dashboard-summary">
+
+            <div class="summary-head">
+
+                <div class="summary-icon bg-primary">
+
+                    <i class="bi bi-box-seam"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="summary-title">
+
+                        TOTAL INVENTARIS
+
+                    </div>
+
+                    <div class="summary-value text-primary">
+
+                        <%= summary.total %>
+
+                    </div>
+
+                    <div class="summary-small">
+
+                        Semua Data
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DONE -->
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="dashboard-summary">
+
+            <div class="summary-head">
+
+                <div class="summary-icon bg-success">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="summary-title">
+
+                        DONE
+
+                    </div>
+
+                    <div class="summary-value text-success">
+
+                        <%= summary.done %>
+
+                    </div>
+
+                    <div class="summary-small">
+
+                        <%= summary.total ? ((summary.done/summary.total)*100).toFixed(2) : 0 %> %
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PENDING -->
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="dashboard-summary">
+
+            <div class="summary-head">
+
+                <div class="summary-icon bg-warning">
+
+                    <i class="bi bi-hourglass-split text-dark"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="summary-title">
+
+                        PENDING
+
+                    </div>
+
+                    <div class="summary-value text-warning">
+
+                        <%= summary.pending %>
+
+                    </div>
+
+                    <div class="summary-small">
+
+                        <%= summary.total ? ((summary.pending/summary.total)*100).toFixed(2) : 0 %> %
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- REJECT -->
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="dashboard-summary">
+
+            <div class="summary-head">
+
+                <div class="summary-icon bg-danger">
+
+                    <i class="bi bi-x-circle-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="summary-title">
+
+                        REJECT
+
+                    </div>
+
+                    <div class="summary-value text-danger">
+
+                        <%= summary.reject %>
+
+                    </div>
+
+                    <div class="summary-small">
+
+                        <%= summary.total ? ((summary.reject/summary.total)*100).toFixed(2) : 0 %> %
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     CONTENT
+========================= -->
+
+<div class="row g-4 mt-3">
+    <!-- =========================
+         BATCH AKTIF
+    ========================= -->
+
+    <div class="col-lg-6">
+
+        <div class="dashboard-card h-100">
+
+           <div class="dashboard-card-body">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start">
+
+        <div>
+
+            <span class="badge bg-primary px-3 py-2 rounded-pill">
+                Batch Aktif
+            </span>
+
+            <h2 class="batch-code mt-3">
+                <%= summary.batch?.batch_code || "-" %>
+            </h2>
+
+            <p class="batch-name mb-0">
+                <%= summary.batch?.batch_name || "-" %>
+            </p>
+
+        </div>
+
+        <div class="batch-icon">
+            <i class="bi bi-box-seam"></i>
+        </div>
+
+    </div>
+
+    <!-- Informasi Batch -->
+    <div class="row mt-4 g-4">
+
+        <div class="col-md-6">
+
+            <div class="info-box">
+
+                <div class="info-icon info-blue">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+
+                <div>
+
+                    <small class="text-muted">
+                        Tanggal Import
+                    </small>
+
+                    <div class="fw-bold">
+
+                        <%= summary.batch?.created_at_formatted || "-" %>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="info-box">
+
+                <div class="info-icon info-yellow">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+
+                <div>
+
+                    <small class="text-muted">
+                        Jumlah Asset
+                    </small>
+
+                    <div class="fw-bold">
+
+                        <%= summary.total %> Unit
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Progress -->
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+
+        <strong>
+            Progress QC
+        </strong>
+
+        <strong>
+
+            <%= summary.progress.toFixed(2) %>%
+
+        </strong>
+
+    </div>
+
+    <div class="progress progress-dashboard">
+<div class="progress progress-dashboard">
+
+    <div
+        class="progress-bar bg-success"
+        style="width:<%= summary.progress %>%">
+    </div>
+
+</div>
+        <div
+            class="progress-bar bg-success"
+            style="width:<%= summary.progress %>%">
+        </div>
+
+    </div>
+
+    <p class="text-muted mt-3 mb-0">
+
+        <%= summary.done + summary.reject %> dari
+        <%= summary.total %> inventaris telah selesai diproses.
+
+    </p>
+
+</div>
+            </div>
+
+        </div>
+
+    
+
+    <!-- =========================
+         STATUS DISTRIBUSI
+    ========================= -->
+
+    <div class="col-lg-6">
+
+        <div class="dashboard-card h-100">
+
+            <div class="dashboard-card-body">
+
+                <h5 class="fw-bold mb-4">
+
+                    <i class="bi bi-pie-chart-fill text-primary me-2"></i>
+
+                    Status Distribusi
+
+                </h5>
+
+                <div class="status-wrapper">
+
+    <!-- DONUT -->
+
+    <div class="chart-wrapper">
+
+        <canvas id="statusChart"></canvas>
+
+        <div class="chart-center">
+
+            <div class="chart-total">
+
+                <%= summary.total %>
+
+            </div>
+
+            <div class="chart-text">
+
+                Total
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- LEGEND -->
+
+    <div class="status-legend">
+
+        <div class="status-row">
+
+            <div class="status-left">
+
+                <span class="dot bg-success"></span>
+
+                DONE
+
+            </div>
+
+            <div class="status-right">
+
+                <%= summary.done %>
+
+                (<%= summary.total ? ((summary.done/summary.total)*100).toFixed(2) : 0 %>%)
+
+            </div>
+
+        </div>
+
+        <div class="status-row">
+
+            <div class="status-left">
+
+                <span class="dot bg-warning"></span>
+
+                PENDING
+
+            </div>
+
+            <div class="status-right">
+
+                <%= summary.pending %>
+
+                (<%= summary.total ? ((summary.pending/summary.total)*100).toFixed(2) : 0 %>%)
+
+            </div>
+
+        </div>
+
+        <div class="status-row">
+
+            <div class="status-left">
+
+                <span class="dot bg-danger"></span>
+
+                REJECT
+
+            </div>
+
+            <div class="status-right">
+
+                <%= summary.reject %>
+
+                (<%= summary.total ? ((summary.reject/summary.total)*100).toFixed(2) : 0 %>%)
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<% } else { %>
+
+<div class="alert alert-warning">
+
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+    Belum ada Batch Aktif.
+
+</div>
+
+<a href="/batch"
+   class="btn btn-primary">
+
+    <i class="bi bi-upload me-2"></i>
+
+    Import Batch
+
+</a>
+
+<% } %>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ctx = document.getElementById("statusChart");
+
+if(ctx){
+
+    new Chart(ctx,{
+
+        type:"doughnut",
+
+        data:{
+
+            labels:[
+
+                "Done",
+
+                "Pending",
+
+                "Reject"
+
+            ],
+
+            datasets:[{
+
+                data:[
+
+                    <%= summary ? summary.done : 0 %>,
+
+                    <%= summary ? summary.pending : 0 %>,
+
+                    <%= summary ? summary.reject : 0 %>
+
+                ],
+
+                backgroundColor:[
+    "#22c55e",
+    "#f59e0b",
+    "#ef4444"
+],
+
+hoverOffset:8,
+spacing:2,
+
+                borderWidth:3,
+borderColor:"#ffffff"
+
+            }]
+
+        },
+
+        options:{
+
+            responsive:true,
+maintainAspectRatio:false,
+layout:{
+    padding:10
+},
+
+            cutout:"68%",
+
+            plugins:{
+
+                legend:{
+
+                    display:false
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+<%- include("partials/footer") %>
+
+</body>
+
+</html>

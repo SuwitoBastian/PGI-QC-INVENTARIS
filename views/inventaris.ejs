@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1">
+
+<title>Monitoring QC IT Support</title>
+
+<link
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+
+<link
+rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<link
+rel="stylesheet"
+href="/css/app.css">
+
+<style>
+
+.table td,
+.table th{
+
+    vertical-align:middle;
+
+}
+
+.badge{
+
+    font-size:13px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<%- include("partials/navbar") %>
+
+<div class="container py-4">
+
+<div class="inventory-header">
+
+    <div>
+
+        <h2 class="inventory-title">
+
+            <i class="bi bi-box-seam-fill me-2"></i>
+
+            <% if(typeof isHistory !== "undefined" && isHistory){ %>
+
+                Detail Batch
+
+            <% }else{ %>
+
+                Data Inventaris
+
+            <% } %>
+
+        </h2>
+
+        <p class="inventory-subtitle">
+
+            <% if(typeof isHistory !== "undefined" && isHistory){ %>
+
+                Daftar inventaris pada batch yang telah selesai.
+
+            <% }else{ %>
+
+                Daftar semua inventaris pada batch aktif.
+
+            <% } %>
+
+            </p>
+
+    </div>
+
+<div class="inventory-actions">
+
+<% if(batch){ %>
+
+  <button 
+    id="btnExport"
+    class="btn btn-success">
+
+    <i class="bi bi-download me-2"></i>
+
+    Download Excel
+
+</button>
+
+    <% if(typeof isHistory !== "undefined" && isHistory){ %>
+
+        <a
+            href="/batch"
+            class="btn btn-outline-secondary ms-2">
+
+            <i class="bi bi-arrow-left me-2"></i>
+
+            Kembali ke Riwayat
+
+        </a>
+
+    <% }else{ %>
+
+        <a
+            href="/batch"
+            class="btn btn-primary ms-2">
+
+            <i class="bi bi-upload me-2"></i>
+
+            Import Tambahan
+
+        </a>
+
+        <button
+            class="btn btn-outline-danger ms-2"
+            id="btnCloseBatch">
+
+            <i class="bi bi-lock-fill me-2"></i>
+
+            Tutup Batch
+
+        </button>
+
+    <% } %>
+
+<% }else{ %>
+
+        <a
+            href="/batch"
+            class="btn btn-primary">
+
+            <i class="bi bi-plus-circle me-2"></i>
+
+            Import Batch Baru
+
+        </a>
+
+    <% } %>
+
+</div>
+
+</div>
+
+<div class="inventory-card">
+
+<div class="card-body">
+    <% if(batch){ %>
+
+<div class="batch-header">
+
+    <div class="batch-info">
+
+        <span class="batch-status">
+
+    <% if(batch.status === "ACTIVE"){ %>
+
+        <i class="bi bi-circle-fill"></i>
+
+        ACTIVE
+
+    <% }else{ %>
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        FINISHED
+
+    <% } %>
+
+</span>
+
+        <h2 class="batch-code">
+
+            <%= batch.batch_code %>
+
+        </h2>
+
+        <p class="batch-name">
+
+            <%= batch.batch_name %>
+
+        </p>
+
+        <div class="batch-date">
+
+            <i class="bi bi-clock-history me-2"></i>
+
+            <% if(batch.status === "ACTIVE"){ %>
+
+                Terakhir Import :
+
+                <%= batch.created_at_formatted || batch.created_at || "-" %>
+
+            <% }else{ %>
+
+                Batch Ditutup :
+
+                <%= batch.closed_at || "-" %>
+
+            <% } %>
+
+        </div>
+
+    </div>
+
+  
+
+</div>
+
+<hr class="my-4">
+
+<form method="GET">
+
+    <div class="inventory-toolbar">
+
+        <div class="toolbar-search">
+
+            <div class="input-group">
+
+                <span class="input-group-text">
+
+                    <i class="bi bi-search"></i>
+
+                </span>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    name="keyword"
+                    placeholder="Cari NF / Merk / Type..."
+                    value="<%= keyword || '' %>">
+
+            </div>
+
+        </div>
+
+        <div class="toolbar-filter">
+
+            <select
+                class="form-select"
+                name="status">
+
+                <option value="">Semua Status</option>
+
+                <option
+                    value="PENDING"
+                    <%= status=="PENDING" ? "selected" : "" %>>
+
+                    Pending
+
+                </option>
+
+                <option
+                    value="DONE"
+                    <%= status=="DONE" ? "selected" : "" %>>
+
+                    Done
+
+                </option>
+
+                <option
+                    value="REJECT"
+                    <%= status=="REJECT" ? "selected" : "" %>>
+
+                    Reject
+
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="toolbar-filter">
+
+    <select
+        class="form-select"
+        name="jenis">
+
+        <option value="">Semua Jenis</option>
+
+        <option
+            value="Laptop"
+            <%= jenis=="Laptop" ? "selected" : "" %>>
+
+            Laptop
+
+        </option>
+
+        <option
+            value="Handphone"
+            <%= jenis=="Handphone" ? "selected" : "" %>>
+
+            Handphone
+
+        </option>
+
+    </select>
+
+</div>
+
+        <!-- Tombol Filter -->
+<div class="toolbar-action">
+
+    <button
+        type="submit"
+        class="btn btn-primary toolbar-btn">
+
+        <i class="bi bi-funnel-fill me-2"></i>
+
+        Filter
+
+    </button>
+
+</div>
+
+<!-- Tombol Reset -->
+<div class="toolbar-action">
+
+    <a
+        href="/inventaris"
+        class="btn btn-light border toolbar-btn">
+
+        <i class="bi bi-arrow-clockwise me-2"></i>
+
+        Reset
+
+    </a>
+
+</div>
+
+    </div>
+
+</form>
+
+<div class="inventory-table">
+
+<table
+id="inventarisTable"
+class="table inventory-table-main align-middle mb-0">
+
+   <thead class="inventory-table-head">
+
+<tr>
+
+    <th class="text-center" width="45">No</th>
+
+    <th style="min-width:180px;">NF</th>
+
+    <th class="text-center" width="120">Jenis</th>
+
+    <th class="text-center">Merk</th>
+
+    <th class="text-center">Type</th>
+
+    <th class="text-center" width="140">Status</th>
+
+    <th class="text-center" width="170">Last QC</th>
+
+    <th class="text-center" width="130">Aksi</th>
+
+</tr>
+
+</thead>
+
+    <tbody>
+
+<% items.forEach(item => { %>
+
+<tr>
+
+    <td>
+        <%= item.no %>
+    </td>
+
+    <td class="inventory-nf">
+        <%= item.nf %>
+    </td>
+
+    <td>
+        <span class="asset-type">
+            <%= item.jenis || "-" %>
+        </span>
+    </td>
+
+    <td>
+        <%= item.merk %>
+    </td>
+
+    <td class="inventory-type">
+        <%= item.type %>
+    </td>
+
+    <td>
+
+        <% if(item.status=="DONE"){ %>
+
+            <span class="status-badge done">
+
+                <i class="bi bi-check-circle-fill me-1"></i>
+
+                DONE
+
+            </span>
+
+        <% }else if(item.status=="REJECT"){ %>
+
+            <span class="status-badge reject">
+
+                <i class="bi bi-x-circle-fill me-1"></i>
+
+                REJECT
+
+            </span>
+
+        <% }else{ %>
+
+            <span class="status-badge pending">
+
+                <i class="bi bi-hourglass-split me-1"></i>
+
+                PENDING
+
+            </span>
+
+        <% } %>
+
+    </td>
+
+    <td>
+
+        <% if(item.last_qc){ %>
+
+            <i class="bi bi-clock-history text-primary me-1"></i>
+
+            <%= item.last_qc %>
+
+        <% }else{ %>
+
+            <span class="text-muted">-</span>
+
+        <% } %>
+
+    </td>
+
+    <td class="text-center">
+
+        <a
+            href="/inventaris/<%= item.id %>"
+            class="btn btn-primary btn-action">
+
+            <i class="bi bi-eye-fill"></i>
+
+        </a>
+
+    </td>
+
+</tr>
+
+<% }) %>
+
+    </tbody>
+
+</table>
+
+</div>
+
+<hr>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+
+    <a
+        href="/"
+        class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-2"></i>
+
+        Dashboard
+
+    </a>
+
+    <span class="badge bg-primary fs-6">
+
+        <i class="bi bi-box-seam me-2"></i>
+
+        Total Data :
+
+        <%= items.length %>
+
+    </span>
+
+</div>
+<% } else { %>
+
+<div class="empty-batch">
+
+    <div class="empty-icon">
+
+        <i class="bi bi-box-seam"></i>
+
+    </div>
+
+    <h3>
+
+        Belum Ada Batch Aktif
+
+    </h3>
+
+    <p>
+
+        Silakan import batch baru untuk memulai proses
+        QC Inventaris.
+
+    </p>
+
+    <a
+        href="/batch"
+        class="btn btn-primary btn-lg mt-3">
+
+        <i class="bi bi-plus-circle me-2"></i>
+
+        Import Batch Baru
+
+    </a>
+
+</div>
+
+<% } %>
+</div>
+
+</div>
+
+</div>
+<div class="modal fade" id="closeBatchModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Tutup Batch
+
+                </h5>
+
+                <button
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+    <div class="alert alert-warning">
+
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+        Setelah batch ditutup, Anda tidak dapat melakukan
+        <strong>Import Tambahan</strong> ke batch ini.
+
+    </div>
+
+    <table class="table table-borderless mb-0">
+
+        <tr>
+
+            <td width="140">
+
+                <strong>Batch Code</strong>
+
+            </td>
+
+            <td>
+
+                <%= batch.batch_code %>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                <strong>Nama Batch</strong>
+
+            </td>
+
+            <td>
+
+                <%= batch.batch_name %>
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>
+
+                <strong>Total Asset</strong>
+
+            </td>
+
+            <td>
+
+                <%= items.length %>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Batal
+
+                </button>
+
+                <button
+class="btn btn-danger px-4"
+id="confirmCloseBatch">
+
+    <i class="bi bi-lock-fill me-2"></i>
+
+    Tutup Batch
+
+</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<%- include("partials/footer") %>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+$(function(){
+
+    $('#inventarisTable').DataTable({
+
+        pageLength:10,
+
+        lengthMenu:[
+            [10,25,50,100],
+            [10,25,50,100]
+        ],
+
+        ordering:true,
+
+        info:true,
+
+        searching:false,
+
+        lengthChange:false,
+
+        paging:true,
+
+        autoWidth:false,
+
+        columnDefs:[
+
+            {
+                targets:0,
+                width:"50px"
+            },
+
+            {
+                targets:1,
+                width:"180px"
+            },
+
+            {
+                targets:2,
+                width:"120px"
+            },
+
+            {
+                targets:3,
+                width:"120px"
+            },
+
+            {
+                targets:5,
+                width:"150px"
+            },
+
+            {
+                targets:6,
+                width:"180px"
+            },
+
+            {
+                targets:7,
+                width:"90px"
+            }
+
+        ],
+
+        language:{
+
+            info:"Menampilkan _START_ - _END_ dari _TOTAL_ data",
+
+            infoEmpty:"Tidak ada data",
+
+            zeroRecords:"Data tidak ditemukan",
+
+            paginate:{
+
+                previous:"←",
+
+                next:"→"
+
+            }
+
+        }
+
+    });
+
+});
+
+</script>
+
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+document.getElementById("btnExport").addEventListener("click", async () => {
+
+    const result = await Swal.fire({
+
+        width: 700,
+
+        showConfirmButton: true,
+
+        showCancelButton: true,
+
+        confirmButtonText: '<i class="bi bi-download me-2"></i>Download Excel',
+
+        cancelButtonText: "Batal",
+
+        confirmButtonColor: "#198754",
+
+        cancelButtonColor: "#6c757d",
+
+        reverseButtons: true,
+
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+        },
+
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+        },
+
+        html: `
+
+<div class="mb-3 text-center">
+
+    <div
+        class="d-inline-flex
+               align-items-center
+               justify-content-center
+               rounded-circle
+               bg-success-subtle"
+        style="width:50px;height:50px;">
+
+        <i
+            class="bi bi-file-earmark-excel text-success"
+            style="font-size:24px;">
+        </i>
+
+    </div>
+
+    <h4 class="fw-bold mt-2 mb-1">
+
+        Export Batch
+
+    </h4>
+
+    <p class="text-muted small mb-0">
+
+        File Excel akan dibuat berdasarkan data batch.
+
+    </p>
+
+</div>
+
+<div class="export-body">
+
+<div class="mb-4 text-center">
+
+<div class="mb-3 text-center">
+
+    <span class="badge <%= isHistory ? 'bg-success' : 'bg-primary' %> px-3 py-2">
+
+        <%= isHistory ? "Batch Selesai" : "Batch Aktif" %>
+
+    </span>
+
+    <h3 class="fw-bold mt-2 mb-1">
+
+        <%= batch.batch_code %>
+
+    </h3>
+
+    <p class="text-muted mb-0">
+
+        <%= batch.batch_name %>
+
+    </p>
+
+</div>
+
+</div>
+
+<div class="export-summary">
+
+    <div class="export-card">
+
+        <i class="bi bi-box-seam fs-3 text-primary"></i>
+
+        <div class="number">
+
+            <%= items.length %>
+
+        </div>
+
+        <div>Total Asset</div>
+
+    </div>
+
+    <div class="export-card">
+
+        <i class="bi bi-laptop fs-3 text-success"></i>
+
+        <div class="number">
+
+            <%= items.filter(x => x.jenis === "Laptop").length %>
+
+        </div>
+
+        <div>Laptop</div>
+
+    </div>
+
+    <div class="export-card">
+
+        <i class="bi bi-phone fs-3 text-warning"></i>
+
+        <div class="number">
+
+            <%= items.filter(x => x.jenis === "Handphone").length %>
+
+        </div>
+
+        <div>Handphone</div>
+
+    </div>
+
+</div>
+
+<div class="export-file">
+
+    <div class="fw-bold mb-1">
+
+        <i class="bi bi-download me-2"></i>
+
+        File yang akan diunduh
+
+    </div>
+
+    <small class="text-muted">
+
+        QC_INV_<%= batch.batch_code %>.xlsx
+
+    </small>
+
+</div>
+
+</div>
+
+        `
+
+    });
+
+    if(!result.isConfirmed){
+
+        return;
+
+    }
+
+    Swal.fire({
+
+        width:620,
+
+        allowOutsideClick:false,
+
+        allowEscapeKey:false,
+
+        showConfirmButton:false,
+
+        html:`
+
+<div class="p-4 text-center">
+
+    <i
+        class="bi bi-file-earmark-excel text-success"
+        style="font-size:50px;">
+    </i>
+
+    <h5 class="mt-3 fw-bold">
+
+        Menyiapkan File Excel
+
+    </h5>
+
+    <p class="text-muted mb-0">
+
+        Mohon tunggu sebentar.<br>
+        File akan otomatis diunduh.
+
+    </p>
+
+</div>
+        `,
+
+        didOpen(){
+
+            Swal.showLoading();
+
+        }
+
+    });
+
+    window.location.href =
+    "<%= isHistory ? '/export/batch/' + batch.id : '/export/excel' %>";
+
+    setTimeout(()=>{
+
+        Swal.close();
+
+    },2500);
+
+});
+
+</script>
+<script>
+
+const btnClose = document.getElementById("btnCloseBatch");
+
+if (btnClose) {
+
+    btnClose.addEventListener("click", () => {
+
+        console.log("BTN CLOSE DIKLIK");
+
+        const modal = new bootstrap.Modal(
+            document.getElementById("closeBatchModal")
+        );
+
+        modal.show();
+
+    });
+
+}
+
+const confirmClose = document.getElementById("confirmCloseBatch");
+
+if (confirmClose) {
+
+    confirmClose.addEventListener("click", async () => {
+
+        console.log("CONFIRM DIKLIK");
+
+        const response = await fetch("/batch/close", {
+            method: "POST"
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+
+            await Swal.fire({
+
+                icon: "success",
+
+                title: "Berhasil",
+
+                text: result.message
+
+            });
+
+            window.location.reload();
+
+        } else {
+
+            Swal.fire({
+
+                icon: "error",
+
+                title: "Gagal",
+
+                text: result.message
+
+            });
+
+        }
+
+    });
+
+}
+
+</script>
+</body>
+
+</html>
