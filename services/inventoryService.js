@@ -305,6 +305,44 @@ exports.findByNF = (barcode) => {
 
 };
 // =====================================
+// Cari dari banyak kandidat OCR
+// =====================================
+
+exports.findByCandidates = (candidates) => {
+
+    for (const barcode of candidates) {
+
+        const item = db.prepare(`
+            SELECT *
+            FROM inventaris
+            WHERE
+                TRIM(nf)=TRIM(?)
+                OR
+                TRIM(imei)=TRIM(?)
+            LIMIT 1
+        `).get(
+            barcode,
+            barcode
+        );
+
+        if (item) {
+
+            return {
+
+                item,
+
+                barcode
+
+            };
+
+        }
+
+    }
+
+    return null;
+
+};
+// =====================================
 // OCR - Update Status QC
 // =====================================
 exports.updateStatus = (
@@ -505,5 +543,53 @@ exports.canCloseBatch = (company) => {
         pending: row.total
 
     };
+
+};
+// =====================================
+// Manual QC dari Dashboard
+// =====================================
+
+exports.manualQC = (
+    id,
+    status,
+    rejectReason
+) => {
+
+    return db.prepare(`
+        UPDATE inventaris
+        SET
+            status = ?,
+            reject_reason = ?,
+            last_qc = datetime('now','localtime'),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `).run(
+
+        status,
+
+        status === "REJECT"
+            ? rejectReason
+            : "",
+
+        id
+
+    );
+
+};
+// =====================================
+// Reset QC (Edit QC)
+// =====================================
+
+exports.resetQC = (id) => {
+
+    return db.prepare(`
+        UPDATE inventaris
+        SET
+            status = 'PENDING',
+            reject_reason = '',
+            last_qc = NULL,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `).run(id);
 
 };

@@ -1671,3 +1671,119 @@
     font-size:18px;
 
 }
+/* ===========================
+   Manual QC
+=========================== */
+
+#rejectBtn:disabled{
+
+    background:#adb5bd !important;
+
+    border-color:#adb5bd !important;
+
+    color:#fff !important;
+
+    opacity:1;
+
+    cursor:not-allowed;
+
+}
+
+#rejectWarning{
+
+    font-size:15px;
+
+    font-weight:600;
+
+}
+/* =====================================
+   TOAST NOTIFICATION
+===================================== */
+
+.toast{
+
+    width:380px;
+
+    border:none;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    animation:toastSlide .35s ease;
+
+}
+
+.toast-body{
+
+    padding:18px 20px;
+
+    font-size:15px;
+
+    line-height:1.5;
+
+}
+
+.toast .fw-bold{
+
+    font-size:22px;
+
+}
+
+.toast-success{
+
+    background:#198754;
+
+    color:#fff;
+
+}
+
+.toast-danger{
+
+    background:#dc3545;
+
+    color:#fff;
+
+}
+
+.toast-warning{
+
+    background:#ffc107;
+
+    color:#212529;
+
+}
+
+.toast .btn-close{
+
+    flex-shrink:0;
+
+}
+
+.toast-success .btn-close,
+
+.toast-danger .btn-close{
+
+    filter:invert(1);
+
+}
+
+@keyframes toastSlide{
+
+    from{
+
+        opacity:0;
+
+        transform:translateX(70px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateX(0);
+
+    }
+
+}

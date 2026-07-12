@@ -33,7 +33,7 @@ exports.process = async (msg, result) => {
 
     if (!ocr.success) {
 
-        logger.error("NF :", "Tidak ditemukan");
+        logger.error("OCR :", "Barcode tidak ditemukan");
 
         try {
 
@@ -50,41 +50,61 @@ exports.process = async (msg, result) => {
 
     }
 
-    logger.success("NF :", ocr.nf);
-    logger.info("Confidence :", `${ocr.confidence.toFixed(2)} %`);
+    logger.success(
+        "Candidate :",
+        `${ocr.candidates.length} ditemukan`
+    );
+
+    logger.info(
+        "Confidence :",
+        `${ocr.confidence.toFixed(2)} %`
+    );
 
     logger.line();
 
-  //------------------------------------------------
-// DATABASE
-//------------------------------------------------
+    //------------------------------------------------
+    // DATABASE
+    //------------------------------------------------
 
-const item = inventoryService.findByNF(
-    ocr.nf
+    const resultDb =
+        inventoryService.findByCandidates(
+            ocr.candidates
         );
 
-        if (!item) {
+    if (!resultDb) {
 
-    logger.error("Database :", "NF tidak ditemukan");
+        logger.error(
+            "Database :",
+            "Barcode tidak ditemukan"
+        );
 
-    try {
+        try {
 
-        await replyService.notFound(msg, ocr.nf);
+            await replyService.notFound(
+                msg,
+                ocr.candidates[0] || "-"
+            );
 
-    } catch (err) {
+        } catch (err) {
 
-        console.error("❌ Reply Error");
-        console.error(err);
+            console.error("❌ Reply Error");
+            console.error(err);
+
+        }
+
+        return;
 
     }
 
-    return;
+    const item = resultDb.item;
 
-}
+    const barcode = resultDb.barcode;
 
     logger.section("DATABASE");
 
-    logger.success("NF :", item.nf);
+    logger.success("Barcode :", barcode);
+    logger.success("NF :", item.nf || "-");
+    logger.success("IMEI :", item.imei || "-");
     logger.success("Merk :", item.merk);
     logger.success("Type :", item.type);
     logger.success("Status Lama :", item.status);
@@ -95,34 +115,42 @@ const item = inventoryService.findByNF(
     // UPDATE DATABASE
     //------------------------------------------------
 
-const relativePhotoPath = photo.filePath
-    .replace(/\\/g, "/")
-    .replace(/^.*\/uploads/, "/uploads");
+    const relativePhotoPath = photo.filePath
+        .replace(/\\/g, "/")
+        .replace(/^.*\/uploads/, "/uploads");
 
+    inventoryService.updateStatus(
 
-inventoryService.updateStatus(
+        barcode,
 
-    ocr.nf,
+        result.status,
 
-    result.status,
+        result.rejectReason,
 
-    result.rejectReason,
+        relativePhotoPath
 
-    relativePhotoPath
-
-);
+    );
 
     logger.section("QC BERHASIL");
 
-    logger.success("Status Baru :", result.status);
+    logger.success(
+        "Status Baru :",
+        result.status
+    );
 
     if (result.rejectReason) {
 
-        logger.info("Alasan :", result.rejectReason);
+        logger.info(
+            "Alasan :",
+            result.rejectReason
+        );
 
     }
 
-    logger.success("Status Database :", "Berhasil diupdate");
+    logger.success(
+        "Status Database :",
+        "Berhasil diupdate"
+    );
 
     //------------------------------------------------
     // BALAS WHATSAPP
@@ -136,17 +164,25 @@ inventoryService.updateStatus(
         if (result.status === "DONE") {
 
             await replyService.success(
+
                 msg,
+
                 item,
+
                 "DONE"
+
             );
 
         } else {
 
             await replyService.reject(
+
                 msg,
+
                 item,
+
                 result.rejectReason
+
             );
 
         }

@@ -25,7 +25,7 @@ exports.index = (req, res) => {
 
     currentPage:"batch"
 
-});;
+});
 
 };
 
@@ -260,8 +260,27 @@ exports.detail = (req, res) => {
 
     }
 
+    const keyword =
+        req.query.keyword || "";
+
+    const status =
+        req.query.status || "";
+
+    const jenis =
+        req.query.jenis || "";
+
     const items =
-        batchService.getInventarisByBatch(batch.id);
+        inventoryService.searchInventaris(
+
+            batch.id,
+
+            keyword,
+
+            status,
+
+            jenis
+
+        );
 
     res.render("inventaris", {
 
@@ -269,11 +288,11 @@ exports.detail = (req, res) => {
 
         items,
 
-        keyword: "",
+        keyword,
 
-        status: "",
+        status,
 
-        jenis: "",
+        jenis,
 
         isHistory: true,
 
