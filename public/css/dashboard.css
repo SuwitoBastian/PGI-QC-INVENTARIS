@@ -472,3 +472,92 @@ body{
     color:#2563eb;
 
 }
+/* ==================================================
+   PEI THEME
+================================================== */
+
+/* Background Dashboard */
+.PEI{
+
+    background:#FFFBF4;
+
+}
+
+/* Judul Dashboard */
+
+.PEI .page-header h2{
+
+    color:#C9972C !important;
+
+}
+
+/* Icon Judul */
+
+.PEI .page-header h2 i{
+
+    color:#C9972C !important;
+
+}
+
+.PEI .dashboard-summary{
+
+    border-top:4px solid #C9972C;
+
+    transition:.25s;
+
+
+}
+
+/* ===========================================
+   BADGE
+=========================================== */
+
+.PEI .badge.bg-primary{
+
+    background:#C9972C !important;
+
+    border:none;
+
+}
+
+/* ==========================================
+   BATCH AKTIF - PEI
+========================================== */
+
+.PEI .batch-icon{
+
+    background:#FFF4D6;
+
+}
+
+.PEI .batch-icon i{
+
+    color:#C9972C;
+
+}
+
+/* ==========================================
+   DASHBOARD CARD - PEI
+========================================== */
+
+.PEI .dashboard-card{
+
+    border-top:4px solid #C9972C;
+
+}
+/* ==========================================
+   SUMMARY CARD - PEI
+========================================== */
+
+.PEI .dashboard-summary:hover{
+
+    box-shadow:0 16px 36px rgba(201,151,44,.15);
+
+}
+
+
+.PEI .text-primary{
+
+    color:#C9972C !important;
+
+}
