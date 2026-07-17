@@ -1,0 +1,9 @@
+{
+  "ignore": [
+    "session-qc/**",
+    "uploads/**",
+    "*.db",
+    "*.db-shm",
+    "*.db-wal"
+  ]
+}

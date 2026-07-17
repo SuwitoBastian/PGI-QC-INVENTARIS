@@ -53,5 +53,7 @@ tmp/
 temp/
 .cache/
 
+session-qc/
+
 # Backup
 backup/
