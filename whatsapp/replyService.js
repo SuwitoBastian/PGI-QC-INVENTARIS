@@ -14,12 +14,10 @@ ${status}
 
 Data inventaris berhasil diperbarui.`;
 
-    await msg.client.sendMessage(
-        msg.from,
-        text
-    );
+    await msg.reply(text);
 
 };
+
 
 exports.reject = async (msg, item, reason) => {
 
@@ -40,12 +38,10 @@ ${reason}
 
 Data inventaris berhasil diperbarui.`;
 
-    await msg.client.sendMessage(
-        msg.from,
-        text
-    );
+    await msg.reply(text);
 
 };
+
 
 exports.notFound = async (msg, nf) => {
 
@@ -61,12 +57,10 @@ Namun nomor tersebut tidak ditemukan pada database.
 
 Silakan hubungi Admin IT.`;
 
-    await msg.client.sendMessage(
-        msg.from,
-        text
-    );
+    await msg.reply(text);
 
 };
+
 
 exports.ocrFailed = async (msg) => {
 
@@ -81,9 +75,6 @@ Silakan foto ulang dengan:
 • Pastikan tidak blur
 • Pastikan nomor NF terlihat jelas`;
 
-    await msg.client.sendMessage(
-        msg.from,
-        text
-    );
+    await msg.reply(text);
 
 };

@@ -1,3 +1,38 @@
+// =====================================
+// FILTER LOG INTERNAL BAILEYS / SIGNAL
+// =====================================
+
+const originalConsoleLog = console.log;
+const originalConsoleInfo = console.info;
+const originalConsoleWarn = console.warn;
+
+function shouldIgnoreLog(args) {
+
+    if (
+        typeof args[0] === "string" &&
+        args[0].startsWith("Closing session:")
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+console.log = (...args) => {
+    if (shouldIgnoreLog(args)) return;
+    originalConsoleLog(...args);
+};
+
+console.info = (...args) => {
+    if (shouldIgnoreLog(args)) return;
+    originalConsoleInfo(...args);
+};
+
+console.warn = (...args) => {
+    if (shouldIgnoreLog(args)) return;
+    originalConsoleWarn(...args);
+};
+
 const express = require("express");
 require("dotenv").config();
 
@@ -61,4 +96,9 @@ app.use("/export", exportRoutes);
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server berjalan pada port ${PORT}`);
 });
-require("./whatsapp/bot");
+const { connect } = require("./whatsapp/baileys/connection");
+
+connect().catch((err) => {
+    console.error("❌ Gagal menjalankan WhatsApp Baileys");
+    console.error(err);
+});
