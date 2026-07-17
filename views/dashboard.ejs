@@ -24,11 +24,11 @@
 
 </head>
 
-<body>
+<body class="<%= company %>">
 
 <%- include("partials/navbar") %>
 
-<div class="container py-4">
+<div class="container py-4 dashboard-page <%= company %>">
 
 <% if(summary){ %>
 
@@ -345,7 +345,6 @@
 
     </div>
 
-    <div class="progress progress-dashboard">
 <div class="progress progress-dashboard">
 
     <div
@@ -354,19 +353,13 @@
     </div>
 
 </div>
-        <div
-            class="progress-bar bg-success"
-            style="width:<%= summary.progress %>%">
-        </div>
 
-    </div>
+<p class="text-muted mt-3 mb-0">
 
-    <p class="text-muted mt-3 mb-0">
+    <%= summary.done + summary.reject %> dari
+    <%= summary.total %> inventaris telah selesai diproses.
 
-        <%= summary.done + summary.reject %> dari
-        <%= summary.total %> inventaris telah selesai diproses.
-
-    </p>
+</p>
 
 </div>
             </div>

@@ -163,15 +163,16 @@
 
 }
 
-.inventory-title{
+/* ==========================================
+   INVENTARIS - PEI
+========================================== */
 
-    font-size:34px;
+.PEI .inventory-title{
 
-    font-weight:700;
-
-    color:#1e293b;
+    color:#C9972C;
 
 }
+
 
 .inventory-subtitle{
 
@@ -1003,11 +1004,17 @@
 
 }
 
-.upload-area:hover{
+.PEI .upload-area:hover{
 
-    border-color:#2563eb;
+    border-color:#C9972C;
 
-    background:#eff6ff;
+    background:#FFF8EB;
+
+}
+
+.PEI .upload-icon{
+
+    color:#C9972C;
 
 }
 
@@ -1787,3 +1794,421 @@
     }
 
 }
+/* ======================================================
+   PEI THEME
+====================================================== */
+
+.PEI .navbar-enterprise{
+
+    background:linear-gradient(
+        135deg,
+        #141414,
+        #141414
+    ) !important;
+
+}
+/* ===========================================
+   DASHBOARD PEI
+=========================================== */
+
+.PEI .page-header h2{
+
+    color:#C9972C;
+
+}
+
+.PEI .page-header h2 i{
+
+    color:#C9972C;
+
+}
+
+/* ======================================================
+   PEI NAVBAR
+====================================================== */
+
+/* Judul Brand */
+
+.PEI .brand-title{
+
+    color:#FFFFFF !important;
+
+}
+
+.PEI .brand-subtitle{
+
+    color:#C9972C !important;
+
+}
+
+/* Menu */
+
+.PEI .navbar-nav .nav-link{
+
+    color:#C9972C !important;
+
+}
+
+/* Hover */
+
+.PEI .navbar-nav .nav-link:hover{
+
+    color:#D8A73D !important;
+
+    background: #ffff;
+
+}
+
+/* Menu aktif */
+
+.PEI .navbar-nav .nav-link.active{
+
+    color:#e2e2e2 !important;
+
+    background:#C9972C;
+
+}
+
+/* Icon menu */
+
+.PEI .navbar-nav .nav-link i{
+
+    color:#C9972C !important;
+
+}
+.PEI .navbar-nav .nav-link.active i{
+
+    color:#ffff !important;
+
+}
+/* Dropdown company */
+
+.PEI .dropdown-toggle{
+
+    color:#1F2937 !important;
+
+}
+
+.PEI .dropdown-toggle i{
+
+    color:#1F2937 !important;
+
+}
+/* ======================================================
+   INVENTARIS PEI
+====================================================== */
+
+/* Header Table */
+
+.PEI .inventory-table-head{
+
+    background:#C9972C;
+
+}
+
+.PEI .inventory-table-head th{
+
+    background:#C9972C !important;
+
+}
+
+.PEI .inventory-table-main thead th{
+
+    background:#C9972C;
+
+}
+
+.PEI .inventory-table thead th{
+
+    background:#C9972C;
+
+}
+
+.PEI .page-item.active .page-link{
+
+    background:#C9972C;
+
+    border-color:#C9972C;
+
+}
+
+.PEI .page-item .page-link{
+
+    color:#C9972C;
+
+}
+.PEI .form-control:focus{
+
+    border-color:#C9972C;
+
+    box-shadow:0 0 0 .2rem rgba(201,151,44,.18);
+
+}
+
+.PEI .form-select:focus{
+
+    border-color:#C9972C;
+
+    box-shadow:0 0 0 .2rem rgba(201,151,44,.18);
+
+}
+
+/* Import Tambahan */
+.PEI .inventory-actions .btn.btn-primary{
+
+    background:#C9972C;
+    border-color:#C9972C;
+    color:#fff;
+
+}
+
+.PEI .inventory-actions .btn.btn-primary:hover{
+
+    background:#B8860B;
+    border-color:#B8860B;
+
+}
+
+/* Tombol Filter */
+.PEI .toolbar-btn.btn-primary{
+
+    background:#C9972C;
+    border-color:#C9972C;
+    color:#fff;
+
+}
+
+.PEI .toolbar-btn.btn-primary:hover{
+
+    background:#B8860B;
+    border-color:#B8860B;
+
+}
+
+/* Tombol Detail */
+.PEI .btn-action{
+
+    background:#C9972C;
+    border-color:#C9972C;
+
+}
+
+.PEI .btn-action:hover{
+
+    background:#B8860B;
+    border-color:#B8860B;
+
+}
+/* Badge Total Data */
+.PEI .badge.bg-primary{
+
+    background:#C9972C !important;
+
+}
+
+.PEI .form-control:focus{
+
+    border-color:#C9972C;
+    box-shadow:0 0 0 .2rem rgba(201,151,44,.18);
+
+}
+
+.PEI .form-select:focus{
+
+    border-color:#C9972C;
+    box-shadow:0 0 0 .2rem rgba(201,151,44,.18);
+
+}
+
+/* ==========================================
+   DETAIL INVENTARIS - PEI
+========================================== */
+
+/* Breadcrumb */
+
+.PEI .breadcrumb a{
+
+    color:#C9972C;
+
+    text-decoration:none;
+
+}
+
+.PEI .breadcrumb-item.active{
+
+    color:#8B6B1E;
+
+}
+
+.PEI .breadcrumb-item + .breadcrumb-item::before{
+
+    color:#C9972C;
+
+}
+.PEI .detail-category{
+
+    color:#C9972C;
+
+}
+.PEI .section-title i{
+
+    color:#C9972C;
+
+}
+.PEI .info-label i{
+
+    color:#C9972C;
+
+}
+
+.PEI .info-item:hover{
+
+    border-color:#C9972C;
+
+    box-shadow:0 12px 28px rgba(201,151,44,.15);
+
+}
+.PEI .badge.bg-primary{
+
+    background:#C9972C !important;
+
+}   
+.PEI .btn.btn-primary{
+
+    background:#C9972C;
+
+    border-color:#C9972C;
+
+}
+
+.PEI .btn.btn-primary:hover{
+
+    background:#B8860B;
+
+    border-color:#B8860B;
+
+}
+.PEI textarea.form-control:focus{
+
+    border-color:#C9972C;
+
+    box-shadow:0 0 0 .2rem rgba(201,151,44,.18);
+
+}
+
+/* ==========================================
+   IMPORT BATCH - PEI
+========================================== */
+
+.PEI .page-title{
+
+    color:#C9972C;
+
+}
+
+.PEI .page-title i{
+
+    color:#C9972C;
+
+}
+.PEI .alert-primary{
+
+    background:#FFF8E8;
+
+    border:1px solid #E8C96A;
+
+    color:#6B4F00;
+
+}
+
+.PEI .upload-area{
+
+    border:2px dashed #C9972C;
+
+}
+
+.PEI .upload-area:hover{
+
+    background:#FFF8E8;
+
+    border-color:#B8860B;
+
+}
+.PEI .upload-icon{
+
+    color:#C9972C;
+
+}
+
+.PEI form .btn.btn-primary{
+
+    background:#C9972C;
+
+    border-color:#C9972C;
+
+}
+
+.PEI form .btn.btn-primary:hover{
+
+    background:#B8860B;
+
+    border-color:#B8860B;
+
+}
+.PEI .btn-outline-primary{
+
+    color:#C9972C;
+
+    border-color:#C9972C;
+
+}
+
+.PEI .btn-outline-primary:hover{
+
+    background:#C9972C;
+
+    color:#fff;
+
+}
+
+/* ======================================================
+   FOOTER
+====================================================== */
+
+/* Default PGI */
+
+.footer-enterprise{
+
+    background:linear-gradient(
+        90deg,
+        #0d6efd,
+        #0b5ed7
+    );
+
+}
+
+/* PEI */
+
+.PEI .footer-enterprise{
+
+    background:linear-gradient(
+        90deg,
+        #141414,
+        #141414
+    );
+
+}
+
+/* Text */
+
+.PEI .footer-enterprise small{
+
+    color:#E8C46A;
+
+}
+
+.PEI .footer-enterprise span{
+
+    color:#E8C46A;
+
+}   
