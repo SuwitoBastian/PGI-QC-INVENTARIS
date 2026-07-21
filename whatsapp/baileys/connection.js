@@ -11,6 +11,8 @@ const qrcode = require("qrcode-terminal");
 const router = require("../messageRouter");
 const Message = require("./Message");
 
+const logger = require("../logger");
+
 const { loadSession } = require("./session");
 const { setSocket } = require("./socket");
 
@@ -76,11 +78,11 @@ async function connect() {
                 const msg =
                     new Message(raw);
 
-                console.log("");
-                console.log("📩 PESAN MASUK BAILEYS");
-                console.log("FROM :", msg.from);
-                console.log("BODY :", msg.body);
-                console.log("MEDIA:", msg.hasMedia);
+                logger.debug("");
+                logger.debug("📩 PESAN MASUK BAILEYS");
+                logger.debug("FROM :", msg.from);
+                logger.debug("BODY :", msg.body);
+                logger.debug("MEDIA:", msg.hasMedia);
 
                 await router.handle(msg);
 
