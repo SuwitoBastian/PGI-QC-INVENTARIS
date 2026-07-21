@@ -257,7 +257,7 @@ exports.searchInventaris = (
     if (jenis) {
 
     sql += `
-        AND jenis = ?
+        AND LOWER(TRIM(jenis)) = LOWER(TRIM(?))
     `;
 
     params.push(jenis);

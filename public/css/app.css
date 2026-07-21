@@ -1451,24 +1451,24 @@
     display:inline-flex;
 
     align-items:center;
-
     justify-content:center;
 
     min-width:90px;
+    min-height:32px;
 
-    height:32px;
+    padding:6px 14px;
 
     border:1px solid #dee2e6;
-
     border-radius:18px;
 
     background:#fff;
 
     font-size:13px;
-
     font-weight:600;
 
     color:#495057;
+
+    white-space:nowrap;
 
 }
 /* ===========================

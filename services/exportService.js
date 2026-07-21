@@ -184,7 +184,19 @@ function styleTableHeader(sheet){
 // ======================================================
 // ISI DATA
 // ======================================================
+function formatJenis(jenis){
 
+    const value = (jenis || "").toLowerCase().trim();
+
+    const labels = {
+        "laptop": "Laptop",
+        "handphone": "Handphone",
+        "tablet": "Tablet",
+        "pc all in one": "PC All in One"
+    };
+
+    return labels[value] || jenis || "-";
+}
 function fillData(sheet, items){
 
     let rowNumber = 10;
@@ -201,7 +213,7 @@ function fillData(sheet, items){
 
             item.last_qc || "-",
 
-            item.jenis || "-",
+            formatJenis(item.jenis),
 
             item.merk || "-",
 
@@ -370,13 +382,23 @@ exports.exportExcel = async (company, res) => {
     // Pisahkan Laptop & Handphone
     // ===============================
 
-    const laptops = items.filter(item =>
-        (item.jenis || "").toLowerCase() === "laptop"
-    );
+    const laptops = items.filter(item => {
 
-    const handphones = items.filter(item =>
-        (item.jenis || "").toLowerCase() === "handphone"
-    );
+        const jenis = (item.jenis || "").toLowerCase();
+
+        return jenis === "laptop"
+            || jenis === "pc all in one";
+
+    });
+
+    const handphones = items.filter(item => {
+
+        const jenis = (item.jenis || "").toLowerCase();
+
+        return jenis === "handphone"
+            || jenis === "tablet";
+
+    });
 
     // ===============================
     // Workbook
@@ -517,13 +539,23 @@ exports.exportBatch = async (batchId, res) => {
         ORDER BY no ASC
     `).all(batch.id);
 
-    const laptops = items.filter(item =>
-        (item.jenis || "").toLowerCase() === "laptop"
-    );
+    const laptops = items.filter(item => {
 
-    const handphones = items.filter(item =>
-        (item.jenis || "").toLowerCase() === "handphone"
-    );
+        const jenis = (item.jenis || "").toLowerCase();
+
+        return jenis === "laptop"
+            || jenis === "pc all in one";
+
+    });
+
+    const handphones = items.filter(item => {
+
+        const jenis = (item.jenis || "").toLowerCase();
+
+        return jenis === "handphone"
+            || jenis === "tablet";
+
+    });
 
     const workbook = new ExcelJS.Workbook();
 
