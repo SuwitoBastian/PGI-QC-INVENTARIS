@@ -49,7 +49,7 @@ const batchRoutes = require("./routes/batch");
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const dashboardRoute = require("./routes/dashboard");
 
@@ -62,43 +62,140 @@ const path = require("path");
 
 const exportRoutes = require("./routes/export");
 
-app.use(express.static(path.join(__dirname,"public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+const feedbackReminderRoute =
+    require("./routes/feedbackReminder");
+
+
+app.use(
+    express.static(
+        path.join(__dirname, "public")
+    )
+);
+
+app.use(
+    "/uploads",
+    express.static(
+        path.join(__dirname, "uploads")
+    )
+);
+
 
 // View Engine
 app.set("view engine", "ejs");
 
-// Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 
-app.use(session({
-    secret: "PGI-QC-2026",
-    resave: false,
-    saveUninitialized: true
-}));
+// Middleware
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
+
+app.use(
+    express.json()
+);
+
+
+app.use(
+    session({
+        secret: "PGI-QC-2026",
+        resave: false,
+        saveUninitialized: true
+    })
+);
+
 
 app.use(companyMiddleware);
 
-const currentBatch = require("./middlewares/currentBatch");
+const currentBatch =
+    require("./middlewares/currentBatch");
 
 app.use(currentBatch);
-app.use("/uploads", express.static("uploads"));
 
+app.use(
+    "/uploads",
+    express.static("uploads")
+);
+
+
+// =====================================
 // Routes
-app.use("/", dashboardRoute);
-app.use("/batch", batchRoutes);
-app.use("/company", companyRoute);
-app.use("/inventaris", inventoryRoute);
-app.use("/dev", devRoute);
-app.use("/export", exportRoutes);
+// =====================================
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server berjalan pada port ${PORT}`);
-});
-const { connect } = require("./whatsapp/baileys/connection");
+// IMPORTANT:
+// Internal API harus diletakkan SEBELUM
+// dashboard route "/"
+app.use(
+    "/internal/feedback-reminder",
+    feedbackReminderRoute
+);
+
+
+app.use(
+    "/",
+    dashboardRoute
+);
+
+app.use(
+    "/batch",
+    batchRoutes
+);
+
+app.use(
+    "/company",
+    companyRoute
+);
+
+app.use(
+    "/inventaris",
+    inventoryRoute
+);
+
+app.use(
+    "/dev",
+    devRoute
+);
+
+app.use(
+    "/export",
+    exportRoutes
+);
+
+
+// =====================================
+// HTTP SERVER
+// =====================================
+
+app.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+
+        console.log(
+            `Server berjalan pada port ${PORT}`
+        );
+
+    }
+);
+
+
+// =====================================
+// WHATSAPP BAILEYS
+// =====================================
+
+const {
+    connect
+} = require(
+    "./whatsapp/baileys/connection"
+);
+
 
 connect().catch((err) => {
-    console.error("❌ Gagal menjalankan WhatsApp Baileys");
+
+    console.error(
+        "❌ Gagal menjalankan WhatsApp Baileys"
+    );
+
     console.error(err);
+
 });
