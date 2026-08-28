@@ -567,41 +567,70 @@ if (item.last_qc) {
 
         <div class="device-image">
 
-            <%
+    <%
     let deviceImage = "default.png";
 
     const jenis = (item.jenis || "").toLowerCase();
     const merk = (item.merk || "").toLowerCase();
 
+    // ===== HANDPHONE =====
+// ===== HANDPHONE =====
     if(jenis === "handphone"){
-
-        // ===== HANDPHONE =====
 
         deviceImage = "defaulthp.png";
 
         if(merk.includes("oppo")){
-
             deviceImage = "oppo.png";
-
-        }else if(merk.includes("samsung")){
-
+        }
+        else if(merk.includes("samsung")){
             deviceImage = "samsung.png";
-
+        }
+        else if(merk.includes("apple")){
+            deviceImage = "apple.png";
         }
 
+    // ===== TABLET =====
+    }else if(jenis === "tablet"){
+
+        deviceImage = "default.png";
+
+        if(merk.includes("samsung")){
+            deviceImage = "samsung-tablet.png";
+        }
+        else if(merk.includes("apple")){
+            deviceImage = "apple.png";
+        }
+
+    // ===== LAPTOP / PC ALL IN ONE =====
     }else{
 
-        // ===== LAPTOP =====
-
-        if(merk.includes("dell")) deviceImage = "dell.png";
-        else if(merk.includes("hp")) deviceImage = "hp.png";
-        else if(merk.includes("lenovo")) deviceImage = "lenovo.png";
-        else if(merk.includes("asus")) deviceImage = "asus.png";
-        else if(merk.includes("acer")) deviceImage = "acer.png";
-        else if(merk.includes("axioo")) deviceImage = "axioo.png";
+        if(merk.includes("apple macbook")){
+            deviceImage = "apple-macbook.png";
+        }
+        else if(merk.includes("apple")){
+            deviceImage = "apple.png";
+        }
+        else if(merk.includes("dell")){
+            deviceImage = "dell.png";
+        }
+        else if(merk.includes("hp")){
+            deviceImage = "hp.png";
+        }
+        else if(merk.includes("lenovo")){
+            deviceImage = "lenovo.png";
+        }
+        else if(merk.includes("asus")){
+            deviceImage = "asus.png";
+        }
+        else if(merk.includes("acer")){
+            deviceImage = "acer.png";
+        }
+        else if(merk.includes("axioo")){
+            deviceImage = "axioo.png";
+        }
 
     }
-%>
+    %>
 
             <img
                 src="/images/device/<%= deviceImage %>"

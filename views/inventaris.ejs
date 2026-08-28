@@ -294,17 +294,25 @@ href="/css/app.css">
         <option
             value="Laptop"
             <%= jenis=="Laptop" ? "selected" : "" %>>
-
             Laptop
-
         </option>
 
         <option
             value="Handphone"
             <%= jenis=="Handphone" ? "selected" : "" %>>
-
             Handphone
+        </option>
 
+        <option
+            value="PC All in One"
+            <%= jenis=="PC All in One" ? "selected" : "" %>>
+            PC All in One
+        </option>
+
+        <option
+            value="Tablet"
+            <%= jenis=="Tablet" ? "selected" : "" %>>
+            Tablet
         </option>
 
     </select>
@@ -391,7 +399,10 @@ class="table inventory-table-main align-middle mb-0">
 
     <td>
         <span class="asset-type">
-            <%= item.jenis || "-" %>
+            <%= item.jenis
+                ? item.jenis.charAt(0).toUpperCase() + item.jenis.slice(1)
+                : "-"
+            %>
         </span>
     </td>
 
