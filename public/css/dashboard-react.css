@@ -52,12 +52,13 @@ body.PEI{
 .history-stats strong{font-size:22px;}
 .history-stats span{margin-top:3px;color:var(--dashboard-muted);font-size:12px;}
 .history-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
-.history-pagination{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;margin-top:22px;color:var(--dashboard-muted);font-size:13px;}
+.history-pagination{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;margin-top:24px;padding-top:18px;border-top:1px solid #e3eaf3;color:var(--dashboard-muted);font-size:13px;}
 .history-pagination > span{font-size:13px;font-weight:600;}
-.history-page-control{display:flex;align-items:center;gap:6px;padding:5px;border:1px solid #dbe3ee;border-radius:14px;background:#fff;box-shadow:0 8px 20px rgba(15,23,42,.05);}
-.history-page-btn{min-width:38px;height:38px;padding:0 10px;border:0;border-radius:10px;background:transparent;color:#64748b;font:inherit;font-weight:700;cursor:pointer;transition:background .2s ease,color .2s ease,box-shadow .2s ease;}
-.history-page-btn:hover:not(:disabled){background:#eef4ff;color:var(--dashboard-brand);}
+.history-page-control{display:flex;align-items:center;gap:4px;padding:5px;border:1px solid #dbe3ee;border-radius:16px;background:#fff;box-shadow:0 8px 20px rgba(15,23,42,.05);}
+.history-page-btn{appearance:none;min-width:38px;height:38px;padding:0 10px;border:1px solid transparent;border-radius:11px;background:transparent;color:#64748b;font:inherit;font-weight:700;line-height:1;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease;}
+.history-page-btn:hover:not(:disabled){border-color:#cfe0fb;background:#f2f6fd;color:var(--dashboard-brand);}
 .history-page-btn.active{background:var(--dashboard-brand);color:#fff;box-shadow:0 5px 12px rgba(15,77,184,.24);}
+.history-page-btn:focus-visible{outline:3px solid rgba(15,77,184,.2);outline-offset:2px;}
 .history-page-btn:disabled{color:#c4cfdd;cursor:not-allowed;}
 .history-empty{width:100%;min-height:420px;padding:70px 24px;display:grid;place-content:center;text-align:center;border:1px dashed #cbd5e1;border-radius:20px;background:rgba(255,255,255,.7);box-sizing:border-box;}
 .history-empty i{font-size:48px;color:var(--dashboard-brand);}
