@@ -80,7 +80,7 @@ function DonutChart({ summary }) {
                 ></circle>
                 {values.map((item, index) => {
                     const dash = (item.value / total) * circumference;
-                    const offset = circumference - runningOffset - dash;
+                    const offset = -runningOffset;
                     runningOffset += dash;
 
                     return (
@@ -92,7 +92,7 @@ function DonutChart({ summary }) {
                             r={radius}
                             stroke={item.color}
                             strokeWidth={stroke}
-                            strokeDasharray={`${dash} ${circumference - dash}`}
+                            strokeDasharray={`${dash} ${circumference}`}
                             strokeDashoffset={offset}
                             style={{ filter: index === 0 ? "drop-shadow(0 4px 10px rgba(34,197,94,.12))" : "none" }}
                         ></circle>
