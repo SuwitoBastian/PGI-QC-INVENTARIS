@@ -640,7 +640,7 @@ body.PEI{
     }
 }
 
-@media (max-width: 1400px) and (min-width: 992px){
+@media (max-width: 1200px) and (min-width: 992px){
     .dashboard-shell{
         --dashboard-sidebar-width: 280px;
     }
