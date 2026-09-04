@@ -318,9 +318,6 @@ function DashboardApp() {
                             </div>
                         </section>
 
-                        <div className="dashboard-footer">
-                            © 2026 {data.company === "PEI" ? "IT Support Pusat Emas Indonesia" : "Pusat Gadai Indonesia"}
-                        </div>
                     </>
                 ) : (
                     <div className="empty-state">

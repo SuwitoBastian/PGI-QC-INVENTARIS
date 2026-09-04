@@ -92,10 +92,10 @@ function HistoryApp() {
                         <div className="history-list">{visible.map(batch => <BatchCard key={batch.id} batch={batch} />)}</div>
                         <div className="history-pagination">
                             <span>Menampilkan {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, history.length)} dari {history.length} batch</span>
-                            <div className="btn-group" role="group" aria-label="Pagination riwayat batch">
-                                <button className="btn btn-outline-secondary" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}><i className="bi bi-chevron-left"></i></button>
-                                {Array.from({ length: pageCount }, (_, index) => index + 1).map(item => <button key={item} className={`btn ${item === currentPage ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(item)}>{item}</button>)}
-                                <button className="btn btn-outline-secondary" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}><i className="bi bi-chevron-right"></i></button>
+                            <div className="history-page-control" role="group" aria-label="Pagination riwayat batch">
+                                <button className="history-page-btn" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)} aria-label="Halaman sebelumnya"><i className="bi bi-chevron-left"></i></button>
+                                {Array.from({ length: pageCount }, (_, index) => index + 1).map(item => <button key={item} className={`history-page-btn ${item === currentPage ? "active" : ""}`} onClick={() => setPage(item)} aria-current={item === currentPage ? "page" : undefined}>{item}</button>)}
+                                <button className="history-page-btn" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)} aria-label="Halaman berikutnya"><i className="bi bi-chevron-right"></i></button>
                             </div>
                         </div>
                     </>
