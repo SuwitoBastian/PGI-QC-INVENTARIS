@@ -640,6 +640,33 @@ body.PEI{
     }
 }
 
+@media (max-width: 1400px) and (min-width: 992px){
+    .dashboard-shell{
+        --dashboard-sidebar-width: 280px;
+    }
+
+    .dashboard-sidebar{
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .sidebar-brand-title{
+        font-size: 16px;
+    }
+
+    .dashboard-main{
+        padding: 20px;
+    }
+
+    .summary-grid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .content-grid{
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 991.98px){
     .dashboard-shell{
         display: block;
