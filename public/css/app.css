@@ -148,6 +148,13 @@
 
 }
 
+@media(min-width:992px){
+    .sidebar-layout{
+        min-height:111.111vh;
+        height:111.111vh;
+    }
+}
+
 /* Shared sidebar layout for all non-dashboard pages. */
 .sidebar-layout{
     position:fixed;
