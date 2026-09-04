@@ -12,14 +12,9 @@ exports.index = (req, res) => {
     const activeBatch =
     batchService.getActiveBatch(req.company);
 
-    const history =
-    batchService.getHistory(req.company);
-
     res.render("batch",{
 
     activeBatch,
-
-    history,
 
     company: req.company,
 
@@ -298,6 +293,23 @@ exports.detail = (req, res) => {
 
         currentPage: "batch"
 
+    });
+
+};
+
+// ===========================
+// Halaman Riwayat Batch
+// ===========================
+exports.history = (req, res) => {
+
+    const activeBatch = batchService.getActiveBatch(req.company);
+    const history = batchService.getHistory(req.company);
+
+    res.render("history", {
+        activeBatch,
+        history,
+        company: req.company,
+        currentPage: "history"
     });
 
 };

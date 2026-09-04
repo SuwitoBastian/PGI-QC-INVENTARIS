@@ -147,6 +147,47 @@
     }
 
 }
+
+/* Shared sidebar layout for all non-dashboard pages. */
+.sidebar-layout{
+    position:fixed;
+    inset:0 auto 0 0;
+    width:320px;
+    min-height:100vh;
+    z-index:1030;
+    padding:22px 18px;
+    overflow-y:auto;
+    background:linear-gradient(180deg,#0f4db8,#0b3f96);
+    box-shadow:8px 0 30px rgba(15,23,42,.16);
+}
+.sidebar-layout .sidebar-brand{display:flex;align-items:center;gap:11px;padding:8px 8px 18px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.12);text-decoration:none;}
+.sidebar-layout .navbar-logo{width:48px;height:48px;}
+.sidebar-layout .brand-title,.sidebar-layout .brand-subtitle{display:block;}
+.sidebar-layout .brand-title{font-size:17px;font-weight:700;line-height:1.15;white-space:nowrap;letter-spacing:-.2px;}
+.sidebar-layout .brand-subtitle{font-size:12px;font-weight:500;color:rgba(255,255,255,.9);}
+.sidebar-layout .sidebar-section-label{color:rgba(255,255,255,.55);font-size:11px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin:24px 10px 10px;}
+.sidebar-layout .sidebar-nav{display:flex;gap:6px;}
+.sidebar-layout .sidebar-nav .nav-link{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.86)!important;border-radius:12px;padding:12px 14px!important;font-size:14px;font-weight:600;}
+.sidebar-layout .sidebar-nav .nav-link:hover,.sidebar-layout .sidebar-nav .nav-link.active{background:rgba(255,255,255,.16);color:#fff!important;}
+.sidebar-layout .sidebar-nav .nav-link i{width:20px;text-align:center;font-size:17px;}
+.sidebar-layout .sidebar-card{padding:11px;margin-top:20px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:rgba(255,255,255,.08);}
+.sidebar-layout .sidebar-card-title{margin-bottom:14px;color:#fff;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+.sidebar-layout .company-switcher{margin:0 0 8px;}
+.sidebar-layout .sidebar-card > .company-switcher + .company-switcher{margin-top:10px;}
+.sidebar-layout .company-option{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;padding:7px 8px;border:1px solid transparent;border-radius:8px;background:transparent;color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-align:left;}
+.sidebar-layout .company-option:hover,.sidebar-layout .company-option.active{background:rgba(255,255,255,.14);color:#fff;}
+.sidebar-layout .sidebar-toggler{display:none;}
+.sidebar-layout .navbar-collapse{display:block;}
+body > .container{margin-left:320px;width:calc(100% - 320px);max-width:none;padding-left:40px!important;padding-right:40px!important;}
+@media(max-width:991px){
+    .sidebar-layout{width:260px;transform:translateX(-100%);transition:transform .25s ease;}
+    .sidebar-layout .sidebar-brand{padding-top:8px;}
+    .sidebar-layout .sidebar-toggler{display:block;position:absolute;right:-52px;top:20px;width:44px;height:40px;border-radius:10px;background:#0f4db8;}
+    .sidebar-layout:has(.navbar-collapse.show){transform:translateX(0);}
+    .sidebar-layout .navbar-collapse{display:none!important;}
+    .sidebar-layout:has(.navbar-collapse.show) .navbar-collapse{display:block!important;}
+    body > .container{margin-left:0;width:100%;padding-left:18px!important;padding-right:18px!important;}
+}
 /* ===================================================
    INVENTARIS
 =================================================== */
@@ -2211,4 +2252,4 @@
 
     color:#E8C46A;
 
-}   
+}

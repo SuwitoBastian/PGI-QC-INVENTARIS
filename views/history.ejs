@@ -1,32 +1,27 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Monitoring QC IT Support</title>
-
+    <title>Riwayat Batch - Monitoring QC IT Support</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/dashboard-react.css">
+    <link rel="stylesheet" href="/css/app.css">
 </head>
-
 <body class="<%= company %>">
-    <div id="dashboard-root"></div>
-
+    <div id="history-root"></div>
     <script>
-        window.__DASHBOARD_DATA__ = <%- JSON.stringify({
-            summary: summary || null,
+        window.__HISTORY_DATA__ = <%- JSON.stringify({
+            history: history || [],
+            activeBatch: activeBatch || null,
             company: company || "PGI",
-            currentPage: currentPage || "dashboard",
-            currentBatch: typeof currentBatch !== "undefined" ? currentBatch : null
+            currentPage: currentPage || "history"
         }) %>;
     </script>
-
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script type="text/babel" src="/js/dashboard.jsx"></script>
+    <script type="text/babel" src="/js/history.jsx"></script>
 </body>
-
 </html>
