@@ -33,8 +33,8 @@ body.PEI{
     min-height: 100vh;
 }
 
-.history-shell{width:100%;min-height:100vh;display:flex;background:var(--dashboard-bg);overflow-x:hidden;}
-.history-sidebar{position:sticky;align-self:flex-start;overflow:visible;}
+.history-shell{width:100%;min-height:100vh;display:flex;align-items:stretch;background:var(--dashboard-bg);overflow-x:hidden;}
+.history-sidebar{position:sticky;top:0;align-self:flex-start;height:100vh;min-height:100vh;overflow:hidden;box-sizing:border-box;}
 .history-main{flex:1;min-width:0;overflow:hidden;padding:34px 42px;}
 .history-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:26px;padding-bottom:24px;border-bottom:1px solid var(--dashboard-border);}
 .history-eyebrow{color:var(--dashboard-brand);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
@@ -84,9 +84,13 @@ body.PEI{
     }
 
     .dashboard-sidebar,
-    .history-sidebar,
     .sidebar-layout{
         height: 111.111vh;
+    }
+
+    .history-sidebar{
+        height: 100vh;
+        min-height: 100vh;
     }
 }
 
