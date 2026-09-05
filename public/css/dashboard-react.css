@@ -40,7 +40,7 @@ body.PEI{
     display: flex;
     align-items: stretch;
     background: var(--dashboard-bg);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .history-sidebar {
@@ -68,7 +68,7 @@ body.PEI{
     margin: 0 !important;
     padding: 34px 42px;
     box-sizing: border-box;
-    overflow-y: auto;
+    overflow-y: visible;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
