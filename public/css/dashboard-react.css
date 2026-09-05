@@ -157,11 +157,6 @@ body.PEI{
     .dashboard-sidebar,
     .history-sidebar,
     .sidebar-layout{
-        height: 100vh;
-        min-height: 100vh;
-    }
-
-    .history-sidebar{
         height: 111.111vh !important;
         min-height: 111.111vh !important;
     }
