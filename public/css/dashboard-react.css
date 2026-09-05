@@ -561,16 +561,18 @@ body.PEI{
 
 .distribution-layout{
     display: grid;
-    grid-template-columns: minmax(220px, .9fr) minmax(260px, 1.1fr);
-    gap: 28px;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 18px;
     align-items: center;
-    height: 100%;
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .donut{
     position: relative;
-    width: min(100%, 260px);
+    width: min(100%, 240px);
+    max-width: 100%;
     aspect-ratio: 1;
     margin: 0 auto;
 }
@@ -626,9 +628,12 @@ body.PEI{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
     padding: 10px 0;
     border-bottom: 1px solid #edf2f7;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .legend-row:last-child{
@@ -642,12 +647,15 @@ body.PEI{
     gap: 10px;
     font-weight: 700;
     color: #4b5563;
+    min-width: 0;
 }
 
 .legend-right{
     font-weight: 800;
     color: #111827;
     text-align: right;
+    white-space: nowrap;
+    flex-shrink: 1;
 }
 
 .dot{
