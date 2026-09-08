@@ -33,44 +33,94 @@ console.warn = (...args) => {
     originalConsoleWarn(...args);
 };
 
+
 const express = require("express");
 require("dotenv").config();
 
 const session = require("express-session");
 
 
-// Database
+// =====================================
+// DATABASE
+// =====================================
+
 require("./database/initDatabase");
 
-// Routes
-const companyRoute = require("./routes/company");
 
-const batchRoutes = require("./routes/batch");
+// =====================================
+// ROUTES
+// =====================================
 
-const app = express();
+const companyRoute =
+    require("./routes/company");
 
-const PORT = process.env.PORT || 3001;
+const batchRoutes =
+    require("./routes/batch");
 
-const dashboardRoute = require("./routes/dashboard");
+const dashboardRoute =
+    require("./routes/dashboard");
 
-const inventoryRoute = require("./routes/inventory");
+const inventoryRoute =
+    require("./routes/inventory");
 
-const companyMiddleware = require("./middlewares/company");
+const devRoute =
+    require("./routes/dev");
 
-const devRoute = require("./routes/dev");
-const path = require("path");
-
-const exportRoutes = require("./routes/export");
+const exportRoutes =
+    require("./routes/export");
 
 const feedbackReminderRoute =
     require("./routes/feedbackReminder");
 
+// =====================================
+// CALENDAR
+// =====================================
+
+// Calendar API
+const calendarRoute =
+    require("./routes/calendar");
+
+// Calendar Page
+const calendarPageRoute =
+    require("./routes/calendarPage");
+
+const activityRoute =
+    require("./routes/activity");
+
+
+// =====================================
+// MIDDLEWARE
+// =====================================
+
+const companyMiddleware =
+    require("./middlewares/company");
+
+const currentBatch =
+    require("./middlewares/currentBatch");
+
+const path = require("path");
+
+
+// =====================================
+// EXPRESS APP
+// =====================================
+
+const app = express();
+
+const PORT =
+    process.env.PORT || 3001;
+
+
+// =====================================
+// STATIC FILES
+// =====================================
 
 app.use(
     express.static(
         path.join(__dirname, "public")
     )
 );
+
 
 app.use(
     "/uploads",
@@ -80,11 +130,20 @@ app.use(
 );
 
 
-// View Engine
-app.set("view engine", "ejs");
+// =====================================
+// VIEW ENGINE
+// =====================================
+
+app.set(
+    "view engine",
+    "ejs"
+);
 
 
-// Middleware
+// =====================================
+// BODY PARSER
+// =====================================
+
 app.use(
     express.urlencoded({
         extended: true
@@ -96,6 +155,10 @@ app.use(
 );
 
 
+// =====================================
+// SESSION
+// =====================================
+
 app.use(
     session({
         secret: "PGI-QC-2026",
@@ -105,12 +168,27 @@ app.use(
 );
 
 
-app.use(companyMiddleware);
+// =====================================
+// COMPANY MIDDLEWARE
+// =====================================
 
-const currentBatch =
-    require("./middlewares/currentBatch");
+app.use(
+    companyMiddleware
+);
 
-app.use(currentBatch);
+
+// =====================================
+// CURRENT BATCH
+// =====================================
+
+app.use(
+    currentBatch
+);
+
+
+// =====================================
+// UPLOADS
+// =====================================
 
 app.use(
     "/uploads",
@@ -119,42 +197,111 @@ app.use(
 
 
 // =====================================
-// Routes
+// ROUTES
 // =====================================
 
 // IMPORTANT:
 // Internal API harus diletakkan SEBELUM
 // dashboard route "/"
+
+
+// -------------------------------------
+// Feedback Reminder
+// -------------------------------------
+
 app.use(
     "/internal/feedback-reminder",
     feedbackReminderRoute
 );
 
 
+// -------------------------------------
+// Calendar API
+// -------------------------------------
+//
+// GET    /api/calendar
+// GET    /api/calendar/:id
+// POST   /api/calendar
+// PUT    /api/calendar/:id
+// PATCH  /api/calendar/:id/cancel
+// DELETE /api/calendar/:id
+
+app.use(
+    "/api/calendar",
+    calendarRoute
+);
+
+
+// -------------------------------------
+// Calendar Page
+// -------------------------------------
+//
+// GET /kalender
+
+app.use(
+    "/kalender",
+    calendarPageRoute
+);
+
+app.use(
+    "/api/activity",
+    activityRoute
+);
+
+
+// -------------------------------------
+// Dashboard
+// -------------------------------------
+
 app.use(
     "/",
     dashboardRoute
 );
+
+
+// -------------------------------------
+// Batch
+// -------------------------------------
 
 app.use(
     "/batch",
     batchRoutes
 );
 
+
+// -------------------------------------
+// Company
+// -------------------------------------
+
 app.use(
     "/company",
     companyRoute
 );
+
+
+// -------------------------------------
+// Inventaris
+// -------------------------------------
 
 app.use(
     "/inventaris",
     inventoryRoute
 );
 
+
+// -------------------------------------
+// Development
+// -------------------------------------
+
 app.use(
     "/dev",
     devRoute
 );
+
+
+// -------------------------------------
+// Export
+// -------------------------------------
 
 app.use(
     "/export",

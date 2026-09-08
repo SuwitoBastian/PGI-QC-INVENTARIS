@@ -6,9 +6,47 @@ console.log(" DATABASE INITIALIZER");
 console.log("==================================");
 console.log("");
 
+
+// ==================================================
+// HELPER - CEK COLUMN
+// ==================================================
+
+function columnExists(tableName, columnName) {
+
+    const columns = db.prepare(`
+        PRAGMA table_info(${tableName})
+    `).all();
+
+    return columns.some(column => column.name === columnName);
+}
+
+
+// ==================================================
+// HELPER - TAMBAH COLUMN JIKA BELUM ADA
+// ==================================================
+
+function addColumnIfNotExists(tableName, columnName, definition) {
+
+    if (!columnExists(tableName, columnName)) {
+
+        db.prepare(`
+            ALTER TABLE ${tableName}
+            ADD COLUMN ${columnName} ${definition}
+        `).run();
+
+        console.log(
+            `✅ Column ${tableName}.${columnName} berhasil ditambahkan`
+        );
+
+    }
+
+}
+
+
 // =====================
 // TABEL BATCH
 // =====================
+
 db.prepare(`
 CREATE TABLE IF NOT EXISTS batch (
 
@@ -37,6 +75,7 @@ CREATE TABLE IF NOT EXISTS batch (
 // =====================
 // TABEL INVENTARIS
 // =====================
+
 db.prepare(`
 CREATE TABLE IF NOT EXISTS inventaris (
 
@@ -85,29 +124,151 @@ CREATE TABLE IF NOT EXISTS inventaris (
 // =====================
 // TABEL ACTIVITY LOG
 // =====================
+
 db.prepare(`
 CREATE TABLE IF NOT EXISTS activity_log (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    batch_id INTEGER,
+    company TEXT,
 
-    activity TEXT,
+    type TEXT NOT NULL,
 
-    nf TEXT,
+    title TEXT NOT NULL,
+
+    message TEXT,
+
+    reference_id INTEGER,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+);
+`).run();
+
+
+// ==================================================
+// MIGRATION ACTIVITY LOG
+// ==================================================
+//
+// Database lama sudah mempunyai activity_log:
+//
+// id
+// batch_id
+// activity
+// nf
+// created_at
+//
+// Jangan hapus tabel lama.
+// Tambahkan column baru jika belum tersedia.
+//
+// ==================================================
+
+addColumnIfNotExists(
+    "activity_log",
+    "company",
+    "TEXT"
+);
+
+addColumnIfNotExists(
+    "activity_log",
+    "type",
+    "TEXT"
+);
+
+addColumnIfNotExists(
+    "activity_log",
+    "title",
+    "TEXT"
+);
+
+addColumnIfNotExists(
+    "activity_log",
+    "message",
+    "TEXT"
+);
+
+addColumnIfNotExists(
+    "activity_log",
+    "reference_id",
+    "INTEGER"
+);
+
+
+// =====================
+// TABEL CALENDAR BOOKING
+// =====================
+
+db.prepare(`
+CREATE TABLE IF NOT EXISTS calendar_booking (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    company TEXT NOT NULL DEFAULT 'PGI',
+
+    booking_date TEXT NOT NULL,
+
+    asset_type TEXT,
+
+    asset_count INTEGER DEFAULT 0,
+
+    requester TEXT,
+
+    location TEXT,
+
+    notes TEXT,
+
+    status TEXT NOT NULL DEFAULT 'TENTATIVE',
 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY(batch_id)
-        REFERENCES batch(id)
-        ON DELETE CASCADE
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 
 );
 `).run();
 
 
 // =====================
-// INDEX
+// INDEX CALENDAR BOOKING
+// =====================
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_calendar_booking_date
+ON calendar_booking(booking_date);
+`).run();
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_calendar_booking_company
+ON calendar_booking(company);
+`).run();
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_calendar_booking_status
+ON calendar_booking(status);
+`).run();
+
+
+// =====================
+// INDEX ACTIVITY LOG
+// =====================
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_activity_log_created_at
+ON activity_log(created_at);
+`).run();
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_activity_log_company
+ON activity_log(company);
+`).run();
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_activity_log_type
+ON activity_log(type);
+`).run();
+
+
+// =====================
+// INDEX BATCH
 // =====================
 
 db.prepare(`
@@ -119,6 +280,11 @@ db.prepare(`
 CREATE INDEX IF NOT EXISTS idx_batch_status
 ON batch(status);
 `).run();
+
+
+// =====================
+// INDEX INVENTARIS
+// =====================
 
 db.prepare(`
 CREATE INDEX IF NOT EXISTS idx_inventory_batch
@@ -135,8 +301,6 @@ CREATE INDEX IF NOT EXISTS idx_inventory_company
 ON inventaris(company);
 `).run();
 
-console.log("✅ Semua tabel berhasil dibuat");
-console.log("✅ Semua index berhasil dibuat");
 
 console.log("");
 console.log("==================================");

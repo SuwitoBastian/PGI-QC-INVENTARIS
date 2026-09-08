@@ -22,6 +22,7 @@ function Sidebar({ company, activeBatch }) {
                 <a className="sidebar-link" href="/inventaris"><i className="bi bi-list-ul"></i><span>Inventaris</span></a>
                 <a className="sidebar-link" href="/batch"><i className={`bi ${activeBatch ? "bi-upload" : "bi-plus-circle"}`}></i><span>{activeBatch ? "Import Tambahan" : "Import Batch Baru"}</span></a>
                 <a className="sidebar-link active" href="/batch/history"><i className="bi bi-clock-history"></i><span>Riwayat Batch</span></a>
+                <a className="sidebar-link" href="/kalender"><i className="bi bi-calendar3"></i><span>Kalender</span></a>
             </nav>
             <div className="sidebar-card">
                 <div className="sidebar-card-title">Pilih Perusahaan</div>

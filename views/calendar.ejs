@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        Kalender Booking - Monitoring QC IT Support
+    </title>
+
+
+    <!-- =================================
+         FAVICON
+    ================================== -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="/images/favicon.png"
+    >
+
+
+    <!-- =================================
+         BOOTSTRAP
+    ================================== -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- =================================
+         BOOTSTRAP ICONS
+    ================================== -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- =================================
+         DASHBOARD CSS
+    ================================== -->
+
+    <link
+        rel="stylesheet"
+        href="/css/dashboard-react.css"
+    >
+
+
+    <!-- =================================
+         CALENDAR CSS
+    ================================== -->
+
+    <link
+        rel="stylesheet"
+        href="/css/calendar.css"
+    >
+
+</head>
+
+
+<body class="<%= company %>">
+
+
+    <!-- =================================
+         CALENDAR ROOT
+    ================================== -->
+
+    <div id="calendar-root"></div>
+
+
+    <!-- =================================
+         CALENDAR DATA
+    ================================== -->
+
+    <script>
+
+        window.__CALENDAR_DATA__ = <%- JSON.stringify({
+            company: company || "PGI",
+            currentPage: currentPage || "calendar"
+        }) %>;
+
+    </script>
+
+
+    <!-- =================================
+         REACT
+    ================================== -->
+
+    <script
+        src="https://unpkg.com/react@18/umd/react.development.js">
+    </script>
+
+
+    <script
+        src="https://unpkg.com/react-dom@18/umd/react-dom.development.js">
+    </script>
+
+
+    <!-- =================================
+         BABEL
+    ================================== -->
+
+    <script
+        src="https://unpkg.com/@babel/standalone/babel.min.js">
+    </script>
+
+
+    <!-- =================================
+         CALENDAR JSX
+    ================================== -->
+
+    <script
+        type="text/babel"
+        src="/js/calendar.jsx">
+    </script>
+
+</body>
+
+</html>

@@ -561,18 +561,16 @@ body.PEI{
 
 .distribution-layout{
     display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-    gap: 18px;
+    grid-template-columns: minmax(220px, .9fr) minmax(260px, 1.1fr);
+    gap: 28px;
     align-items: center;
+    height: 100%;
     width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
 }
 
 .donut{
     position: relative;
-    width: min(100%, 240px);
-    max-width: 100%;
+    width: min(100%, 260px);
     aspect-ratio: 1;
     margin: 0 auto;
 }
@@ -628,12 +626,9 @@ body.PEI{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     padding: 10px 0;
     border-bottom: 1px solid #edf2f7;
-    min-width: 0;
-    width: 100%;
-    box-sizing: border-box;
 }
 
 .legend-row:last-child{
@@ -647,15 +642,12 @@ body.PEI{
     gap: 10px;
     font-weight: 700;
     color: #4b5563;
-    min-width: 0;
 }
 
 .legend-right{
     font-weight: 800;
     color: #111827;
     text-align: right;
-    white-space: nowrap;
-    flex-shrink: 1;
 }
 
 .dot{
@@ -856,4 +848,188 @@ body.PEI{
         flex-direction: column;
         align-items: stretch;
     }
+}
+
+
+
+@media (min-width: 992px) {
+
+    /* Tombol hamburger desktop */
+    .dashboard-topbar {
+        display: block !important;
+        position: static;
+        width: 0;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .dashboard-topbar-title,
+    .dashboard-topbar-actions {
+        display: none !important;
+    }
+
+    .dashboard-topbar > .topbar-button:first-child {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+
+        position: fixed;
+        top: 24px;
+        left: calc(var(--dashboard-sidebar-width) + 24px);
+
+        width: 44px;
+        height: 44px;
+
+        z-index: 1000;
+        cursor: pointer;
+
+        transition: left 0.28s ease;
+    }
+
+    /* Saat sidebar ditutup */
+    .dashboard-shell.desktop-sidebar-hidden
+    .dashboard-topbar > .topbar-button:first-child {
+        left: 24px;
+    }
+
+
+    /* =========================
+       SIDEBAR NORMAL
+       ========================= */
+
+    .dashboard-shell .dashboard-sidebar {
+        width: var(--dashboard-sidebar-width);
+        flex: 0 0 var(--dashboard-sidebar-width);
+
+        transform: translateX(0);
+
+        transition:
+            width 0.28s ease,
+            flex-basis 0.28s ease,
+            transform 0.28s ease,
+            padding 0.28s ease;
+
+        overflow-x: hidden;
+    }
+
+
+    /* =========================
+       SIDEBAR DITUTUP
+       ========================= */
+
+    .dashboard-shell.desktop-sidebar-hidden .dashboard-sidebar {
+        width: 0 !important;
+        flex-basis: 0 !important;
+
+        transform: translateX(-100%);
+
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+
+        overflow: hidden;
+        border: 0 !important;
+    }
+
+    .dashboard-shell.desktop-sidebar-hidden
+    .dashboard-sidebar > * {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+
+    /* =========================
+       CONTENT MELEBAR
+       ========================= */
+
+    .dashboard-shell .dashboard-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: auto;
+    }
+
+    .dashboard-shell.desktop-sidebar-hidden .dashboard-main {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 0;
+    }
+}
+@media (min-width: 992px) {
+
+    /* Beri ruang agar tombol hamburger tidak menutupi judul */
+    .dashboard-hero {
+        padding-left: 64px;
+    }
+
+}
+/* =========================================
+   PEI SIDEBAR - GOLD MENU
+   ========================================= */
+
+body.PEI .dashboard-sidebar .sidebar-link {
+    color: var(--dashboard-accent);
+}
+
+body.PEI .dashboard-sidebar .sidebar-link i {
+    color: var(--dashboard-accent);
+}
+
+body.PEI .dashboard-sidebar .sidebar-link:hover {
+    background: rgba(201, 151, 44, 0.12);
+    color: var(--dashboard-accent);
+}
+
+body.PEI .dashboard-sidebar .sidebar-link:hover i {
+    color: var(--dashboard-accent);
+}
+
+/* Menu aktif tetap background gold + putih */
+body.PEI .dashboard-sidebar .sidebar-link.active {
+    background: var(--dashboard-accent);
+    border-color: var(--dashboard-accent);
+    color: #fff;
+}
+
+body.PEI .dashboard-sidebar .sidebar-link.active i {
+    color: #fff;
+}
+/* =========================================================
+   PEI SIDEBAR - STYLE GOLD
+   Berlaku untuk semua halaman React Sidebar
+   ========================================================= */
+
+/* Subtitle brand PEI */
+body.PEI .dashboard-sidebar .sidebar-brand-subtitle {
+    color: var(--dashboard-accent) !important;
+}
+
+/* Semua menu PEI menjadi GOLD */
+body.PEI .dashboard-sidebar .sidebar-link {
+    color: var(--dashboard-accent) !important;
+}
+
+body.PEI .dashboard-sidebar .sidebar-link i {
+    color: var(--dashboard-accent) !important;
+}
+
+/* Hover */
+body.PEI .dashboard-sidebar .sidebar-link:hover {
+    background: rgba(201, 151, 44, 0.12);
+    color: var(--dashboard-accent) !important;
+}
+
+body.PEI .dashboard-sidebar .sidebar-link:hover i {
+    color: var(--dashboard-accent) !important;
+}
+
+/* Menu aktif */
+body.PEI .dashboard-sidebar .sidebar-link.active {
+    background: var(--dashboard-accent) !important;
+    border-color: var(--dashboard-accent) !important;
+    color: #fff !important;
+}
+
+body.PEI .dashboard-sidebar .sidebar-link.active i {
+    color: #fff !important;
 }

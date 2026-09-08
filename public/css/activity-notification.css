@@ -1,0 +1,305 @@
+/* =====================================
+   ACTIVITY NOTIFICATION
+   ===================================== */
+
+.dashboard-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.activity-notification {
+    position: relative;
+}
+
+.activity-bell {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background: #fff;
+    color: #343a40;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.activity-bell:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.activity-bell i {
+    font-size: 18px;
+}
+
+.activity-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #dc3545;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+
+/* Overlay */
+.activity-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: transparent;
+}
+
+/* Panel */
+.activity-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 390px;
+    max-width: calc(100vw - 24px);
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .14);
+    z-index: 1050;
+    overflow: hidden;
+}
+
+/* Header */
+.activity-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f2;
+}
+
+.activity-panel-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #212529;
+}
+
+.activity-panel-subtitle {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.activity-close {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.activity-close:hover {
+    background: #f1f3f5;
+}
+
+/* List */
+.activity-list {
+    max-height: 470px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f3f5;
+    transition: background .15s ease;
+}
+
+.activity-item:hover {
+    background: #f8f9fa;
+}
+
+.activity-item.unread {
+    background: #f8fbff;
+}
+
+.activity-icon {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activity-icon i {
+    font-size: 18px;
+}
+
+.activity-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.activity-title-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 3px;
+}
+
+.activity-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #212529;
+}
+
+.activity-company {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #e9ecef;
+    color: #495057;
+}
+
+.activity-company.pgi {
+    background: #e7f1ff;
+    color: #0d6efd;
+}
+
+.activity-company.pei {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.activity-message {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #495057;
+    word-break: break-word;
+}
+
+.activity-time {
+    margin-top: 5px;
+    font-size: 10px;
+    color: #adb5bd;
+}
+
+/* Empty */
+.activity-empty {
+    padding: 45px 20px;
+    text-align: center;
+    color: #adb5bd;
+    font-size: 13px;
+}
+
+.activity-empty i {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 30px;
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+    .activity-panel {
+        position: fixed;
+        top: 65px;
+        right: 12px;
+        width: calc(100vw - 24px);
+    }
+}
+
+/* =====================================
+   NOTIFICATION + COMPANY POSITION
+   ===================================== */
+.dashboard-hero .hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.dashboard-hero .hero-actions .activity-notification {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+/* =====================================
+   NOTIFICATION PANEL SCROLL
+   ===================================== */
+.activity-panel {
+    max-height: min(560px, calc(100vh - 110px));
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* =====================================
+   CLOSE EFFECT
+   ===================================== */
+.activity-close {
+    transition: background .15s ease, transform .15s ease;
+}
+
+.activity-close:hover {
+    background: #f1f3f5;
+    transform: scale(1.05);
+}
+
+.activity-close:active {
+    transform: scale(.88);
+}
+
+.activity-panel.closing {
+    animation: activityPanelClose .16s ease forwards;
+}
+
+@keyframes activityPanelClose {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-4px) scale(.97);
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-hero .hero-actions {
+        gap: 8px;
+    }
+
+    .activity-panel {
+        max-height: calc(100vh - 90px);
+    }
+}
+/* =====================================
+   NOTIFICATION PANEL - RAPAT KE KANAN
+   ===================================== */
+
+.dashboard-hero .hero-actions .activity-panel {
+    right: -220px;
+}

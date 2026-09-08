@@ -22,7 +22,10 @@
     <link
         rel="stylesheet"
         href="/css/app.css">
-    <link rel="stylesheet" href="/css/dashboard-react.css">
+
+    <link
+        rel="stylesheet"
+        href="/css/dashboard-react.css">
 
 </head>
 
@@ -40,79 +43,316 @@
 
                 <div class="card-body p-4">
 
+                    <!-- ========================= -->
+                    <!-- HEADER -->
+                    <!-- ========================= -->
+
                     <div class="mb-4">
 
-    <h2 class="page-title">
+                        <h2 class="page-title">
 
-        <i class="bi bi-upload me-2"></i>
+                            <i class="bi bi-upload me-2"></i>
 
-        Import Data Inventaris
+                            Import Data Inventaris
 
-    </h2>
+                        </h2>
 
-    <p class="text-muted mb-0">
+                        <p class="text-muted mb-0">
 
-        Upload file Excel untuk membuat Batch baru atau menambahkan inventaris ke Batch aktif.
+                            Upload file Excel untuk membuat Batch baru
+                            atau menambahkan inventaris ke Batch aktif.
 
-    </p>
+                        </p>
 
-</div>
+                    </div>
+
+
+                    <!-- ========================= -->
+                    <!-- BOOKING KALENDER -->
+                    <!-- ========================= -->
+
+                    <% if (booking) { %>
+
+                    <div class="card border-primary shadow-sm mb-4">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <div>
+
+                                    <span class="badge bg-primary mb-3">
+
+                                        <i class="bi bi-calendar-check-fill me-2"></i>
+
+                                        BOOKING KALENDER
+
+                                    </span>
+
+                                    <h4 class="fw-bold mb-1">
+
+                                        Booking #<%= booking.id %>
+
+                                    </h4>
+
+                                    <p class="text-muted mb-0">
+
+                                        Referensi booking untuk pembuatan Batch QC
+
+                                    </p>
+
+                                </div>
+
+                                <div class="text-primary">
+
+                                    <i class="bi bi-calendar-event fs-1"></i>
+
+                                </div>
+
+                            </div>
+
+
+                            <hr>
+
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Tanggal Booking
+                                    </div>
+
+                                    <div class="fw-bold">
+                                        <%= booking.booking_date || "-" %>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Perusahaan
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.company || "-" %>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Jenis Asset
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.asset_type || "-" %>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Jumlah
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.asset_count || 0 %> unit
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Requester
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.requester || "-" %>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Lokasi
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.location || "-" %>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Status Booking
+                                    </div>
+
+                                    <% if (booking.status === "CONFIRMED") { %>
+
+                                        <span class="badge bg-success">
+
+                                            <i class="bi bi-check-circle-fill me-1"></i>
+
+                                            CONFIRMED
+
+                                        </span>
+
+                                    <% } else if (booking.status === "TENTATIVE") { %>
+
+                                        <span class="badge bg-warning text-dark">
+
+                                            <i class="bi bi-clock-fill me-1"></i>
+
+                                            TENTATIVE
+
+                                        </span>
+
+                                    <% } else { %>
+
+                                        <span class="badge bg-secondary">
+
+                                            <%= booking.status || "-" %>
+
+                                        </span>
+
+                                    <% } %>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <div class="small text-secondary">
+                                        Booking Dibuat
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.created_at || "-" %>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-12">
+
+                                    <div class="small text-secondary">
+                                        Catatan
+                                    </div>
+
+                                    <div class="fw-bold">
+
+                                        <%= booking.notes || "-" %>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <% } %>
+
+
+                    <!-- ========================= -->
+                    <!-- ACTIVE BATCH -->
+                    <!-- ========================= -->
 
                     <% if(activeBatch){ %>
-<div class="card border-success shadow-sm mb-4">
 
-    <div class="card-body">
+                    <div class="card border-success shadow-sm mb-4">
 
-        <div class="d-flex justify-content-between align-items-start">
+                        <div class="card-body">
 
-            <div>
+                            <div class="d-flex justify-content-between align-items-start">
 
-                <span class="badge bg-success mb-3">
+                                <div>
 
-                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span class="badge bg-success mb-3">
 
-                    BATCH ACTIVE
+                                        <i class="bi bi-check-circle-fill me-2"></i>
 
-                </span>
+                                        BATCH ACTIVE
 
-                <h3 class="fw-bold mb-1">
+                                    </span>
 
-                    <%= activeBatch.batch_code %>
+                                    <h3 class="fw-bold mb-1">
 
-                </h3>
+                                        <%= activeBatch.batch_code %>
 
-                <p class="text-muted mb-3">
+                                    </h3>
 
-                    <%= activeBatch.batch_name %>
+                                    <p class="text-muted mb-3">
 
-                </p>
+                                        <%= activeBatch.batch_name %>
 
-                <div class="small text-secondary">
+                                    </p>
 
-                    Semua data inventaris yang diimport akan otomatis
-                    ditambahkan ke Batch ini.
+                                    <div class="small text-secondary">
 
-                </div>
+                                        Semua data inventaris yang diimport
+                                        akan otomatis ditambahkan ke Batch ini.
 
-            </div>
+                                    </div>
 
-            <div class="text-success">
+                                </div>
 
-                <i class="bi bi-box-seam fs-1"></i>
+                                <div class="text-success">
 
-            </div>
+                                    <i class="bi bi-box-seam fs-1"></i>
 
-        </div>
+                                </div>
 
-    </div>
+                            </div>
 
-</div>
+                        </div>
+
+                    </div>
+
                     <% } %>
+
+
+                    <!-- ========================= -->
+                    <!-- FORM IMPORT -->
+                    <!-- ========================= -->
 
                     <form
                         action="/batch/import"
                         method="POST"
                         enctype="multipart/form-data">
+
+
+                        <!-- ========================= -->
+                        <!-- APPEND / NEW -->
+                        <!-- ========================= -->
 
                         <% if(activeBatch){ %>
 
@@ -129,181 +369,231 @@
                                 <ul class="mb-0">
 
                                     <li>
-                                        Data dengan <strong>NF yang sudah ada</strong>
+
+                                        Data dengan
+                                        <strong>NF yang sudah ada</strong>
                                         akan dilewati secara otomatis.
+
                                     </li>
 
                                     <li class="mt-2">
+
                                         Data baru akan otomatis
                                         ditambahkan ke
                                         <strong>Batch Aktif</strong>.
+
                                     </li>
 
                                 </ul>
 
                             </div>
 
+
                             <input
                                 type="hidden"
                                 name="importType"
                                 value="append">
 
+
+                            <% if (booking) { %>
+
+                                <input
+                                    type="hidden"
+                                    name="booking_id"
+                                    value="<%= booking.id %>">
+
+                            <% } %>
+
+
                         <% } else { %>
 
-         <div class="card border-warning shadow-sm mb-4">
 
-    <div class="card-body">
+                            <div class="card border-warning shadow-sm mb-4">
 
-        <div class="d-flex justify-content-between align-items-start">
+                                <div class="card-body">
 
-            <div>
+                                    <div class="d-flex justify-content-between align-items-start">
 
-                <span class="badge bg-warning text-dark mb-3">
+                                        <div>
 
-                    <i class="bi bi-plus-circle me-2"></i>
+                                            <span class="badge bg-warning text-dark mb-3">
 
-                    BATCH BARU
+                                                <i class="bi bi-plus-circle me-2"></i>
 
-                </span>
+                                                BATCH BARU
 
-                <h3 class="fw-bold mb-2">
+                                            </span>
 
-                    Belum Ada Batch Aktif
+                                            <h3 class="fw-bold mb-2">
 
-                </h3>
+                                                Belum Ada Batch Aktif
 
-                <p class="text-muted mb-3">
+                                            </h3>
 
-                    Import pertama akan otomatis membuat
-                    <strong>Batch Baru</strong>.
+                                            <p class="text-muted mb-3">
 
-                </p>
+                                                Import pertama akan otomatis membuat
+                                                <strong>Batch Baru</strong>.
 
-                <div class="small text-secondary">
+                                            </p>
 
-                    Batch baru akan dibuat berdasarkan nama file Excel
-                    yang diupload.
+                                            <div class="small text-secondary">
 
-                </div>
+                                                Batch baru akan dibuat berdasarkan
+                                                nama file Excel yang diupload.
 
-            </div>
+                                            </div>
 
-            <div class="text-warning">
+                                        </div>
 
-                <i class="bi bi-folder-plus fs-1"></i>
+                                        <div class="text-warning">
 
-            </div>
+                                            <i class="bi bi-folder-plus fs-1"></i>
 
-        </div>
+                                        </div>
 
-    </div>
+                                    </div>
 
-</div>
+                                </div>
+
+                            </div>
+
 
                             <input
                                 type="hidden"
                                 name="importType"
                                 value="new">
 
+
+                            <% if (booking) { %>
+
+                                <input
+                                    type="hidden"
+                                    name="booking_id"
+                                    value="<%= booking.id %>">
+
+                            <% } %>
+
+
                         <% } %>
-<div class="alert alert-primary border-0 shadow-sm mb-4">
 
-    <div class="d-flex align-items-center">
 
-        <i class="bi bi-buildings fs-2 me-3"></i>
+                        <!-- ========================= -->
+                        <!-- COMPANY -->
+                        <!-- ========================= -->
 
-        <div>
+                        <div class="alert alert-primary border-0 shadow-sm mb-4">
 
-            <div class="fw-bold">
+                            <div class="d-flex align-items-center">
 
-                Office
+                                <i class="bi bi-buildings fs-2 me-3"></i>
 
-            </div>
+                                <div>
 
-            <div>
+                                    <div class="fw-bold">
 
-                <%= company === "PGI"
-                    ? "Pusat Gadai Indonesia"
-                    : "Pusat Emas Indonesia" %>
+                                        Office
 
-            </div>
+                                    </div>
 
-        </div>
+                                    <div>
 
-    </div>
+                                        <%= company === "PGI"
+                                            ? "Pusat Gadai Indonesia"
+                                            : "Pusat Emas Indonesia" %>
 
-</div>
+                                    </div>
 
-<div class="card border-0 shadow-sm mt-4">
+                                </div>
 
-    <div class="card-body p-4">
+                            </div>
 
-        <label
-    for="excelFile"
-    class="upload-area">
+                        </div>
 
-    <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
 
-    <h5 class="mt-3">
+                        <!-- ========================= -->
+                        <!-- UPLOAD EXCEL -->
+                        <!-- ========================= -->
 
-        Upload File Excel
+                        <div class="card border-0 shadow-sm mt-4">
 
-    </h5>
+                            <div class="card-body p-4">
 
-    <p class="text-muted mb-2">
+                                <label
+                                    for="excelFile"
+                                    class="upload-area">
 
-        Klik di sini untuk memilih file Excel
+                                    <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
 
-    </p>
+                                    <h5 class="mt-3">
 
-    <small class="text-secondary">
+                                        Upload File Excel
 
-        Format :
-        .xlsx & .xls
+                                    </h5>
 
-    </small>
+                                    <p class="text-muted mb-2">
 
-    <input
-        id="excelFile"
-        type="file"
-        name="excel"
-        accept=".xlsx,.xls"
-        hidden
-        required>
+                                        Klik di sini untuk memilih file Excel
 
-</label>
+                                    </p>
 
-<div
-    id="selectedFile"
-    class="text-center mt-3 text-success fw-semibold">
+                                    <small class="text-secondary">
 
-</div>
+                                        Format :
+                                        .xlsx & .xls
 
-    </div>
+                                    </small>
 
-</div>
+                                    <input
+                                        id="excelFile"
+                                        type="file"
+                                        name="excel"
+                                        accept=".xlsx,.xls"
+                                        hidden
+                                        required>
+
+                                </label>
+
+
+                                <div
+                                    id="selectedFile"
+                                    class="text-center mt-3 text-success fw-semibold">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ========================= -->
+                        <!-- BUTTON -->
+                        <!-- ========================= -->
 
                         <div class="d-flex gap-3 mt-4">
 
                             <button
-                             type="submit"
-                             class="btn <%= activeBatch ? 'btn-primary' : 'btn-success' %> px-4">
+                                type="submit"
+                                class="btn <%= activeBatch ? 'btn-primary' : 'btn-success' %> px-4">
 
                                 <i class="bi bi-upload me-2"></i>
 
-                                <%= activeBatch ? "Import Tambahan" : "Buat Batch Baru" %>
+                                <%= activeBatch
+                                    ? "Import Tambahan"
+                                    : "Buat Batch Baru" %>
 
                             </button>
 
-                  <a
-                    href="/"
-                    class="btn btn-outline-secondary px-4">
 
-                   <i class="bi bi-arrow-left me-2"></i>
+                            <a
+                                href="/"
+                                class="btn btn-outline-secondary px-4">
 
-                    Kembali ke Dashboard
+                                <i class="bi bi-arrow-left me-2"></i>
 
-                  </a>
+                                Kembali ke Dashboard
+
+                            </a>
 
                         </div>
 
@@ -319,38 +609,48 @@
 
 </div>
 
+
+<!-- ========================= -->
+<!-- BOOTSTRAP JS -->
+<!-- ========================= -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <script>
 
 document
 .querySelector("form")
-.addEventListener("submit",function(){
+.addEventListener("submit", function(){
 
-    const btn=this.querySelector("button");
+    const btn = this.querySelector("button");
 
-    btn.disabled=true;
+    btn.disabled = true;
 
-    btn.innerHTML=
-    '<span class="spinner-border spinner-border-sm me-2"></span>Mengimpor...';
+    btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2"></span>Mengimpor...';
 
 });
+
+
 const fileInput =
-document.getElementById("excelFile");
+    document.getElementById("excelFile");
 
 const selected =
-document.getElementById("selectedFile");
+    document.getElementById("selectedFile");
 
-fileInput.addEventListener("change",()=>{
+
+fileInput.addEventListener("change", () => {
 
     if(fileInput.files.length){
 
-        selected.innerHTML=
-        `<i class="bi bi-check-circle-fill me-2"></i>${fileInput.files[0].name}`;
+        selected.innerHTML =
+            `<i class="bi bi-check-circle-fill me-2"></i>${fileInput.files[0].name}`;
 
     }
 
 });
+
 </script>
 
 </body>

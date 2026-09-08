@@ -24,8 +24,11 @@
                 <i class="bi <%= currentBatch ? 'bi-upload' : 'bi-plus-circle' %>"></i>
                 <span><%= currentBatch ? 'Import Tambahan' : 'Import Batch Baru' %></span>
             </a>
-            <a href="/batch/history" class="nav-link <%= currentPage === 'history' ? 'active' : '' %>">
+            <a href="/batch/history" class="nav-link <%= (currentPage === 'history' || currentPage === 'batch-history') ? 'active' : '' %>">
                 <i class="bi bi-clock-history"></i><span>Riwayat Batch</span>
+            </a>
+            <a href="/kalender" class="nav-link <%= currentPage === 'calendar' ? 'active' : '' %>">
+                <i class="bi bi-calendar3"></i><span>Kalender</span>
             </a>
         </nav>
 
