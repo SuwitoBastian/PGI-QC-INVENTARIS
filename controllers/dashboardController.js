@@ -9,6 +9,9 @@ exports.index = (req, res) => {
     const summary =
     inventoryService.getDashboardSummary(req.company);
 
+    const totalInventarisKeseluruhan =
+        inventoryService.getTotalInventarisByCompany(req.company);
+
 if (summary?.batch?.created_at) {
 
     summary.batch.created_at_formatted = dayjs(summary.batch.created_at)
@@ -19,6 +22,8 @@ if (summary?.batch?.created_at) {
     res.render("dashboard", {
 
         summary,
+
+        totalInventarisKeseluruhan,
         
         company: req.company,
         

@@ -135,7 +135,7 @@ function Sidebar({ data, onClose }) {
                 <SidebarLink href="/batch" icon={currentBatch ? "bi bi-upload" : "bi bi-plus-circle"} onClick={onClose}>
                     {importLabel}
                 </SidebarLink>
-                <SidebarLink href="/batch/history" icon="bi bi-clock-history" active={currentPage === "batch-history"} onClick={onClose}>
+                <SidebarLink href="/batch/history" icon="bi bi-clock-history" onClick={onClose}>
                     Riwayat Batch
                 </SidebarLink>
                 <SidebarLink href="/kalender" icon="bi bi-calendar3" active={currentPage === "calendar"} onClick={onClose}>
@@ -162,29 +162,6 @@ function Sidebar({ data, onClose }) {
             </div>
 
         </aside>
-    );
-}
-
-function ThemeToggle() {
-    const [darkTheme, setDarkTheme] = useState(() => localStorage.getItem("pgi-theme") === "dark");
-
-    useEffect(() => {
-        const theme = darkTheme ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", theme);
-        document.body.setAttribute("data-theme", theme);
-        localStorage.setItem("pgi-theme", theme);
-    }, [darkTheme]);
-
-    return (
-        <button
-            type="button"
-            className="theme-toggle-control"
-            onClick={() => setDarkTheme(theme => !theme)}
-            aria-label={darkTheme ? "Aktifkan light theme" : "Aktifkan dark theme"}
-            aria-pressed={darkTheme}
-        >
-            <i className={`bi ${darkTheme ? "bi-sun-fill" : "bi-moon-stars-fill"}`}></i>
-        </button>
     );
 }
 
@@ -387,24 +364,31 @@ function ActivityNotification() {
             return "-";
         }
 
-        const normalized = String(dateString)
-            .replace(" ", "T");
+        const normalized =
+            String(dateString).replace(
+                " ",
+                "T"
+            );
 
-        // created_at dari SQLite = UTC
-        const date = new Date(`${normalized}Z`);
+        const date =
+            new Date(normalized);
 
-        if (Number.isNaN(date.getTime())) {
+        if (
+            Number.isNaN(date.getTime())
+        ) {
             return dateString;
         }
 
-        return date.toLocaleString("id-ID", {
-            timeZone: "Asia/Jakarta",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        });
+        return date.toLocaleString(
+            "id-ID",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
     };
 
     // =====================================
@@ -624,6 +608,8 @@ function ActivityNotification() {
 function DashboardApp() {
     const data = dashboardData;
     const summary = data.summary;
+    const totalInventarisKeseluruhan =
+        data.totalInventarisKeseluruhan || 0;
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [desktopSidebarHidden, setDesktopSidebarHidden] = useState(false);
@@ -710,8 +696,6 @@ function DashboardApp() {
 
                                 <ActivityNotification />
 
-                                <ThemeToggle />
-
                                 <div className="hero-chip">
 
                                     <i className="bi bi-buildings"></i>
@@ -732,12 +716,12 @@ function DashboardApp() {
 
 
                         {/* SUMMARY CARDS */}
-                        <section className="summary-grid">
+                        <section className="summary-grid dashboard-summary-grid">
 
                             <SummaryCard
                                 title="Total Inventaris"
                                 value={summary.total}
-                                meta="Semua data"
+                                meta="Batch aktif"
                                 icon="bi bi-box-seam"
                                 iconClass="bg-primary"
                                 valueClass="text-primary"
@@ -768,6 +752,15 @@ function DashboardApp() {
                                 icon="bi bi-x-circle-fill"
                                 iconClass="bg-danger"
                                 valueClass="text-danger"
+                            />
+
+                            <SummaryCard
+                                title="Total Inventaris Keseluruhan"
+                                value={totalInventarisKeseluruhan}
+                                meta="Seluruh periode"
+                                icon="bi bi-archive-fill"
+                                iconClass="bg-info"
+                                valueClass="text-info"
                             />
 
                         </section>

@@ -167,6 +167,21 @@ exports.countReject = (batchId) => {
     `).get(batchId);
 
 };
+
+/**
+ * Total seluruh inventaris berdasarkan company
+ * Mencakup semua batch, bukan hanya batch aktif.
+ */
+exports.getTotalInventarisByCompany = (company = "PGI") => {
+
+    return db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM inventaris
+        WHERE company = ?
+    `).get(company).total;
+
+};
+
 exports.getDashboardSummary = (company = "PGI") => {
 
     const batch = exports.getActiveBatch(company);
@@ -345,10 +360,6 @@ exports.findByCandidates = (candidates) => {
 // =====================================
 // OCR - Update Status QC
 // =====================================
-// =====================================
-// OCR - Update Status QC
-// =====================================
-
 exports.updateStatus = (
     barcode,
     status,
@@ -356,151 +367,24 @@ exports.updateStatus = (
     photoPath
 ) => {
 
-    // =====================================
-    // Ambil item sebelum di-update
-    // =====================================
-
-    const item = db.prepare(`
-        SELECT *
-        FROM inventaris
+    db.prepare(`
+        UPDATE inventaris
+        SET
+            status=?,
+            reject_reason=?,
+            photo_path=?,
+            last_qc=datetime('now','localtime')
         WHERE
-            TRIM(nf) = TRIM(?)
+            TRIM(nf)=TRIM(?)
             OR
-            TRIM(imei) = TRIM(?)
-        LIMIT 1
-    `).get(
+            TRIM(imei)=TRIM(?)
+    `).run(
+        status,
+        rejectReason,
+        photoPath,
         barcode,
         barcode
     );
-
-
-    if (!item) {
-
-        return {
-            success: false,
-            changes: 0,
-            message: "Inventaris tidak ditemukan."
-        };
-
-    }
-
-
-    // =====================================
-    // Update status
-    // =====================================
-
-    const result = db.prepare(`
-        UPDATE inventaris
-        SET
-            status = ?,
-            reject_reason = ?,
-            photo_path = ?,
-            last_qc = datetime('now','localtime'),
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    `).run(
-
-        status,
-
-        rejectReason,
-
-        photoPath,
-
-        item.id
-
-    );
-
-
-    // =====================================
-    // ACTIVITY LOG
-    // =====================================
-
-    try {
-
-        const activityService =
-            require("./activityService");
-
-
-        if (
-            result.changes > 0 &&
-            status === "DONE"
-        ) {
-
-            activityService.createActivity({
-
-                company:
-                    item.company,
-
-                type:
-                    "QC_DONE",
-
-                title:
-                    "QC Selesai",
-
-                message:
-                    `${item.company} - ` +
-                    `${item.jenis || "Asset"} ` +
-                    `${item.nf || item.imei || "-"}` +
-                    ` dinyatakan DONE melalui QC.`,
-
-                reference_id:
-                    item.id
-
-            });
-
-        }
-
-
-        if (
-            result.changes > 0 &&
-            status === "REJECT"
-        ) {
-
-            activityService.createActivity({
-
-                company:
-                    item.company,
-
-                type:
-                    "QC_REJECT",
-
-                title:
-                    "QC Reject",
-
-                message:
-                    `${item.company} - ` +
-                    `${item.jenis || "Asset"} ` +
-                    `${item.nf || item.imei || "-"}` +
-                    ` dinyatakan REJECT.` +
-                    ` Alasan: ${rejectReason || "-"}`,
-
-                reference_id:
-                    item.id
-
-            });
-
-        }
-
-    } catch (activityError) {
-
-        console.error(
-            "⚠️ Gagal membuat activity log OCR QC:",
-            activityError
-        );
-
-    }
-
-
-    return {
-
-        success: true,
-
-        changes:
-            result.changes,
-
-        item
-
-    };
 
 };
 // =====================================
