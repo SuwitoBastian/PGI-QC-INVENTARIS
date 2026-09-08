@@ -2264,3 +2264,557 @@ body > .container{margin-left:320px;width:calc(100% - 320px);max-width:none;padd
     color:#E8C46A;
 
 }
+
+/* ======================================================
+   DARK THEME
+====================================================== */
+
+body[data-theme="dark"]{
+
+    color-scheme:dark;
+    background:#0b1120;
+    color:#e5e7eb;
+
+}
+
+body[data-theme="dark"] .container,
+body[data-theme="dark"] .container-fluid{
+
+    color:#e5e7eb;
+
+}
+
+body[data-theme="dark"] .navbar-enterprise,
+body[data-theme="dark"] .sidebar-layout,
+body[data-theme="dark"] .footer-enterprise{
+
+    background:#0f172a;
+
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-brand{
+
+    border-bottom-color:rgba(148,163,184,.18);
+
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-section-label,
+body[data-theme="dark"] .sidebar-layout .brand-subtitle,
+body[data-theme="dark"] .sidebar-layout .company-option{
+
+    color:#cbd5e1;
+
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-card,
+body[data-theme="dark"] .inventory-card,
+body[data-theme="dark"] .inventory-detail-card,
+body[data-theme="dark"] .device-card,
+body[data-theme="dark"] .info-section,
+body[data-theme="dark"] .summary-card,
+body[data-theme="dark"] .export-card,
+body[data-theme="dark"] .modal-content,
+body[data-theme="dark"] .card{
+
+    background:#111827;
+    color:#e5e7eb;
+    border-color:#243041;
+
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-card{
+
+    border-color:rgba(148,163,184,.16);
+
+}
+
+body[data-theme="dark"] .sidebar-layout .company-option:hover,
+body[data-theme="dark"] .sidebar-layout .company-option.active,
+body[data-theme="dark"] .theme-toggle-button:hover{
+
+    background:rgba(255,255,255,.12);
+    color:#fff;
+
+}
+
+body[data-theme="dark"] .sidebar-layout .theme-toggle-button{
+
+    width:100%;
+    justify-content:space-between;
+
+}
+
+body[data-theme="dark"] .inventory-subtitle,
+body[data-theme="dark"] .detail-subtitle,
+body[data-theme="dark"] .batch-date,
+body[data-theme="dark"] .summary-card small,
+body[data-theme="dark"] .export-file small,
+body[data-theme="dark"] .dataTables_length label,
+body[data-theme="dark"] .dataTables_info,
+body[data-theme="dark"] .breadcrumb-item,
+body[data-theme="dark"] .empty-photo,
+body[data-theme="dark"] .text-muted{
+
+    color:#94a3b8 !important;
+
+}
+
+body[data-theme="dark"] .form-control,
+body[data-theme="dark"] .form-select,
+body[data-theme="dark"] .input-group-text,
+body[data-theme="dark"] .page-link,
+body[data-theme="dark"] .dropdown-menu,
+body[data-theme="dark"] .swal2-popup,
+body[data-theme="dark"] .swal2-html-container,
+body[data-theme="dark"] .swal2-content{
+
+    background:#0f172a;
+    color:#e5e7eb;
+    border-color:#334155;
+
+}
+
+body[data-theme="dark"] .form-control::placeholder{
+
+    color:#64748b;
+
+}
+
+body[data-theme="dark"] .table,
+body[data-theme="dark"] .table td,
+body[data-theme="dark"] .table th{
+
+    color:#e5e7eb;
+    border-color:#243041;
+
+}
+
+body[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > *{
+
+    color:#e5e7eb;
+
+}
+
+body[data-theme="dark"] .inventory-table,
+body[data-theme="dark"] .inventory-table tbody td,
+body[data-theme="dark"] .inventory-table tbody tr:hover{
+
+    border-color:#243041;
+
+}
+
+body[data-theme="dark"] .inventory-table tbody tr:hover{
+
+    background:#0f172a;
+
+}
+
+body[data-theme="dark"] .inventory-table-main thead th,
+body[data-theme="dark"] .inventory-table-head,
+body[data-theme="dark"] .inventory-table-head th{
+
+    background:#1d4ed8;
+
+}
+
+body[data-theme="dark"] .upload-area,
+body[data-theme="dark"] .export-file{
+
+    background:#0f172a;
+    border-color:#334155;
+
+}
+
+body[data-theme="dark"] .breadcrumb a{
+
+    color:#93c5fd;
+
+}
+
+body[data-theme="dark"] .page-item .page-link{
+
+    box-shadow:none;
+
+}
+
+body[data-theme="dark"] .page-item .page-link,
+body[data-theme="dark"] .page-item.disabled .page-link{
+
+    background:#111827;
+
+}
+
+body[data-theme="dark"] .page-item.active .page-link{
+
+    background:#2563eb;
+
+    color:#fff;
+
+}
+
+/* Complete dark theme coverage for inventory, detail, and import pages. */
+body[data-theme="dark"] .navbar-enterprise,
+body[data-theme="dark"] .sidebar-layout{
+    background:#0f172a !important;
+}
+
+body[data-theme="dark"] .inventory-card,
+body[data-theme="dark"] .inventory-detail-card,
+body[data-theme="dark"] .device-card,
+body[data-theme="dark"] .info-section,
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .card-body,
+body[data-theme="dark"] .modal-content{
+    background:#111827 !important;
+    color:#e5e7eb;
+    border-color:#243041 !important;
+}
+
+body[data-theme="dark"] .inventory-table,
+body[data-theme="dark"] .inventory-table-main,
+body[data-theme="dark"] .dataTables_wrapper,
+body[data-theme="dark"] .dataTables_wrapper .table{
+    background:#111827 !important;
+    color:#e5e7eb !important;
+}
+
+body[data-theme="dark"] .inventory-table-main thead th,
+body[data-theme="dark"] .inventory-table-head,
+body[data-theme="dark"] .inventory-table-head th{
+    background:#1e293b !important;
+    color:#e5e7eb !important;
+    border-color:#334155 !important;
+}
+
+body[data-theme="dark"] .inventory-table-main tbody tr,
+body[data-theme="dark"] .inventory-table-main tbody td,
+body[data-theme="dark"] .inventory-table tbody tr,
+body[data-theme="dark"] .inventory-table tbody td{
+    background:#111827 !important;
+    color:#e5e7eb !important;
+    border-color:#243041 !important;
+}
+
+body[data-theme="dark"] .inventory-table-main tbody tr:hover,
+body[data-theme="dark"] .inventory-table tbody tr:hover{
+    background:#1f2937 !important;
+}
+
+body[data-theme="dark"] .dataTables_filter input,
+body[data-theme="dark"] .dataTables_length select,
+body[data-theme="dark"] .btn-light,
+body[data-theme="dark"] .btn-outline-secondary,
+body[data-theme="dark"] .btn-secondary{
+    background:#0f172a !important;
+    color:#cbd5e1 !important;
+    border-color:#475569 !important;
+}
+
+body[data-theme="dark"] .btn-light:hover,
+body[data-theme="dark"] .btn-outline-secondary:hover,
+body[data-theme="dark"] .btn-secondary:hover{
+    background:#1e293b !important;
+    color:#fff !important;
+}
+
+body[data-theme="dark"] .detail-title,
+body[data-theme="dark"] .detail-category,
+body[data-theme="dark"] .batch-code,
+body[data-theme="dark"] .batch-name,
+body[data-theme="dark"] .page-title,
+body[data-theme="dark"] .card h1,
+body[data-theme="dark"] .card h2,
+body[data-theme="dark"] .card h3,
+body[data-theme="dark"] .card h4,
+body[data-theme="dark"] .card h5,
+body[data-theme="dark"] .card h6,
+body[data-theme="dark"] .card label,
+body[data-theme="dark"] .device-card h5,
+body[data-theme="dark"] .info-section h5{
+    color:#e5e7eb !important;
+}
+
+body[data-theme="dark"] .detail-subtitle,
+body[data-theme="dark"] .batch-date,
+body[data-theme="dark"] .card .text-muted,
+body[data-theme="dark"] .device-card .text-muted,
+body[data-theme="dark"] .info-section .text-muted,
+body[data-theme="dark"] .dataTables_info,
+body[data-theme="dark"] .dataTables_length label,
+body[data-theme="dark"] .dataTables_filter label{
+    color:#94a3b8 !important;
+}
+
+body[data-theme="dark"] .upload-area,
+body[data-theme="dark"] .export-file,
+body[data-theme="dark"] .export-card,
+body[data-theme="dark"] .empty-batch,
+body[data-theme="dark"] .device-image{
+    background:#0f172a !important;
+    color:#e5e7eb;
+    border-color:#334155 !important;
+}
+
+body[data-theme="dark"] .btn-close:not(.btn-close-white){
+    filter:invert(1) grayscale(1) brightness(1.7);
+}
+
+body[data-theme="dark"] .PEI .sidebar-layout,
+body.PEI[data-theme="dark"] .sidebar-layout,
+body.PEI[data-theme="dark"] .navbar-enterprise{
+    background:#1c1917 !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout .sidebar-section-label,
+body.PEI[data-theme="dark"] .sidebar-layout .brand-subtitle,
+body.PEI[data-theme="dark"] .sidebar-layout .company-option,
+body.PEI[data-theme="dark"] .sidebar-layout .sidebar-card-title,
+body.PEI[data-theme="dark"] .sidebar-layout .nav-link{
+    color:#e8c46a !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout .nav-link:hover,
+body.PEI[data-theme="dark"] .sidebar-layout .nav-link.active,
+body.PEI[data-theme="dark"] .sidebar-layout .company-option:hover,
+body.PEI[data-theme="dark"] .sidebar-layout .company-option.active{
+    background:rgba(201,151,44,.2) !important;
+    color:#fff !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout .sidebar-card{
+    border-color:rgba(201,151,44,.35);
+}
+
+body.PEI[data-theme="dark"] .btn-primary,
+body.PEI[data-theme="dark"] .btn-outline-primary{
+    background:#c9972c !important;
+    border-color:#c9972c !important;
+    color:#1c1917 !important;
+}
+
+/* Detail inventory follows the dark panel / light information-card layout. */
+body[data-theme="dark"] .inventory-detail-card{
+    background:#0f172a !important;
+    border-color:#26364f !important;
+    box-shadow:none;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-section{
+    background:#0f172a !important;
+    border-color:#26364f !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item{
+    background:#fff !important;
+    border-color:#dbe2ef !important;
+    color:#0f172a !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item .info-label{
+    color:#8197bd !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item .info-label i{
+    color:#2563eb !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item .info-value{
+    color:#0f172a !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .device-card{
+    background:#0f172a !important;
+    border-color:transparent !important;
+    box-shadow:none;
+    color:#f8fafc;
+}
+
+body[data-theme="dark"] .inventory-detail-card .device-card h5,
+body[data-theme="dark"] .inventory-detail-card .detail-title,
+body[data-theme="dark"] .inventory-detail-card .section-title{
+    color:#f8fafc !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .device-image{
+    background:#0f172a !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .empty-photo{
+    color:#9db5dc !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .photo-preview{
+    border-color:#334155 !important;
+}
+
+body.PEI[data-theme="dark"] .inventory-detail-card .detail-category,
+body.PEI[data-theme="dark"] .inventory-detail-card .info-item .info-label i{
+    color:#c9972c !important;
+}
+
+body.PEI[data-theme="dark"] .inventory-detail-card .info-item:hover{
+    border-color:#c9972c !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout .sidebar-card{
+    background:transparent !important;
+    border-color:rgba(201,151,44,.35) !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout .sidebar-card .company-option.active{
+    background:rgba(201,151,44,.24) !important;
+    border-color:rgba(201,151,44,.55) !important;
+    color:#fff !important;
+}
+
+/* Batch/import panels use the same dark surface as the rest of the app. */
+body[data-theme="dark"] .card.border-primary,
+body[data-theme="dark"] .card.border-success,
+body[data-theme="dark"] .card.border-warning,
+body[data-theme="dark"] .card.border-0{
+    background:#111827 !important;
+    border-color:#334155 !important;
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .alert.alert-primary{
+    background:#172033 !important;
+    border:1px solid #334155 !important;
+    color:#cbd5e1 !important;
+}
+
+body[data-theme="dark"] .alert.alert-primary h5,
+body[data-theme="dark"] .alert.alert-primary strong,
+body[data-theme="dark"] .alert.alert-primary .fw-bold{
+    color:#f8fafc !important;
+}
+
+body[data-theme="dark"] .alert.alert-primary i{
+    color:#60a5fa !important;
+}
+
+body[data-theme="dark"] .upload-area{
+    background:#111827 !important;
+    border-color:#475569 !important;
+}
+
+body[data-theme="dark"] .upload-area:hover{
+    background:#172033 !important;
+    border-color:#60a5fa !important;
+}
+
+body[data-theme="dark"] .upload-area h5,
+body[data-theme="dark"] .upload-area p,
+body[data-theme="dark"] .upload-area .upload-icon{
+    color:#cbd5e1 !important;
+}
+
+body.PEI[data-theme="dark"] .alert.alert-primary{
+    background:#1c1917 !important;
+    border-color:#80621e !important;
+    color:#e8c46a !important;
+}
+
+body.PEI[data-theme="dark"] .alert.alert-primary h5,
+body.PEI[data-theme="dark"] .alert.alert-primary strong,
+body.PEI[data-theme="dark"] .alert.alert-primary .fw-bold,
+body.PEI[data-theme="dark"] .alert.alert-primary i{
+    color:#e8c46a !important;
+}
+
+body.PEI[data-theme="dark"] .upload-area:hover{
+    background:#1c1917 !important;
+    border-color:#c9972c !important;
+}
+
+/* Keep detail information cards dark and visually separated from their panel. */
+body[data-theme="dark"] .inventory-detail-card .info-item{
+    background:#172033 !important;
+    border-color:#334155 !important;
+    color:#e5e7eb !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item .info-label{
+    color:#9db5dc !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item .info-value{
+    color:#f8fafc !important;
+}
+
+body[data-theme="dark"] .inventory-detail-card .info-item:hover{
+    background:#1e293b !important;
+    border-color:#60a5fa !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-nav .nav-link:not(.active){
+    background:transparent !important;
+    color:rgba(255,255,255,.86) !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-nav .nav-link:not(.active):hover{
+    background:rgba(255,255,255,.07) !important;
+    color:#fff !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-nav .nav-link.active{
+    background:#374151 !important;
+    border-color:#4b5563 !important;
+    color:#fff !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-card{
+    background:transparent !important;
+    border-color:#26364f !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-card .company-option,
+body[data-theme="dark"] .sidebar-layout .sidebar-card .theme-toggle-button{
+    background:transparent !important;
+    border-color:transparent !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-card .company-option.active{
+    background:#374151 !important;
+    border-color:#4b5563 !important;
+}
+
+body[data-theme="dark"] .sidebar-layout .sidebar-card .company-option:hover,
+body[data-theme="dark"] .sidebar-layout .sidebar-card .theme-toggle-button:hover{
+    background:rgba(255,255,255,.07) !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout,
+body.PEI[data-theme="dark"] .navbar-enterprise{
+    background:linear-gradient(180deg,#0f172a 0%,#111827 100%) !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-layout .sidebar-nav .nav-link.active{
+    background:#374151 !important;
+    border-color:#4b5563 !important;
+    color:#fff !important;
+}
+
+/* Smooth transition when switching between light and dark themes. */
+body,
+body .sidebar-layout,
+body .inventory-card,
+body .inventory-detail-card,
+body .info-section,
+body .info-item,
+body .device-card,
+body .card,
+body .modal-content,
+body .export-card,
+body .upload-area,
+body .table,
+body .form-control,
+body .form-select,
+body .btn-light,
+body .btn-outline-secondary{
+    transition:background .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease,box-shadow .3s ease;
+}
+
+body.PEI[data-theme="dark"] .inventory-detail-card .info-item:hover{
+    border-color:#c9972c !important;
+}

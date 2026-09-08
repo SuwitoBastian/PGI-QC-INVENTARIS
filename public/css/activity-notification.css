@@ -33,6 +33,43 @@
     transform: translateY(-1px);
 }
 
+.theme-toggle-control {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background: #fff;
+    color: #343a40;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.theme-toggle-control:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+body[data-theme="dark"] .theme-toggle-control {
+    background: #1e293b;
+    border-color: #475569;
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .theme-toggle-control:hover {
+    background: #334155;
+}
+
+body .activity-bell,
+body .theme-toggle-control,
+body .activity-panel,
+body .activity-item,
+body .activity-close{
+    transition:background .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease,box-shadow .3s ease;
+}
+
 .activity-bell i {
     font-size: 18px;
 }

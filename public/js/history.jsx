@@ -7,6 +7,15 @@ function number(value) {
 }
 
 function Sidebar({ company, activeBatch }) {
+    const [darkTheme, setDarkTheme] = useState(() => localStorage.getItem("pgi-theme") === "dark");
+
+    React.useEffect(() => {
+        const theme = darkTheme ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.body.setAttribute("data-theme", theme);
+        localStorage.setItem("pgi-theme", theme);
+    }, [darkTheme]);
+
     return (
         <aside className="history-sidebar dashboard-sidebar">
             <div className="sidebar-brand">

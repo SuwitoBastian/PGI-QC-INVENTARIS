@@ -1218,3 +1218,206 @@
     width: 100%;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+
+body[data-theme="dark"] .calendar-main{
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .page-title,
+body[data-theme="dark"] .summary-value,
+body[data-theme="dark"] .calendar-month-title,
+body[data-theme="dark"] .section-title,
+body[data-theme="dark"] .modal-title-custom,
+body[data-theme="dark"] .form-group label{
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .summary-card,
+body[data-theme="dark"] .calendar-card,
+body[data-theme="dark"] .upcoming-card,
+body[data-theme="dark"] .booking-modal{
+    background:#111827;
+    border-color:#243041;
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .company-filter,
+body[data-theme="dark"] .calendar-nav-btn,
+body[data-theme="dark"] .calendar-today-btn,
+body[data-theme="dark"] .form-group input,
+body[data-theme="dark"] .form-group select,
+body[data-theme="dark"] .form-group textarea{
+    background:#0f172a;
+    border-color:#334155;
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .calendar-toolbar,
+body[data-theme="dark"] .section-header,
+body[data-theme="dark"] .modal-header-custom,
+body[data-theme="dark"] .modal-footer-custom,
+body[data-theme="dark"] .calendar-day-header,
+body[data-theme="dark"] .calendar-cell,
+body[data-theme="dark"] .upcoming-item{
+    border-color:#243041;
+}
+
+body[data-theme="dark"] .calendar-day-header,
+body[data-theme="dark"] .calendar-cell.other-month{
+    background:#0f172a;
+}
+
+body[data-theme="dark"] .calendar-cell,
+body[data-theme="dark"] .upcoming-item:hover,
+body[data-theme="dark"] .calendar-cell:hover{
+    background:#111827;
+}
+
+body[data-theme="dark"] .calendar-date-number,
+body[data-theme="dark"] .upcoming-title,
+body[data-theme="dark"] .modal-subtitle-custom{
+    color:#cbd5e1;
+}
+
+body[data-theme="dark"] .page-subtitle,
+body[data-theme="dark"] .summary-title,
+body[data-theme="dark"] .section-subtitle,
+body[data-theme="dark"] .upcoming-meta,
+body[data-theme="dark"] .upcoming-requester,
+body[data-theme="dark"] .calendar-legend,
+body[data-theme="dark"] .event-more{
+    color:#94a3b8;
+}
+
+body[data-theme="dark"] .calendar-cell.past-date,
+body[data-theme="dark"] .calendar-cell.past-date:hover{
+    background:#0b1220 !important;
+    color:#64748b;
+}
+
+body[data-theme="dark"] .calendar-cell.holiday,
+body[data-theme="dark"] .calendar-cell.past-date.holiday{
+    background:#21151a !important;
+}
+
+body[data-theme="dark"] .calendar-cell.today{
+    background:#172554;
+}
+
+body[data-theme="dark"] .calendar-cell.other-month .calendar-date-number,
+body[data-theme="dark"] .calendar-cell.past-date .calendar-date-number{
+    color:#64748b !important;
+}
+
+body[data-theme="dark"] .calendar-cell.holiday .calendar-date-number,
+body[data-theme="dark"] .calendar-cell.sunday .calendar-date-number,
+body[data-theme="dark"] .calendar-holiday-label{
+    color:#f87171 !important;
+}
+
+body[data-theme="dark"] .calendar-loading,
+body[data-theme="dark"] .calendar-confirm-popup,
+body[data-theme="dark"] .calendar-toast{
+    background:#111827;
+    border-color:#334155;
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .modal-close-btn{
+    background:#1e293b;
+    color:#cbd5e1;
+}
+
+body[data-theme="dark"] .btn-secondary-custom,
+body[data-theme="dark"] .calendar-nav-btn,
+body[data-theme="dark"] .calendar-today-btn{
+    background:#0f172a;
+    color:#cbd5e1;
+    border-color:#475569;
+}
+
+body[data-theme="dark"] .btn-secondary-custom:hover,
+body[data-theme="dark"] .calendar-nav-btn:hover,
+body[data-theme="dark"] .calendar-today-btn:hover{
+    background:#1e293b;
+    color:#fff;
+}
+
+body.PEI[data-theme="dark"] .dashboard-sidebar{
+    background:linear-gradient(180deg,#1c1917 0%,#292524 100%);
+}
+
+body.PEI[data-theme="dark"] .summary-total .summary-icon,
+body.PEI[data-theme="dark"] .upcoming-date{
+    background:rgba(201,151,44,.18);
+    color:#e8c46a;
+}
+
+body.PEI[data-theme="dark"] .btn-add-booking,
+body.PEI[data-theme="dark"] .calendar-cell.today .calendar-date-number{
+    background:#c9972c;
+    color:#1c1917;
+}
+
+body[data-theme="dark"] .detail-item,
+body[data-theme="dark"] .detail-notes{
+    background:#172033 !important;
+    border-color:#334155 !important;
+}
+
+body[data-theme="dark"] .detail-item span,
+body[data-theme="dark"] .detail-notes > span{
+    color:#9db5dc !important;
+}
+
+body[data-theme="dark"] .detail-item strong,
+body[data-theme="dark"] .detail-notes div{
+    color:#f8fafc !important;
+}
+
+body[data-theme="dark"] .detail-company{
+    background:#1e293b !important;
+    color:#cbd5e1 !important;
+}
+
+body[data-theme="dark"] .status-badge.confirmed{
+    background:rgba(34,197,94,.18) !important;
+    color:#86efac !important;
+}
+
+body[data-theme="dark"] .status-badge.tentative{
+    background:rgba(245,158,11,.18) !important;
+    color:#fbbf24 !important;
+}
+
+body[data-theme="dark"] .status-badge.cancelled{
+    background:rgba(239,68,68,.18) !important;
+    color:#fca5a5 !important;
+}
+
+body.PEI[data-theme="dark"] .detail-company{
+    background:rgba(201,151,44,.2) !important;
+    color:#e8c46a !important;
+}
+
+body,
+body .calendar-main,
+body .summary-card,
+body .calendar-card,
+body .upcoming-card,
+body .calendar-cell,
+body .calendar-day-header,
+body .upcoming-item,
+body .booking-modal,
+body .detail-item,
+body .detail-notes,
+body .calendar-loading,
+body .calendar-confirm-popup,
+body .calendar-toast,
+body .form-group input,
+body .form-group select,
+body .form-group textarea,
+body .calendar-nav-btn,
+body .calendar-today-btn{
+    transition:background .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease,box-shadow .3s ease;
+}

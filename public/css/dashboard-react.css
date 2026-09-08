@@ -1033,3 +1033,221 @@ body.PEI .dashboard-sidebar .sidebar-link.active {
 body.PEI .dashboard-sidebar .sidebar-link.active i {
     color: #fff !important;
 }
+
+body[data-theme="dark"]{
+    --dashboard-bg:#0b1120;
+    --dashboard-surface:#111827;
+    --dashboard-border:#243041;
+    --dashboard-text:#e5e7eb;
+    --dashboard-muted:#94a3b8;
+    background:var(--dashboard-bg);
+    color:var(--dashboard-text);
+}
+
+body[data-theme="dark"] .dashboard-shell,
+body[data-theme="dark"] .history-shell{
+    background:var(--dashboard-bg);
+}
+
+body[data-theme="dark"] .metric-card,
+body[data-theme="dark"] .content-card,
+body[data-theme="dark"] .empty-card,
+body[data-theme="dark"] .history-card{
+    background:var(--dashboard-surface);
+    border-color:var(--dashboard-border);
+    color:var(--dashboard-text);
+}
+
+body[data-theme="dark"] .dashboard-hero h1,
+body[data-theme="dark"] .section-title,
+body[data-theme="dark"] .batch-code,
+body[data-theme="dark"] .metric-value,
+body[data-theme="dark"] .history-hero h1,
+body[data-theme="dark"] .history-card h2,
+body[data-theme="dark"] .legend-right{
+    color:var(--dashboard-text) !important;
+}
+
+body[data-theme="dark"] .hero-chip,
+body[data-theme="dark"] .info-box,
+body[data-theme="dark"] .history-stats div,
+body[data-theme="dark"] .history-page-control,
+body[data-theme="dark"] .topbar-button{
+    background:#0f172a;
+    border-color:var(--dashboard-border);
+    color:var(--dashboard-text);
+}
+
+body[data-theme="dark"] .info-box,
+body[data-theme="dark"] .legend-row,
+body[data-theme="dark"] .history-pagination{
+    border-color:var(--dashboard-border);
+}
+
+body[data-theme="dark"] .metric-label,
+body[data-theme="dark"] .metric-meta,
+body[data-theme="dark"] .legend-left,
+body[data-theme="dark"] .history-card p,
+body[data-theme="dark"] .history-card small,
+body[data-theme="dark"] .history-pagination,
+body[data-theme="dark"] .history-stats span{
+    color:var(--dashboard-muted);
+}
+
+body[data-theme="dark"] .progress{
+    background:#243041;
+}
+
+body[data-theme="dark"] .donut-track{
+    stroke:#243041;
+}
+
+body[data-theme="dark"] .dashboard-sidebar,
+body[data-theme="dark"] .history-sidebar{
+    background:linear-gradient(180deg,#0f172a 0%,#111827 100%);
+}
+
+body[data-theme="dark"] .sidebar-card{
+    background:transparent !important;
+    border-color:rgba(148,163,184,.2);
+}
+
+body[data-theme="dark"] .sidebar-card .company-option,
+body[data-theme="dark"] .sidebar-card .theme-toggle-button{
+    background:transparent !important;
+    border-color:transparent !important;
+}
+
+body[data-theme="dark"] .sidebar-card .company-option.active{
+    background:#374151 !important;
+    border-color:#4b5563 !important;
+}
+
+body[data-theme="dark"] .sidebar-card .company-option:hover,
+body[data-theme="dark"] .sidebar-card .theme-toggle-button:hover{
+    background:rgba(255,255,255,.07) !important;
+}
+
+body[data-theme="dark"] .history-page-btn,
+body[data-theme="dark"] .history-page-btn:hover:not(:disabled){
+    color:#cbd5e1;
+}
+
+body[data-theme="dark"] .history-page-btn:hover:not(:disabled){
+    background:#1e293b;
+    border-color:#475569;
+}
+
+body[data-theme="dark"] .history-page-btn:disabled{
+    color:#64748b;
+}
+
+body[data-theme="dark"] .dashboard-sidebar .sidebar-link:not(.active),
+body[data-theme="dark"] .history-sidebar .sidebar-link:not(.active){
+    background:transparent !important;
+    color:rgba(255,255,255,.86) !important;
+}
+
+body[data-theme="dark"] .dashboard-sidebar .sidebar-link:not(.active):hover,
+body[data-theme="dark"] .history-sidebar .sidebar-link:not(.active):hover{
+    background:rgba(255,255,255,.07) !important;
+    color:#fff !important;
+}
+
+body[data-theme="dark"] .dashboard-sidebar .sidebar-link.active,
+body[data-theme="dark"] .history-sidebar .sidebar-link.active{
+    background:#374151 !important;
+    border-color:#4b5563 !important;
+    color:#fff !important;
+}
+
+body.PEI[data-theme="dark"] .dashboard-sidebar,
+body.PEI[data-theme="dark"] .history-sidebar{
+    background:linear-gradient(180deg,#1c1917 0%,#292524 100%);
+}
+
+body.PEI[data-theme="dark"] .sidebar-card{
+    border-color:rgba(201,151,44,.35);
+}
+
+body.PEI[data-theme="dark"] .sidebar-section-label,
+body.PEI[data-theme="dark"] .sidebar-brand-subtitle,
+body.PEI[data-theme="dark"] .sidebar-card-title,
+body.PEI[data-theme="dark"] .company-option{
+    color:#e8c46a;
+}
+
+body.PEI[data-theme="dark"] .sidebar-link:hover,
+body.PEI[data-theme="dark"] .sidebar-link.active,
+body.PEI[data-theme="dark"] .company-option:hover,
+body.PEI[data-theme="dark"] .company-option.active{
+    background:rgba(201,151,44,.2);
+    color:#fff;
+}
+
+body.PEI[data-theme="dark"] .sidebar-card{
+    background:transparent !important;
+    border-color:rgba(201,151,44,.35);
+}
+
+body.PEI[data-theme="dark"] .sidebar-card .company-option.active{
+    background:rgba(201,151,44,.24) !important;
+    border-color:rgba(201,151,44,.55) !important;
+    color:#fff !important;
+}
+
+body[data-theme="dark"] .history-empty{
+    background:#111827 !important;
+    border-color:#334155 !important;
+    color:#e5e7eb;
+}
+
+body[data-theme="dark"] .history-empty h2{
+    color:#f8fafc;
+}
+
+body[data-theme="dark"] .history-empty p{
+    color:#94a3b8;
+}
+
+body.PEI[data-theme="dark"] .history-eyebrow,
+body.PEI[data-theme="dark"] .history-empty i{
+    color:#c9972c !important;
+}
+
+body.PEI[data-theme="dark"] .history-page-btn.active{
+    background:#c9972c;
+    color:#1c1917;
+}
+
+body.PEI[data-theme="dark"] .dashboard-sidebar,
+body.PEI[data-theme="dark"] .history-sidebar{
+    background:linear-gradient(180deg,#0f172a 0%,#111827 100%) !important;
+}
+
+body.PEI[data-theme="dark"] .sidebar-link.active{
+    background:#374151 !important;
+    border-color:#4b5563 !important;
+    color:#fff !important;
+}
+
+body,
+body .dashboard-shell,
+body .history-shell,
+body .dashboard-sidebar,
+body .history-sidebar,
+body .metric-card,
+body .content-card,
+body .empty-card,
+body .history-card,
+body .history-empty,
+body .sidebar-card,
+body .company-option,
+body .sidebar-link,
+body .history-page-control,
+body .history-page-btn,
+body .hero-chip,
+body .info-box,
+body .topbar-button{
+    transition:background .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease,box-shadow .3s ease;
+}

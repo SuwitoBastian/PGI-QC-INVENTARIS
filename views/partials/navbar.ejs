@@ -52,3 +52,44 @@
 
     </div>
 </aside>
+
+<script>
+(function () {
+    const storageKey = "pgi-theme";
+    const themeToggle = document.getElementById("themeToggle");
+    const themeToggleLabel = document.getElementById("themeToggleLabel");
+    const themeToggleIcon = document.getElementById("themeToggleIcon");
+
+    function applyTheme(theme) {
+        const isDark = theme === "dark";
+
+        document.documentElement.setAttribute("data-theme", theme);
+        document.body.setAttribute("data-theme", theme);
+        localStorage.setItem(storageKey, theme);
+
+        if (themeToggle) {
+            themeToggle.setAttribute("aria-pressed", String(isDark));
+        }
+
+        if (themeToggleLabel) {
+            themeToggleLabel.textContent = isDark ? "Light Theme" : "Dark Theme";
+        }
+
+        if (themeToggleIcon) {
+            themeToggleIcon.className = isDark
+                ? "bi bi-sun-fill me-2"
+                : "bi bi-moon-stars-fill me-2";
+        }
+    }
+
+    const savedTheme = localStorage.getItem(storageKey) || "light";
+    applyTheme(savedTheme);
+
+    if (themeToggle) {
+        themeToggle.addEventListener("click", function () {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+            applyTheme(currentTheme === "dark" ? "light" : "dark");
+        });
+    }
+})();
+</script>

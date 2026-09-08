@@ -165,6 +165,29 @@ function Sidebar({ data, onClose }) {
     );
 }
 
+function ThemeToggle() {
+    const [darkTheme, setDarkTheme] = useState(() => localStorage.getItem("pgi-theme") === "dark");
+
+    useEffect(() => {
+        const theme = darkTheme ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.body.setAttribute("data-theme", theme);
+        localStorage.setItem("pgi-theme", theme);
+    }, [darkTheme]);
+
+    return (
+        <button
+            type="button"
+            className="theme-toggle-control"
+            onClick={() => setDarkTheme(theme => !theme)}
+            aria-label={darkTheme ? "Aktifkan light theme" : "Aktifkan dark theme"}
+            aria-pressed={darkTheme}
+        >
+            <i className={`bi ${darkTheme ? "bi-sun-fill" : "bi-moon-stars-fill"}`}></i>
+        </button>
+    );
+}
+
 function ActivityNotification() {
     const company = String(
         dashboardData?.company || "PGI"
@@ -686,6 +709,8 @@ function DashboardApp() {
                             <div className="hero-actions">
 
                                 <ActivityNotification />
+
+                                <ThemeToggle />
 
                                 <div className="hero-chip">
 
