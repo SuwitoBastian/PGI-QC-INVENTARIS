@@ -1173,3 +1173,40 @@
         width: 100%;
     }
 }
+/* =========================================================
+   COMPANY COLOR - CALENDAR
+   PGI = Blue
+   PEI = Gold
+   ========================================================= */
+
+/* PGI */
+.calendar-event.company-pgi {
+    background: rgba(13, 110, 253, 0.10) !important;
+    border-left: 3px solid #0d6efd !important;
+    color: #0d6efd !important;
+}
+
+.calendar-event.company-pgi .event-company,
+.calendar-event.company-pgi .event-text {
+    color: #0d6efd !important;
+}
+
+
+/* PEI */
+.calendar-event.company-pei {
+    background: rgba(201, 151, 44, 0.12) !important;
+    border-left: 3px solid #c9972c !important;
+    color: #c9972c !important;
+}
+
+.calendar-event.company-pei .event-company,
+.calendar-event.company-pei .event-text {
+    color: #c9972c !important;
+}
+
+
+/* Booking dibatalkan */
+.calendar-event.company-pgi.cancelled,
+.calendar-event.company-pei.cancelled {
+    opacity: 0.65;
+}

@@ -417,7 +417,24 @@ function CalendarCell({ date, currentMonth, bookings, onClick }) {
         <div className={["calendar-cell",!isCurrentMonth?"other-month":"",isToday?"today":"",isPast?"past-date":"",holiday?"holiday":"",isSunday(date)?"sunday":"",dayBookings.length>0?"has-booking":""].join(" ")} onClick={() => { if (!isPast || dayBookings.length>0) onClick(dateKey); }} title={isPast?"Tanggal sudah lewat":holidayName}>
             <div className="calendar-date-number">{date.getDate()}</div>
             {holidayName && <div className="calendar-holiday-label">{holidayName}</div>}
-            <div className="calendar-events">{dayBookings.slice(0,3).map(item => (<div key={item.id} className={`calendar-event ${STATUS_CLASS[item.status]||""}`} title={`${item.company} - ${item.requester||"-"}`}><span className="event-company">{item.company}</span><span className="event-text">{item.asset_type||"Booking QC"}</span></div>))}{dayBookings.length>3&&<div className="event-more">+{dayBookings.length-3} lainnya</div>}</div>
+            <div className="calendar-events">
+                {dayBookings.slice(0,3).map(item => (
+                    <div
+                        key={item.id}
+                        className={`calendar-event ${STATUS_CLASS[item.status]||""} company-${String(item.company || "").toLowerCase()}`}
+                        title={`${item.company} - ${item.requester||"-"}`}
+                    >
+                        <span className="event-company">{item.company}</span>
+                        <span className="event-text">{item.asset_type||"Booking QC"}</span>
+                    </div>
+                ))}
+
+                {dayBookings.length>3 && (
+                    <div className="event-more">
+                        +{dayBookings.length-3} lainnya
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -585,20 +602,11 @@ function BookingModal({
 
                                 <select
                                     value={form.company}
-                                    onChange={(e) =>
-                                        updateField(
-                                            "company",
-                                            e.target.value
-                                        )
-                                    }
+                                    disabled
                                     required
                                 >
-                                    <option value="PGI">
-                                        PGI
-                                    </option>
-
-                                    <option value="PEI">
-                                        PEI
+                                    <option value={form.company}>
+                                        {form.company}
                                     </option>
                                 </select>
 
@@ -721,13 +729,7 @@ function BookingModal({
                                 <input
                                     type="text"
                                     value={form.location}
-                                    onChange={(e) =>
-                                        updateField(
-                                            "location",
-                                            e.target.value
-                                        )
-                                    }
-                                    placeholder="Contoh: HO / Cabang"
+                                    readOnly
                                 />
 
                             </div>
@@ -749,10 +751,6 @@ function BookingModal({
                                     )
                                 }
                             >
-                                <option value="TENTATIVE">
-                                    Tentatif
-                                </option>
-
                                 <option value="CONFIRMED">
                                     Terjadwal
                                 </option>
@@ -830,11 +828,15 @@ function BookingModal({
 
 function DetailModal({
     booking,
+    company,
     onClose,
     onEdit,
     onCancel
 }) {
     if (!booking) return null;
+
+    const canManage =
+        booking.company === company;
 
     return (
         <div className="modal-backdrop-custom">
@@ -924,7 +926,7 @@ function DetailModal({
 
                 <div className="modal-footer-custom">
 
-                    {booking.status !== "CANCELLED" && (
+                    {booking.status !== "CANCELLED" && canManage && (
                         <>
                             <button
                                 className="btn-danger-custom"
@@ -953,7 +955,7 @@ function DetailModal({
                         </>
                     )}
 
-                    {booking.status === "CANCELLED" && (
+                    {(booking.status === "CANCELLED" || !canManage) && (
                         <button
                             className="btn-secondary-custom"
                             onClick={onClose}
@@ -1226,11 +1228,11 @@ function CalendarApp() {
 
             requester: "",
 
-            location: "",
+            location: "Head Office Jl. Panjang Arteri",
 
             notes: "",
 
-            status: "TENTATIVE"
+            status: "CONFIRMED"
         });
 
     const monthString =
@@ -1349,17 +1351,26 @@ function CalendarApp() {
 
             requester: "",
 
-            location: "",
+            location: "Head Office Jl. Panjang Arteri",
 
             notes: "",
 
-            status: "TENTATIVE"
+            status: "CONFIRMED"
         });
 
         setFormOpen(true);
     }
 
     function openEditForm(booking) {
+        if (booking.company !== company) {
+            showToast(
+                "Booking perusahaan lain hanya dapat dilihat.",
+                "warning",
+                "Akses Ditolak"
+            );
+            return;
+        }
+
         setDetailBooking(null);
 
         setFormMode("edit");
@@ -1370,9 +1381,12 @@ function CalendarApp() {
             asset_type: booking.asset_type || "",
             asset_count: booking.asset_count || 0,
             requester: booking.requester || "",
-            location: booking.location || "",
+            location: "Head Office Jl. Panjang Arteri",
             notes: booking.notes || "",
-            status: booking.status || "TENTATIVE"
+            status:
+                booking.status === "CANCELLED"
+                    ? "CANCELLED"
+                    : "CONFIRMED"
         });
 
         setEditingId(booking.id);
@@ -1477,6 +1491,15 @@ function CalendarApp() {
 
     function handleCancel() {
         if (!detailBooking) return;
+
+        if (detailBooking.company !== company) {
+            showToast(
+                "Booking perusahaan lain hanya dapat dilihat.",
+                "warning",
+                "Akses Ditolak"
+            );
+            return;
+        }
 
         showConfirm(
             `Batalkan booking tanggal ${formatDate(detailBooking.booking_date)}?`,
@@ -1638,6 +1661,7 @@ function CalendarApp() {
 
             <DetailModal
                 booking={detailBooking}
+                company={company}
                 onClose={() =>
                     setDetailBooking(null)
                 }

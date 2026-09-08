@@ -3,6 +3,28 @@ const activityService = require("../services/activityService");
 
 
 // ==================================================
+// COMPANY ACCESS CONTROL
+// User hanya boleh mengubah booking milik company aktif.
+// Booking company lain tetap boleh dilihat.
+// ==================================================
+
+function getActiveCompany(req) {
+    return String(req.company || "").trim().toUpperCase();
+}
+
+function canManageBooking(req, booking) {
+    const activeCompany = getActiveCompany(req);
+
+    return (
+        ["PGI", "PEI"].includes(activeCompany) &&
+        booking &&
+        booking.company === activeCompany
+    );
+}
+
+
+
+// ==================================================
 // GET /api/calendar
 // ==================================================
 
@@ -109,7 +131,6 @@ exports.create = (req, res) => {
     try {
 
         const {
-            company,
             booking_date,
             asset_type,
             asset_count,
@@ -118,6 +139,9 @@ exports.create = (req, res) => {
             notes,
             status
         } = req.body;
+
+        // Company booking SELALU mengikuti company aktif di session.
+        const company = getActiveCompany(req);
 
 
         // ==============================
@@ -328,9 +352,22 @@ exports.update = (req, res) => {
 
         }
 
+        // Booking company lain hanya boleh dilihat, tidak boleh diedit.
+        if (!canManageBooking(req, existing)) {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message:
+                    "Anda tidak memiliki akses untuk mengubah booking perusahaan lain."
+
+            });
+
+        }
+
 
         const {
-            company,
             booking_date,
             asset_type,
             asset_count,
@@ -339,6 +376,9 @@ exports.update = (req, res) => {
             notes,
             status
         } = req.body;
+
+        // Company tidak boleh dipindahkan saat edit.
+        const company = existing.company;
 
 
         // ==============================
@@ -579,6 +619,20 @@ exports.cancel = (req, res) => {
 
         }
 
+        // Booking company lain hanya boleh dilihat, tidak boleh dibatalkan.
+        if (!canManageBooking(req, existing)) {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message:
+                    "Anda tidak memiliki akses untuk membatalkan booking perusahaan lain."
+
+            });
+
+        }
+
 
         // ==============================
         // CANCEL
@@ -682,6 +736,20 @@ exports.remove = (req, res) => {
 
                 message:
                     "Booking tidak ditemukan"
+
+            });
+
+        }
+
+        // Booking company lain tidak boleh dihapus.
+        if (!canManageBooking(req, existing)) {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message:
+                    "Anda tidak memiliki akses untuk menghapus booking perusahaan lain."
 
             });
 

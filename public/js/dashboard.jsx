@@ -364,31 +364,24 @@ function ActivityNotification() {
             return "-";
         }
 
-        const normalized =
-            String(dateString).replace(
-                " ",
-                "T"
-            );
+        const normalized = String(dateString)
+            .replace(" ", "T");
 
-        const date =
-            new Date(normalized);
+        // created_at dari SQLite = UTC
+        const date = new Date(`${normalized}Z`);
 
-        if (
-            Number.isNaN(date.getTime())
-        ) {
+        if (Number.isNaN(date.getTime())) {
             return dateString;
         }
 
-        return date.toLocaleString(
-            "id-ID",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
+        return date.toLocaleString("id-ID", {
+            timeZone: "Asia/Jakarta",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
     };
 
     // =====================================
