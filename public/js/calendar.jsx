@@ -388,13 +388,6 @@ function Summary({
             />
 
             <SummaryCard
-                icon="bi bi-clock"
-                title="Tentatif"
-                value={summary.tentative || 0}
-                className="summary-tentative"
-            />
-
-            <SummaryCard
                 icon="bi bi-x-circle"
                 title="Dibatalkan"
                 value={summary.cancelled || 0}
@@ -496,11 +489,6 @@ function Calendar({
                     <span>
                         <i className="legend-dot confirmed"></i>
                         Terjadwal
-                    </span>
-
-                    <span>
-                        <i className="legend-dot tentative"></i>
-                        Tentatif
                     </span>
 
                     <span>
