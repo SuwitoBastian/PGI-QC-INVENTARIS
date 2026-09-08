@@ -32,6 +32,26 @@
             }
         }
     </style>
+
+    <style>
+        /* Khusus dashboard: 5 metric cards dalam satu baris desktop.
+           Tidak mengubah grid summary di halaman Kalender. */
+        .dashboard-main .dashboard-summary-grid {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+
+        @media (max-width: 1199.98px) {
+            .dashboard-main .dashboard-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .dashboard-main .dashboard-summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body class="<%= company %>">
@@ -40,6 +60,7 @@
     <script>
         window.__DASHBOARD_DATA__ = <%- JSON.stringify({
             summary: summary || null,
+            totalInventarisKeseluruhan: totalInventarisKeseluruhan || 0,
             totalInventarisKeseluruhan: totalInventarisKeseluruhan || 0,
             company: company || "PGI",
             currentPage: currentPage || "dashboard",
