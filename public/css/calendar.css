@@ -1210,3 +1210,11 @@
 .calendar-event.company-pei.cancelled {
     opacity: 0.65;
 }
+/* =========================================================
+   SUMMARY CARD - 3 KOLOM SEJAJAR DENGAN CALENDAR
+   ========================================================= */
+
+.summary-grid {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
