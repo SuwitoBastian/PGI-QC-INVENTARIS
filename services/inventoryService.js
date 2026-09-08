@@ -173,13 +173,14 @@ exports.countReject = (batchId) => {
  * Mencakup semua batch, bukan hanya batch aktif.
  */
 exports.getTotalInventarisByCompany = (company = "PGI") => {
-
     return db.prepare(`
-        SELECT COUNT(*) AS total
-        FROM inventaris
-        WHERE company = ?
+        SELECT COUNT(i.id) AS total
+        FROM inventaris i
+        INNER JOIN batch b
+            ON i.batch_id = b.id
+        WHERE b.company = ?
+        AND b.status = 'FINISHED'
     `).get(company).total;
-
 };
 
 exports.getDashboardSummary = (company = "PGI") => {
