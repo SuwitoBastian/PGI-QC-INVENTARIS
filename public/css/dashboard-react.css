@@ -1288,3 +1288,16 @@ body .topbar-button{
         gap: 8px;
     }
 }
+/* =========================================================
+   DARK THEME - SWEETALERT REJECT REASON
+   ========================================================= */
+
+body[data-theme="dark"] .swal2-popup .swal2-html-container .bg-light {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border: 1px solid #475569 !important;
+}
+
+body[data-theme="dark"] .swal2-popup .swal2-html-container strong {
+    color: #f8fafc !important;
+}
