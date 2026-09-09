@@ -174,12 +174,9 @@ exports.countReject = (batchId) => {
  */
 exports.getTotalInventarisByCompany = (company = "PGI") => {
     return db.prepare(`
-        SELECT COUNT(i.id) AS total
-        FROM inventaris i
-        INNER JOIN batch b
-            ON i.batch_id = b.id
-        WHERE b.company = ?
-        AND b.status = 'FINISHED'
+        SELECT COUNT(*) AS total
+        FROM inventaris
+        WHERE company = ?
     `).get(company).total;
 };
 

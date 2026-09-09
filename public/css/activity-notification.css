@@ -333,10 +333,56 @@ body .activity-close{
         max-height: calc(100vh - 90px);
     }
 }
-/* =====================================
-   NOTIFICATION PANEL - RAPAT KE KANAN
-   ===================================== */
+/* =========================================================
+   NOTIFICATION PANEL - EMPTY STATE
+   ========================================================= */
 
-.dashboard-hero .hero-actions .activity-panel {
-    right: -220px;
+@media (min-width: 577px) {
+    .dashboard-empty-actions .activity-panel {
+        right: -85px;
+    }
+
+    .dashboard-empty-actions .activity-list {
+        padding-right: 4px;
+    }
 }
+
+@media (max-width: 576px) {
+    .dashboard-empty-actions .activity-panel {
+        position: fixed;
+        top: 65px;
+        right: 12px !important;
+        left: auto;
+        width: calc(100vw - 24px);
+        max-width: none;
+    }
+}
+/* =========================================================
+   NOTIFICATION PANEL - ACTIVE BATCH
+   RAPAT KE KANAN LAYAR
+   ========================================================= */
+
+@media (min-width: 577px) {
+    .dashboard-hero .hero-actions .activity-panel {
+        position: fixed;
+        top: 98px;
+        right: 28px;
+        left: auto;
+    }
+
+    .dashboard-hero .hero-actions .activity-list {
+        padding-right: 4px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-hero .hero-actions .activity-panel {
+        position: fixed;
+        top: 65px;
+        right: 12px !important;
+        left: auto;
+        width: calc(100vw - 24px);
+        max-width: none;
+    }
+}
+

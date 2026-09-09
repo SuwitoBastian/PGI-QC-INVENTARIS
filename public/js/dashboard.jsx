@@ -987,58 +987,64 @@ function DashboardApp() {
                     </>
 
                 ) : (
+                    <>
 
-                    /* EMPTY STATE */
-                    <div className="empty-state">
-
-                        <div className="empty-card">
-
-                            <div className="empty-icon">
-
-                                <i className="bi bi-exclamation-triangle-fill"></i>
-
-                            </div>
-
-                            <h2>
-                                Belum ada Batch Aktif
-                            </h2>
-
-                            <p>
-                                Silakan import batch baru untuk memulai proses QC Inventaris.
-                            </p>
-
-
-                            <div className="action-row">
-
-                                <a
-                                    href="/batch"
-                                    className="btn btn-primary btn-lg"
-                                >
-
-                                    <i className="bi bi-upload me-2"></i>
-
-                                    Import Batch
-
-                                </a>
-
-
-                                <a
-                                    href="/inventaris"
-                                    className="btn btn-outline-secondary btn-lg"
-                                >
-
-                                    <i className="bi bi-list-ul me-2"></i>
-
-                                    Lihat Inventaris
-
-                                </a>
-
-                            </div>
-
+                         {/* ACTION ICONS */}
+                        <div className="dashboard-empty-actions">
+                            <ActivityNotification />
+                            <ThemeToggle />
                         </div>
+                        {/* TOTAL INVENTARIS KESELURUHAN */}
+                        <section className="summary-grid dashboard-summary-grid">
+                            <SummaryCard
+                                title="Total Inventaris Keseluruhan"
+                                value={totalInventarisKeseluruhan}
+                                meta="Seluruh periode"
+                                icon="bi bi-archive-fill"
+                                iconClass="bg-info"
+                                valueClass="text-info"
+                            />
+                        </section>
 
-                    </div>
+                        {/* EMPTY STATE */}
+                        <div className="empty-state">
+                            <div className="empty-card">
 
+                                <div className="empty-icon">
+                                    <i className="bi bi-exclamation-triangle-fill"></i>
+                                </div>
+
+                                <h2>
+                                    Belum ada Batch Aktif
+                                </h2>
+
+                                <p>
+                                    Silakan import batch baru untuk memulai proses QC Inventaris.
+                                </p>
+
+                                <div className="action-row">
+
+                                    <a
+                                        href="/batch"
+                                        className="btn btn-primary btn-lg"
+                                    >
+                                        <i className="bi bi-upload me-2"></i>
+                                        Import Batch
+                                    </a>
+
+                                    <a
+                                        href="/inventaris"
+                                        className="btn btn-outline-secondary btn-lg"
+                                    >
+                                        <i className="bi bi-box-seam me-2"></i>
+                                        Lihat Inventaris
+                                    </a>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </>
                 )}
 
             </main>

@@ -1251,3 +1251,40 @@ body .info-box,
 body .topbar-button{
     transition:background .3s ease,background-color .3s ease,color .3s ease,border-color .3s ease,box-shadow .3s ease;
 }
+/* =========================================================
+   DASHBOARD - SAFE AREA UNTUK TOMBOL COLLAPSE SIDEBAR
+   DESKTOP + TABLET + MOBILE
+   ========================================================= */
+
+.dashboard-main .dashboard-summary-grid {
+    padding-left: 70px;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-main .dashboard-summary-grid {
+        padding-left: 55px;
+    }
+}
+/* =========================================================
+   DASHBOARD EMPTY STATE
+   ICON NOTIFIKASI + DARK/LIGHT THEME
+   ========================================================= */
+
+.dashboard-empty-actions {
+    position: absolute;
+    top: 28px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+}
+
+/* MOBILE */
+@media (max-width: 767.98px) {
+    .dashboard-empty-actions {
+        top: 20px;
+        right: 18px;
+        gap: 8px;
+    }
+}
