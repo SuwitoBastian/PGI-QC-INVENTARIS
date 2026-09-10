@@ -1257,7 +1257,7 @@ body .topbar-button{
    ========================================================= */
 
 .dashboard-main .dashboard-summary-grid {
-    padding-left: 70px;
+    padding-left: 0;
 }
 
 @media (max-width: 767.98px) {
