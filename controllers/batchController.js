@@ -444,6 +444,36 @@ exports.importExcel = (req, res) => {
 
         dayjs.locale("id");
 
+        
+        let matchedBooking = null;
+
+        let bookingDate = null;
+
+        const rawBookingDate = mappedData[0]?.tanggal_masuk;
+
+        if (rawBookingDate) {
+            if (typeof rawBookingDate === "number") {
+                const excelDate = new Date(
+                    (rawBookingDate - 25569) * 86400 * 1000
+                );
+
+                bookingDate = dayjs(excelDate).format("YYYY-MM-DD");
+            } else {
+                bookingDate = dayjs(rawBookingDate).format("YYYY-MM-DD");
+            }
+        }
+
+        if (bookingDate) {
+            const candidates = calendarService.findMatchingBooking(
+                company,
+                bookingDate,
+                mappedData.length
+            );
+
+            if (candidates.length === 1) {
+                matchedBooking = candidates[0];
+            }
+        }
 
         const batchId =
             batchService.createBatch({
@@ -467,7 +497,9 @@ exports.importExcel = (req, res) => {
                 created_at:
                     dayjs().format(
                         "YYYY-MM-DD HH:mm:ss"
-                    )
+                    ),
+                
+                booking_id: matchedBooking ? matchedBooking.id : null
 
             });
 

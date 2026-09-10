@@ -778,6 +778,31 @@ function getMonthlySummary(month, company = "ALL") {
 
 }
 
+function findMatchingBooking(company, bookingDate, assetCount) {
+    const stmt = db.prepare(`
+        SELECT
+            cb.*,
+            b.id AS batch_id,
+            b.batch_code,
+            b.status AS batch_status
+        FROM calendar_booking cb
+        LEFT JOIN batch b
+            ON b.booking_id = cb.id
+        WHERE cb.company = ?
+          AND cb.booking_date = ?
+          AND cb.asset_count = ?
+          AND cb.status != 'CANCELLED'
+          AND b.id IS NULL
+        ORDER BY cb.id ASC
+    `);
+
+    return stmt.all(
+        company,
+        bookingDate,
+        assetCount
+    );
+}
+
 
 // ==================================================
 // EXPORT
@@ -805,6 +830,8 @@ module.exports = {
 
     deleteBooking,
 
-    getMonthlySummary
+    getMonthlySummary,
+
+    findMatchingBooking
 
 };
