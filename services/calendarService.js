@@ -8,23 +8,31 @@ const db = require("../config/database");
 function getBookingsByMonth(month, company = "ALL") {
 
     let sql = `
-        SELECT *
-        FROM calendar_booking
-        WHERE booking_date LIKE ?
+        SELECT
+            cb.*,
+            b.id AS batch_id,
+            b.batch_code,
+            b.status AS batch_status
+        FROM calendar_booking cb
+        LEFT JOIN batch b
+            ON b.booking_id = cb.id
+        WHERE cb.booking_date LIKE ?
     `;
 
     const params = [`${month}%`];
 
     if (company !== "ALL") {
 
-        sql += ` AND company = ?`;
+        sql += `
+            AND cb.company = ?
+        `;
 
         params.push(company);
 
     }
 
     sql += `
-        ORDER BY booking_date ASC, id ASC
+        ORDER BY cb.booking_date ASC, cb.id ASC
     `;
 
     return db.prepare(sql).all(...params);
@@ -38,9 +46,15 @@ function getBookingsByMonth(month, company = "ALL") {
 function getBookingById(id) {
 
     return db.prepare(`
-        SELECT *
-        FROM calendar_booking
-        WHERE id = ?
+        SELECT
+            cb.*,
+            b.id AS batch_id,
+            b.batch_code,
+            b.status AS batch_status
+        FROM calendar_booking cb
+        LEFT JOIN batch b
+            ON b.booking_id = cb.id
+        WHERE cb.id = ?
     `).get(id);
 }
 
@@ -94,6 +108,74 @@ function checkConflict({
 
 
 // ==================================================
+// COUNT ACTIVE BOOKINGS
+// ==================================================
+
+function countActiveBookings() {
+
+    return db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM calendar_booking
+        WHERE status != 'CANCELLED'
+    `).get().total;
+}
+
+
+// ==================================================
+// GET UPCOMING BOOKINGS
+// ==================================================
+
+function getUpcomingBookings(
+    company,
+    limit = 5,
+    today = null
+) {
+
+    const activeCompany =
+        String(company || "").trim().toUpperCase();
+
+    const date =
+        today ||
+        new Date().toISOString().slice(0, 10);
+
+    let sql = `
+        SELECT
+            cb.*,
+            b.id AS batch_id,
+            b.batch_code,
+            b.status AS batch_status
+        FROM calendar_booking cb
+        LEFT JOIN batch b
+            ON b.booking_id = cb.id
+        WHERE cb.booking_date >= ?
+        AND cb.status != 'CANCELLED'
+        AND (b.status IS NULL OR b.status != 'FINISHED')
+    `;
+
+    const params = [date];
+
+    if (activeCompany && activeCompany !== "ALL") {
+
+        sql += `
+            AND cb.company = ?
+        `;
+
+        params.push(activeCompany);
+
+    }
+
+    sql += `
+        ORDER BY cb.booking_date ASC, cb.id ASC
+        LIMIT ?
+    `;
+
+    params.push(Number(limit) || 5);
+
+    return db.prepare(sql).all(...params);
+}
+
+
+// ==================================================
 // CREATE BOOKING
 // ==================================================
 
@@ -120,6 +202,32 @@ function createBooking(data) {
 
     }
 
+    // ==============================
+    // CHECK JUMLAH ASET
+    // ==============================
+
+    const assetCount = Number(data.asset_count);
+
+    if (!Number.isInteger(assetCount) || assetCount < 1) {
+
+        return {
+            success: false,
+            message:
+                "Jumlah aset harus diisi minimal 1."
+        };
+
+    }
+
+    if (assetCount > 50) {
+
+        return {
+            success: false,
+            limitReached: true,
+            message:
+                "Jumlah aset dalam 1 booking maksimal 50 aset."
+        };
+
+    }
 
     // ==============================
     // INSERT
@@ -209,6 +317,22 @@ function updateBooking(id, data) {
             message:
                 "Booking tidak ditemukan."
 
+        };
+
+    }
+
+    // ==============================
+    // BOOKING SUDAH MEMILIKI BATCH
+    // ==============================
+
+    if (existing.batch_id) {
+
+        return {
+            success: false,
+            message:
+                existing.batch_status === "FINISHED"
+                    ? "Booking sudah selesai karena Batch telah ditutup dan tidak dapat diubah."
+                    : "Booking sudah memiliki Batch dan tidak dapat diubah."
         };
 
     }
@@ -315,6 +439,127 @@ function updateBooking(id, data) {
 
 
 // ==================================================
+// ATTACH EXCEL TO BOOKING
+// ==================================================
+//
+// Excel disimpan sebagai file preparation.
+// Belum membuat batch.
+//
+// ==================================================
+
+function attachExcelToBooking(
+    id,
+    {
+        excel_path,
+        excel_original_name
+    }
+) {
+
+    // ==============================
+    // GET BOOKING
+    // ==============================
+
+    const existing =
+        getBookingById(id);
+
+
+    if (!existing) {
+
+        return {
+
+            success: false,
+
+            message:
+                "Booking tidak ditemukan."
+
+        };
+
+    }
+
+    // ==============================
+    // BOOKING SUDAH MEMILIKI BATCH
+    // ==============================
+
+    if (existing.batch_id) {
+
+        return {
+            success: false,
+            message:
+                existing.batch_status === "FINISHED"
+                    ? "Booking sudah selesai dan file Excel tidak dapat diubah."
+                    : "Booking sudah memiliki Batch dan file Excel tidak dapat diganti."
+        };
+
+    }
+
+
+    // ==============================
+    // CANCELLED TIDAK BOLEH UPLOAD
+    // ==============================
+
+    if (existing.status === "CANCELLED") {
+
+        return {
+
+            success: false,
+
+            message:
+                "Booking yang sudah dibatalkan tidak dapat menerima file Excel."
+
+        };
+
+    }
+
+
+    // ==============================
+    // UPDATE FILE
+    // ==============================
+
+    db.prepare(`
+        UPDATE calendar_booking
+        SET
+            excel_path = ?,
+            excel_original_name = ?,
+            excel_uploaded_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `).run(
+
+        excel_path || null,
+
+        excel_original_name || null,
+
+        id
+
+    );
+
+
+    // ==============================
+    // AMBIL DATA TERBARU
+    // ==============================
+
+    const booking =
+        getBookingById(id);
+
+
+    // ==============================
+    // RETURN
+    // ==============================
+
+    return {
+
+        success: true,
+
+        id,
+
+        ...booking
+
+    };
+
+}
+
+
+// ==================================================
 // CANCEL BOOKING
 // ==================================================
 
@@ -337,6 +582,22 @@ function cancelBooking(id) {
             message:
                 "Booking tidak ditemukan."
 
+        };
+
+    }
+
+    // ==============================
+    // BOOKING SUDAH MEMILIKI BATCH
+    // ==============================
+
+    if (existing.batch_id) {
+
+        return {
+            success: false,
+            message:
+                existing.batch_status === "FINISHED"
+                    ? "Booking sudah selesai dan tidak dapat dibatalkan."
+                    : "Booking sudah memiliki Batch dan tidak dapat dibatalkan."
         };
 
     }
@@ -386,17 +647,64 @@ function cancelBooking(id) {
 
 function deleteBooking(id) {
 
-    const result = db.prepare(`
-        DELETE FROM calendar_booking
-        WHERE id = ?
-    `).run(id);
+    // ==============================
+    // AMBIL BOOKING
+    // ==============================
 
+    const existing =
+        getBookingById(id);
+
+
+    // ==============================
+    // BOOKING TIDAK DITEMUKAN
+    // ==============================
+
+    if (!existing) {
+
+        return {
+            success: false,
+            message:
+                "Booking tidak ditemukan."
+        };
+
+    }
+
+
+    // ==============================
+    // BOOKING SUDAH MEMILIKI BATCH
+    // ==============================
+
+    if (existing.batch_id) {
+
+        return {
+            success: false,
+            message:
+                existing.batch_status === "FINISHED"
+                    ? "Booking sudah selesai dan tidak dapat dihapus."
+                    : "Booking sudah memiliki Batch dan tidak dapat dihapus."
+        };
+
+    }
+
+
+    // ==============================
+    // HAPUS BOOKING
+    // ==============================
+
+    const result =
+        db.prepare(`
+            DELETE FROM calendar_booking
+            WHERE id = ?
+        `).run(id);
+
+
+    // ==============================
+    // RETURN
+    // ==============================
 
     return {
-
         success:
             result.changes > 0
-
     };
 
 }
@@ -483,9 +791,15 @@ module.exports = {
 
     checkConflict,
 
+    countActiveBookings,
+
+    getUpcomingBookings,
+
     createBooking,
 
     updateBooking,
+
+    attachExcelToBooking,
 
     cancelBooking,
 

@@ -2,6 +2,146 @@ const { useMemo, useState, useEffect } = React;
 
 const dashboardData = window.__DASHBOARD_DATA__ || {};
 
+const upcomingBookingPaginationStyles = `
+    .upcoming-booking-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .upcoming-booking-page-info {
+        min-width: 120px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    .upcoming-booking-pagination .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    body[data-theme="dark"] .upcoming-booking-page-info {
+        color: #94a3b8;
+    }
+
+    /* =====================================
+       EMPTY DASHBOARD - COMPACT TOP CARD
+       ===================================== */
+
+    .dashboard-main .dashboard-empty-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    .dashboard-empty-summary-grid {
+        align-items: stretch;
+    }
+
+    .dashboard-no-batch-card {
+        min-height: 132px;
+        display: flex;
+        align-items: center;
+    }
+
+    .dashboard-no-batch-inner {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+    }
+
+    .dashboard-empty-summary-grid .metric-card,
+    .dashboard-empty-summary-grid .dashboard-no-batch-card {
+        width: 100%;
+    }
+
+    .dashboard-no-batch-content {
+        min-width: 0;
+    }
+
+    .dashboard-no-batch-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .dashboard-no-batch-title {
+        margin: 0;
+        color: #1f2937;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .dashboard-no-batch-text {
+        margin: 5px 0 0;
+        color: #64748b;
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .dashboard-no-batch-actions {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dashboard-no-batch-actions .btn {
+        white-space: nowrap;
+    }
+
+    .dashboard-no-batch-icon {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--dashboard-accent-soft);
+        color: var(--dashboard-accent);
+        font-size: 20px;
+    }
+
+    body[data-theme="dark"] .dashboard-no-batch-title {
+        color: #f8fafc;
+    }
+
+    body[data-theme="dark"] .dashboard-no-batch-label,
+    body[data-theme="dark"] .dashboard-no-batch-text {
+        color: #94a3b8;
+    }
+
+    @media (max-width: 767.98px) {
+        .dashboard-no-batch-inner {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .dashboard-no-batch-actions {
+            width: 100%;
+        }
+
+        .dashboard-no-batch-actions .btn {
+            flex: 1;
+        }
+    }
+`;
+
+const upcomingBookingStyleElement = document.createElement("style");
+upcomingBookingStyleElement.textContent = upcomingBookingPaginationStyles;
+document.head.appendChild(upcomingBookingStyleElement);
+
+
 function formatNumber(value) {
     return new Intl.NumberFormat("id-ID").format(Number(value || 0));
 }
@@ -637,6 +777,37 @@ function DashboardApp() {
 
     const hasSummary = Boolean(summary);
 
+    // =====================================
+    // UPCOMING BOOKING PAGINATION
+    // =====================================
+    const UPCOMING_PER_PAGE = 4;
+    const [upcomingPage, setUpcomingPage] = useState(1);
+
+    const upcomingBookings = Array.isArray(data.upcomingBookings)
+        ? data.upcomingBookings
+        : [];
+
+    const upcomingTotalPages = Math.max(
+        1,
+        Math.ceil(upcomingBookings.length / UPCOMING_PER_PAGE)
+    );
+
+    const safeUpcomingPage = Math.min(
+        upcomingPage,
+        upcomingTotalPages
+    );
+
+    const paginatedUpcomingBookings = upcomingBookings.slice(
+        (safeUpcomingPage - 1) * UPCOMING_PER_PAGE,
+        safeUpcomingPage * UPCOMING_PER_PAGE
+    );
+
+    useEffect(() => {
+        if (upcomingPage > upcomingTotalPages) {
+            setUpcomingPage(upcomingTotalPages);
+        }
+    }, [upcomingPage, upcomingTotalPages]);
+
     return (
         <div className={`dashboard-shell ${sidebarOpen ? "sidebar-open" : ""} ${desktopSidebarHidden ? "desktop-sidebar-hidden" : ""}`}>
 
@@ -783,6 +954,184 @@ function DashboardApp() {
 
                         </section>
 
+                        {/* UPCOMING BOOKING - HANYA UNTUK TIDAK ADA BATCH AKTIF */}
+                        {false && Array.isArray(data.upcomingBookings) &&
+                            data.upcomingBookings.length > 0 && (
+                                <section className="content-card upcoming-booking-card">
+                                    <div className="section-title d-flex align-items-center justify-content-between">
+                                        <span>
+                                            <i className="bi bi-calendar-event-fill text-primary"></i>
+                                            {" "}Upcoming Booking
+                                        </span>
+
+                                        <a
+                                            href="/kalender"
+                                            className="btn btn-sm btn-outline-primary"
+                                        >
+                                            <i className="bi bi-calendar3 me-1"></i>
+                                            Kalender
+                                        </a>
+                                    </div>
+
+                                    <div className="upcoming-booking-list">
+                                        {paginatedUpcomingBookings.map((booking) => {
+                                            const bookingDate = booking.booking_date
+                                                ? new Date(`${booking.booking_date}T00:00:00`)
+                                                : null;
+
+                                            const formattedDate =
+                                                bookingDate && !Number.isNaN(bookingDate.getTime())
+                                                    ? bookingDate.toLocaleDateString("id-ID", {
+                                                          weekday: "long",
+                                                          day: "2-digit",
+                                                          month: "long",
+                                                          year: "numeric"
+                                                      })
+                                                    : booking.booking_date || "-";
+
+                                            const hasExcel = Boolean(booking.excel_path);
+                                            const hasBatch = Boolean(booking.batch_id);
+
+                                            return (
+                                                <div
+                                                    key={booking.id}
+                                                    className="upcoming-booking-item"
+                                                >
+                                                    <div className="upcoming-booking-date">
+                                                        <div className="upcoming-booking-day">
+                                                            {bookingDate &&
+                                                            !Number.isNaN(bookingDate.getTime())
+                                                                ? bookingDate.getDate()
+                                                                : "-"}
+                                                        </div>
+
+                                                        <div className="upcoming-booking-month">
+                                                            {bookingDate &&
+                                                            !Number.isNaN(bookingDate.getTime())
+                                                                ? bookingDate.toLocaleDateString(
+                                                                      "id-ID",
+                                                                      { month: "short" }
+                                                                  ).toUpperCase()
+                                                                : "-"}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="upcoming-booking-info">
+                                                        <div className="upcoming-booking-title">
+                                                            {booking.asset_type || "Booking QC"}
+                                                        </div>
+
+                                                        <div className="upcoming-booking-meta">
+                                                            <span>
+                                                                <i className="bi bi-building me-1"></i>
+                                                                {booking.company || "-"}
+                                                            </span>
+
+                                                            <span>
+                                                                <i className="bi bi-box-seam me-1"></i>
+                                                                {formatNumber(booking.asset_count)} Unit
+                                                            </span>
+
+                                                            <span>
+                                                                <i className="bi bi-person me-1"></i>
+                                                                {booking.requester || "-"}
+                                                            </span>
+
+                                                            {booking.location && (
+                                                                <span>
+                                                                    <i className="bi bi-geo-alt me-1"></i>
+                                                                    {booking.location}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="upcoming-booking-date-text">
+                                                            <i className="bi bi-calendar3 me-1"></i>
+                                                            {formattedDate}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="upcoming-booking-action">
+                                                        {hasBatch ? (
+                                                            <a
+                                                                href={`/batch/${booking.batch_id}`}
+                                                                className="btn btn-sm btn-success"
+                                                            >
+                                                                <i className="bi bi-box-seam me-1"></i>
+                                                                Lihat Batch
+                                                            </a>
+                                                        ) : hasExcel ? (
+                                                            <form
+                                                                action="/batch/run-booking"
+                                                                method="POST"
+                                                                className="d-inline"
+                                                            >
+                                                                <input
+                                                                    type="hidden"
+                                                                    name="booking_id"
+                                                                    value={booking.id}
+                                                                />
+
+                                                                <button
+                                                                    type="submit"
+                                                                    className="btn btn-sm btn-primary"
+                                                                >
+                                                                    <i className="bi bi-box-arrow-in-right me-1"></i>
+                                                                    Buka Booking
+                                                                </button>
+                                                            </form>
+                                                        ) : (
+                                                            <a
+                                                                href={`/batch?booking_id=${booking.id}`}
+                                                                className="btn btn-sm btn-outline-primary"
+                                                            >
+                                                                <i className="bi bi-upload me-1"></i>
+                                                                Upload Excel
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {upcomingTotalPages > 1 && (
+                                        <div className="upcoming-booking-pagination">
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-primary"
+                                                onClick={() =>
+                                                    setUpcomingPage(prev =>
+                                                        Math.max(1, prev - 1)
+                                                    )
+                                                }
+                                                disabled={safeUpcomingPage === 1}
+                                                aria-label="Booking sebelumnya"
+                                            >
+                                                <i className="bi bi-chevron-left"></i>
+                                            </button>
+
+                                            <span className="upcoming-booking-page-info">
+                                                Halaman {safeUpcomingPage} dari {upcomingTotalPages}
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-primary"
+                                                onClick={() =>
+                                                    setUpcomingPage(prev =>
+                                                        Math.min(upcomingTotalPages, prev + 1)
+                                                    )
+                                                }
+                                                disabled={safeUpcomingPage === upcomingTotalPages}
+                                                aria-label="Booking berikutnya"
+                                            >
+                                                <i className="bi bi-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                    )}
+                                </section>
+                            )}
 
                         {/* CONTENT GRID */}
                         <section className="content-grid">
@@ -989,13 +1338,44 @@ function DashboardApp() {
                 ) : (
                     <>
 
-                         {/* ACTION ICONS */}
-                        <div className="dashboard-empty-actions">
-                            <ActivityNotification />
-                            <ThemeToggle />
+                        {/* HERO */}
+                        <div className="dashboard-hero">
+
+                            <div>
+                                <h1>Dashboard</h1>
+
+                                <p>
+                                    Ringkasan kondisi inventaris pada batch aktif.
+                                </p>
+                            </div>
+
+                            <div className="hero-actions">
+
+                                <ActivityNotification />
+
+                                <ThemeToggle />
+
+                                <div className="hero-chip">
+
+                                    <i className="bi bi-buildings"></i>
+
+                                    <span>
+                                        {
+                                            data.company === "PEI"
+                                                ? "PEI - Pusat Emas Indonesia"
+                                                : "PGI - Pusat Gadai Indonesia"
+                                        }
+                                    </span>
+
+                                </div>
+
+                            </div>
+
                         </div>
-                        {/* TOTAL INVENTARIS KESELURUHAN */}
-                        <section className="summary-grid dashboard-summary-grid">
+
+                        {/* STATUS UTAMA */}
+                        <section className="summary-grid dashboard-summary-grid dashboard-empty-summary-grid">
+
                             <SummaryCard
                                 title="Total Inventaris Keseluruhan"
                                 value={totalInventarisKeseluruhan}
@@ -1004,46 +1384,231 @@ function DashboardApp() {
                                 iconClass="bg-info"
                                 valueClass="text-info"
                             />
+
+                            <div className="metric-card dashboard-no-batch-card">
+                                <div className="dashboard-no-batch-inner">
+
+                                    <div className="dashboard-no-batch-content">
+                                        <div className="dashboard-no-batch-label">
+                                            STATUS BATCH
+                                        </div>
+
+                                        <h2 className="dashboard-no-batch-title">
+                                            Belum ada Batch Aktif
+                                        </h2>
+
+                                        <p className="dashboard-no-batch-text">
+                                            Import batch baru untuk memulai proses QC Inventaris.
+                                        </p>
+                                    </div>
+
+                                    <div className="dashboard-no-batch-icon">
+                                        <i className="bi bi-exclamation-triangle-fill"></i>
+                                    </div>
+
+                                    <div className="dashboard-no-batch-actions">
+                                        <a
+                                            href="/batch"
+                                            className="btn btn-primary btn-sm"
+                                        >
+                                            <i className="bi bi-upload me-1"></i>
+                                            Import Batch
+                                        </a>
+
+                                        <a
+                                            href="/inventaris"
+                                            className="btn btn-outline-secondary btn-sm"
+                                        >
+                                            <i className="bi bi-box-seam me-1"></i>
+                                            Inventaris
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+
                         </section>
 
-                        {/* EMPTY STATE */}
-                        <div className="empty-state">
-                            <div className="empty-card">
+                        {/* UPCOMING BOOKING */}
+                        {Array.isArray(data.upcomingBookings) &&
+                            data.upcomingBookings.length > 0 && (
+                                <section className="content-card upcoming-booking-card">
+                                    <div className="section-title d-flex align-items-center justify-content-between">
+                                        <span>
+                                            <i className="bi bi-calendar-event-fill text-primary"></i>
+                                            {" "}Upcoming Booking
+                                        </span>
 
-                                <div className="empty-icon">
-                                    <i className="bi bi-exclamation-triangle-fill"></i>
-                                </div>
+                                        <a
+                                            href="/kalender"
+                                            className="btn btn-sm btn-outline-primary"
+                                        >
+                                            <i className="bi bi-calendar3 me-1"></i>
+                                            Kalender
+                                        </a>
+                                    </div>
 
-                                <h2>
-                                    Belum ada Batch Aktif
-                                </h2>
+                                    <div className="upcoming-booking-list">
+                                        {paginatedUpcomingBookings.map((booking) => {
+                                            const bookingDate = booking.booking_date
+                                                ? new Date(`${booking.booking_date}T00:00:00`)
+                                                : null;
 
-                                <p>
-                                    Silakan import batch baru untuk memulai proses QC Inventaris.
-                                </p>
+                                            const formattedDate =
+                                                bookingDate && !Number.isNaN(bookingDate.getTime())
+                                                    ? bookingDate.toLocaleDateString("id-ID", {
+                                                          weekday: "long",
+                                                          day: "2-digit",
+                                                          month: "long",
+                                                          year: "numeric"
+                                                      })
+                                                    : booking.booking_date || "-";
 
-                                <div className="action-row">
+                                            const hasExcel = Boolean(booking.excel_path);
+                                            const hasBatch = Boolean(booking.batch_id);
 
-                                    <a
-                                        href="/batch"
-                                        className="btn btn-primary btn-lg"
-                                    >
-                                        <i className="bi bi-upload me-2"></i>
-                                        Import Batch
-                                    </a>
+                                            return (
+                                                <div
+                                                    key={booking.id}
+                                                    className="upcoming-booking-item"
+                                                >
+                                                    <div className="upcoming-booking-date">
+                                                        <div className="upcoming-booking-day">
+                                                            {bookingDate &&
+                                                            !Number.isNaN(bookingDate.getTime())
+                                                                ? bookingDate.getDate()
+                                                                : "-"}
+                                                        </div>
 
-                                    <a
-                                        href="/inventaris"
-                                        className="btn btn-outline-secondary btn-lg"
-                                    >
-                                        <i className="bi bi-box-seam me-2"></i>
-                                        Lihat Inventaris
-                                    </a>
+                                                        <div className="upcoming-booking-month">
+                                                            {bookingDate &&
+                                                            !Number.isNaN(bookingDate.getTime())
+                                                                ? bookingDate.toLocaleDateString(
+                                                                      "id-ID",
+                                                                      { month: "short" }
+                                                                  ).toUpperCase()
+                                                                : "-"}
+                                                        </div>
+                                                    </div>
 
-                                </div>
+                                                    <div className="upcoming-booking-info">
+                                                        <div className="upcoming-booking-title">
+                                                            {booking.asset_type || "Booking QC"}
+                                                        </div>
 
-                            </div>
-                        </div>
+                                                        <div className="upcoming-booking-meta">
+                                                            <span>
+                                                                <i className="bi bi-building me-1"></i>
+                                                                {booking.company || "-"}
+                                                            </span>
+
+                                                            <span>
+                                                                <i className="bi bi-box-seam me-1"></i>
+                                                                {formatNumber(booking.asset_count)} Unit
+                                                            </span>
+
+                                                            <span>
+                                                                <i className="bi bi-person me-1"></i>
+                                                                {booking.requester || "-"}
+                                                            </span>
+
+                                                            {booking.location && (
+                                                                <span>
+                                                                    <i className="bi bi-geo-alt me-1"></i>
+                                                                    {booking.location}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="upcoming-booking-date-text">
+                                                            <i className="bi bi-calendar3 me-1"></i>
+                                                            {formattedDate}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="upcoming-booking-action">
+                                                        {hasBatch ? (
+                                                            <a
+                                                                href={`/batch/${booking.batch_id}`}
+                                                                className="btn btn-sm btn-success"
+                                                            >
+                                                                <i className="bi bi-box-seam me-1"></i>
+                                                                Lihat Batch
+                                                            </a>
+                                                        ) : hasExcel ? (
+                                                            <form
+                                                                action="/batch/run-booking"
+                                                                method="POST"
+                                                                className="d-inline"
+                                                            >
+                                                                <input
+                                                                    type="hidden"
+                                                                    name="booking_id"
+                                                                    value={booking.id}
+                                                                />
+
+                                                                <button
+                                                                    type="submit"
+                                                                    className="btn btn-sm btn-primary"
+                                                                >
+                                                                    <i className="bi bi-box-arrow-in-right me-1"></i>
+                                                                    Buka Booking
+                                                                </button>
+                                                            </form>
+                                                        ) : (
+                                                            <a
+                                                                href={`/batch?booking_id=${booking.id}`}
+                                                                className="btn btn-sm btn-outline-primary"
+                                                            >
+                                                                <i className="bi bi-upload me-1"></i>
+                                                                Upload Excel
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {upcomingTotalPages > 1 && (
+                                        <div className="upcoming-booking-pagination">
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-primary"
+                                                onClick={() =>
+                                                    setUpcomingPage(prev =>
+                                                        Math.max(1, prev - 1)
+                                                    )
+                                                }
+                                                disabled={safeUpcomingPage === 1}
+                                                aria-label="Booking sebelumnya"
+                                            >
+                                                <i className="bi bi-chevron-left"></i>
+                                            </button>
+
+                                            <span className="upcoming-booking-page-info">
+                                                Halaman {safeUpcomingPage} dari {upcomingTotalPages}
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-primary"
+                                                onClick={() =>
+                                                    setUpcomingPage(prev =>
+                                                        Math.min(upcomingTotalPages, prev + 1)
+                                                    )
+                                                }
+                                                disabled={safeUpcomingPage === upcomingTotalPages}
+                                                aria-label="Booking berikutnya"
+                                            >
+                                                <i className="bi bi-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                    )}
+                                </section>
+                            )}
+
+
                     </>
                 )}
 

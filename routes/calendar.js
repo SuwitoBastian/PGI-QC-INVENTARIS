@@ -2,6 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
+const upload = require("../config/upload");
+
 const calendarController =
     require("../controllers/calendarController");
 
@@ -39,6 +41,18 @@ router.post(
 router.put(
     "/:id",
     calendarController.update
+);
+
+
+// UPLOAD EXCEL BOOKING
+// POST /api/calendar/1/excel
+//
+// Excel hanya disimpan sebagai preparation.
+// Belum membuat batch.
+router.post(
+    "/:id/excel",
+    upload.single("excel"),
+    calendarController.uploadExcel
 );
 
 

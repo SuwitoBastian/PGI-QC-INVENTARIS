@@ -423,11 +423,42 @@ function CalendarCell({ date, currentMonth, bookings, onClick }) {
                 {dayBookings.slice(0,3).map(item => (
                     <div
                         key={item.id}
-                        className={`calendar-event ${STATUS_CLASS[item.status]||""} company-${String(item.company || "").toLowerCase()}`}
+                       className={`calendar-event ${
+                        item.status === "CANCELLED"
+                            ? "cancelled"
+                            : item.batch_status === "FINISHED"
+                                ? "completed"
+                                : STATUS_CLASS[item.status] || ""
+                    } company-${String(item.company || "").toLowerCase()}`}
+                     style={
+                        item.status === "CANCELLED"
+                            ? {
+                                background: "#fff1f3",
+                                color: "#b42318",
+                                borderLeft: "3px solid #f04438",
+                                textDecoration: "none"
+                            }
+                            : undefined
+                    }
                         title={`${item.company} - ${item.requester||"-"}`}
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        onClick(item);
+                    }}
                     >
-                        <span className="event-company">{item.company}</span>
-                        <span className="event-text">{item.asset_type||"Booking QC"}</span>
+                        <span className="event-company">
+                            {item.company}
+                        </span>
+
+                        <span className="event-text">
+                            {item.asset_type || "Booking QC"}
+                        </span>
+
+                        {item.batch_status === "FINISHED" && (
+                            <span className="event-completed">
+                                Selesai
+                            </span>
+                        )}
                     </div>
                 ))}
 
@@ -496,12 +527,26 @@ function Calendar({
                 <div className="calendar-legend">
 
                     <span>
-                        <i className="legend-dot confirmed"></i>
+                        <i
+                            className="legend-dot"
+                            style={{ background: "#f59e0b" }}
+                        ></i>
                         Terjadwal
                     </span>
 
                     <span>
-                        <i className="legend-dot cancelled"></i>
+                        <i
+                            className="legend-dot"
+                            style={{ background: "#10b981" }}
+                        ></i>
+                        Selesai
+                    </span>
+
+                    <span>
+                        <i
+                            className="legend-dot"
+                            style={{ background: "#ef4444" }}
+                        ></i>
                         Dibatalkan
                     </span>
 
@@ -549,12 +594,33 @@ function BookingModal({
 
     const isEdit = mode === "edit";
 
+    const assetCount =
+        Number(form.asset_count);
+
+    const assetCountInvalid =
+        !Number.isInteger(assetCount) ||
+        assetCount < 1 ||
+        assetCount > 50;
+
+    const assetCountOverLimit =
+        Number.isFinite(assetCount) &&
+        assetCount > 50;
+
+    const bookingFormInvalid =
+    !form.asset_type ||
+    !form.asset_count ||
+    !Number.isInteger(assetCount) ||
+    assetCount < 1 ||
+    assetCount > 50 ||
+    !String(form.requester || "").trim();
+
     function updateField(field, value) {
         setForm(prev => ({
             ...prev,
             [field]: value
         }));
     }
+
 
     return (
         <div className="modal-backdrop-custom">
@@ -564,26 +630,34 @@ function BookingModal({
                 <div className="modal-header-custom">
 
                     <div>
+
                         <div className="modal-title-custom">
+
                             {isEdit
                                 ? "Edit Orderan"
                                 : "Tambah Orderan"
                             }
+
                         </div>
 
                         <div className="modal-subtitle-custom">
                             Isi detail booking QC
                         </div>
+
                     </div>
 
+
                     <button
+                        type="button"
                         className="modal-close-btn"
                         onClick={onClose}
+                        disabled={saving}
                     >
                         <i className="bi bi-x-lg"></i>
                     </button>
 
                 </div>
+
 
                 <form onSubmit={onSubmit}>
 
@@ -609,6 +683,7 @@ function BookingModal({
 
                             </div>
 
+
                             <div className="form-group">
 
                                 <label>
@@ -632,6 +707,7 @@ function BookingModal({
 
                         </div>
 
+
                         <div className="form-row">
 
                             <div className="form-group">
@@ -648,7 +724,9 @@ function BookingModal({
                                             e.target.value
                                         )
                                     }
+                                    required
                                 >
+
                                     <option value="">
                                         Pilih jenis asset
                                     </option>
@@ -668,9 +746,11 @@ function BookingModal({
                                     <option value="Lainnya">
                                         Lainnya
                                     </option>
+
                                 </select>
 
                             </div>
+
 
                             <div className="form-group">
 
@@ -680,7 +760,8 @@ function BookingModal({
 
                                 <input
                                     type="number"
-                                    min="0"
+                                    min="1"
+                                    max="50"
                                     value={form.asset_count}
                                     onChange={(e) =>
                                         updateField(
@@ -689,11 +770,53 @@ function BookingModal({
                                         )
                                     }
                                     placeholder="Contoh: 25"
+                                    required
+                                    style={{
+                                        borderColor:
+                                            assetCountOverLimit
+                                                ? "#dc3545"
+                                                : undefined,
+                                        color:
+                                            assetCountOverLimit
+                                                ? "#dc3545"
+                                                : undefined
+                                    }}
                                 />
+
+                                {assetCountOverLimit && (
+                                    <div
+                                        style={{
+                                            color: "#dc3545",
+                                            fontSize: "12px",
+                                            marginTop: "5px",
+                                            fontWeight: "600"
+                                        }}
+                                    >
+                                        <i className="bi bi-exclamation-circle me-1"></i>
+                                        Jumlah aset maksimal 50 unit.
+                                    </div>
+                                )}
+
+                                {!assetCountOverLimit &&
+                                    form.asset_count !== "" &&
+                                    assetCount < 1 && (
+                                        <div
+                                            style={{
+                                                color: "#dc3545",
+                                                fontSize: "12px",
+                                                marginTop: "5px",
+                                                fontWeight: "600"
+                                            }}
+                                        >
+                                            <i className="bi bi-exclamation-circle me-1"></i>
+                                            Jumlah aset minimal 1 unit.
+                                        </div>
+                                    )}
 
                             </div>
 
                         </div>
+
 
                         <div className="form-row">
 
@@ -717,6 +840,7 @@ function BookingModal({
 
                             </div>
 
+
                             <div className="form-group">
 
                                 <label>
@@ -733,6 +857,7 @@ function BookingModal({
 
                         </div>
 
+
                         <div className="form-group">
 
                             <label>
@@ -748,6 +873,7 @@ function BookingModal({
                                     )
                                 }
                             >
+
                                 <option value="CONFIRMED">
                                     Terjadwal
                                 </option>
@@ -755,9 +881,11 @@ function BookingModal({
                                 <option value="CANCELLED">
                                     Dibatalkan
                                 </option>
+
                             </select>
 
                         </div>
+
 
                         <div className="form-group">
 
@@ -781,6 +909,7 @@ function BookingModal({
 
                     </div>
 
+
                     <div className="modal-footer-custom">
 
                         <button
@@ -792,25 +921,36 @@ function BookingModal({
                             Batal
                         </button>
 
+
                         <button
                             type="submit"
                             className="btn-primary-custom"
-                            disabled={saving}
+                            disabled={
+                                saving ||
+                                bookingFormInvalid
+                            }
                         >
+
                             {saving ? (
+
                                 <>
                                     <span className="spinner-border spinner-border-sm"></span>
                                     Menyimpan...
                                 </>
+
                             ) : (
+
                                 <>
                                     <i className="bi bi-check-lg"></i>
+
                                     {isEdit
                                         ? "Simpan Perubahan"
                                         : "Simpan Booking"
                                     }
                                 </>
+
                             )}
+
                         </button>
 
                     </div>
@@ -823,12 +963,261 @@ function BookingModal({
     );
 }
 
+function BookingExcelSection({
+    booking,
+    company,
+    onUploaded,
+    onToast
+}) {
+    const [uploading, setUploading] = useState(false);
+
+    const canManage =
+        booking &&
+        booking.company === company;
+
+    const hasExcel =
+        Boolean(booking?.excel_path);
+
+    const hasBatch =
+        Boolean(booking?.batch_id);
+
+    async function handleUpload(e) {
+        const file =
+            e.target.files?.[0];
+
+        if (!file) return;
+
+        const extension =
+            file.name
+                .toLowerCase()
+                .split(".")
+                .pop();
+
+        if (!["xlsx", "xls"].includes(extension)) {
+            onToast(
+                "File harus berformat .xlsx atau .xls.",
+                "warning",
+                "Format File Tidak Valid"
+            );
+
+            e.target.value = "";
+            return;
+        }
+
+        setUploading(true);
+
+        try {
+            const formData =
+                new FormData();
+
+            formData.append(
+                "excel",
+                file
+            );
+
+            const response =
+                await fetch(
+                    `/api/calendar/${booking.id}/excel`,
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message ||
+                    "Gagal mengupload file Excel."
+                );
+            }
+
+            onToast(
+                "File Excel berhasil disimpan sebagai preparation.",
+                "success",
+                "Upload Berhasil"
+            );
+
+            if (onUploaded) {
+                await onUploaded(
+                    data.booking
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Upload Excel error:",
+                error
+            );
+
+            onToast(
+                error.message ||
+                "Gagal mengupload file Excel.",
+                "error",
+                "Upload Gagal"
+            );
+
+        } finally {
+
+            setUploading(false);
+
+            e.target.value = "";
+
+        }
+    }
+
+    return (
+        <div className="booking-excel-section">
+
+            <div className="booking-excel-header">
+
+                <div>
+                    <div className="booking-excel-title">
+                        <i className="bi bi-file-earmark-excel"></i>
+                        File Excel
+                    </div>
+
+                    <div className="booking-excel-subtitle">
+                        File preparation untuk proses QC Inventaris
+                    </div>
+                </div>
+
+            </div>
+
+
+            {hasExcel ? (
+
+                <div className="booking-excel-file">
+
+                    <div className="booking-excel-file-icon">
+                        <i className="bi bi-file-earmark-spreadsheet"></i>
+                    </div>
+
+                    <div className="booking-excel-file-info">
+
+                        <strong>
+                            {booking.excel_original_name ||
+                                "File Excel"}
+                        </strong>
+
+                        <span>
+                            File Excel sudah tersedia
+                        </span>
+
+                    </div>
+
+                    {canManage &&
+                        booking.status !== "CANCELLED" &&
+                        !hasBatch && (
+                            <label className="booking-excel-upload-again">
+
+                                <input
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    onChange={handleUpload}
+                                    disabled={uploading}
+                                    hidden
+                                />
+
+                                {uploading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm"></span>
+                                        Upload...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="bi bi-arrow-repeat"></i>
+                                        Ganti File
+                                    </>
+                                )}
+
+                            </label>
+                        )}
+
+                </div>
+
+            ) : (
+
+                canManage &&
+                booking.status !== "CANCELLED" && (
+
+                    <label className="booking-excel-upload">
+
+                        <input
+                            type="file"
+                            accept=".xlsx,.xls"
+                            onChange={handleUpload}
+                            disabled={uploading}
+                            hidden
+                        />
+
+                        <i className="bi bi-cloud-arrow-up"></i>
+
+                        <div>
+                            <strong>
+                                {uploading
+                                    ? "Mengupload..."
+                                    : "Upload File Excel"}
+                            </strong>
+
+                            <span>
+                                Format .xlsx atau .xls
+                            </span>
+                        </div>
+
+                    </label>
+
+                )
+
+            )}
+
+
+            {hasBatch && (
+                <div className="booking-batch-info">
+
+                    <div className="booking-batch-icon">
+                        <i className="bi bi-box-seam"></i>
+                    </div>
+
+                    <div className="booking-batch-text">
+
+                        <strong>
+                            Batch sudah dibuat
+                        </strong>
+
+                        <span>
+                            {booking.batch_code ||
+                                `Batch #${booking.batch_id}`}
+                        </span>
+
+                    </div>
+
+                    <a
+                        href={`/batch/${booking.batch_id}`}
+                        className="booking-batch-button"
+                    >
+                        <i className="bi bi-box-arrow-up-right"></i>
+                        Lihat Batch
+                    </a>
+
+                </div>
+            )}
+
+        </div>
+    );
+}
+
 function DetailModal({
     booking,
     company,
     onClose,
     onEdit,
-    onCancel
+    onCancel,
+    onToast,
+    onUploaded
 }) {
     if (!booking) return null;
 
@@ -919,11 +1308,20 @@ function DetailModal({
 
                     </div>
 
+                    <BookingExcelSection
+                        booking={booking}
+                        company={company}
+                        onToast={onToast}
+                         onUploaded={onUploaded}
+                    />
+
                 </div>
 
                 <div className="modal-footer-custom">
 
-                    {booking.status !== "CANCELLED" && canManage && (
+                    {booking.status !== "CANCELLED" &&
+                        canManage &&
+                        !booking.batch_id && (
                         <>
                             <button
                                 className="btn-danger-custom"
@@ -973,7 +1371,11 @@ function UpcomingBookings({
     bookings,
     onOpen
 }) {
-    const today = getDateKey(new Date());
+    const today = getTodayKey();
+
+    const UPCOMING_PER_PAGE = 5;
+
+    const [currentPage, setCurrentPage] = useState(1);
 
     const upcoming = bookings
         .filter(item =>
@@ -982,8 +1384,29 @@ function UpcomingBookings({
         )
         .sort((a, b) =>
             a.booking_date.localeCompare(b.booking_date)
+        );
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(
+            upcoming.length / UPCOMING_PER_PAGE
         )
-        .slice(0, 5);
+    );
+
+    const startIndex =
+        (currentPage - 1) * UPCOMING_PER_PAGE;
+
+    const currentUpcoming =
+        upcoming.slice(
+            startIndex,
+            startIndex + UPCOMING_PER_PAGE
+        );
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
 
     return (
         <div className="upcoming-card">
@@ -991,6 +1414,7 @@ function UpcomingBookings({
             <div className="section-header">
 
                 <div>
+
                     <div className="section-title">
                         Upcoming Orderan
                     </div>
@@ -998,11 +1422,13 @@ function UpcomingBookings({
                     <div className="section-subtitle">
                         Jadwal booking terdekat
                     </div>
+
                 </div>
 
                 <i className="bi bi-calendar-event section-icon"></i>
 
             </div>
+
 
             {upcoming.length === 0 ? (
 
@@ -1018,65 +1444,130 @@ function UpcomingBookings({
 
             ) : (
 
-                <div className="upcoming-list">
+                <>
 
-                    {upcoming.map(item => (
+                    <div className="upcoming-list">
 
-                        <div
-                            key={item.id}
-                            className="upcoming-item"
-                            onClick={() => onOpen(item)}
-                        >
+                        {currentUpcoming.map(item => (
 
-                            <div className="upcoming-date">
+                            <div
+                                key={item.id}
+                                className="upcoming-item"
+                                onClick={() => onOpen(item)}
+                            >
 
-                                <strong>
-                                    {new Date(
-                                        `${item.booking_date}T00:00:00`
-                                    ).getDate()}
-                                </strong>
+                                <div className="upcoming-date">
 
-                                <span>
-                                    {MONTH_NAMES[
-                                        new Date(
+                                    <strong>
+                                        {new Date(
                                             `${item.booking_date}T00:00:00`
-                                        ).getMonth()
-                                    ].substring(0, 3)}
+                                        ).getDate()}
+                                    </strong>
+
+                                    <span>
+                                        {MONTH_NAMES[
+                                            new Date(
+                                                `${item.booking_date}T00:00:00`
+                                            ).getMonth()
+                                        ].substring(0, 3)}
+                                    </span>
+
+                                </div>
+
+
+                                <div className="upcoming-info">
+
+                                    <div className="upcoming-title">
+                                        {item.asset_type || "Booking QC"}
+                                    </div>
+
+                                    <div className="upcoming-meta">
+                                        {item.company}
+                                        {" • "}
+                                        {item.asset_count || 0} asset
+                                        {" • "}
+                                        {item.location || "-"}
+                                    </div>
+
+                                    <div className="upcoming-requester">
+                                        {item.requester || "Requester belum diisi"}
+                                    </div>
+
+                                </div>
+
+                                <span
+                                    className="status-badge"
+                                    style={{
+                                        background:
+                                            item.batch_status === "FINISHED"
+                                                ? "#d1fae5"
+                                                : item.status === "CANCELLED"
+                                                    ? "#fee2e2"
+                                                    : "#fef3c7",
+                                        color:
+                                            item.batch_status === "FINISHED"
+                                                ? "#047857"
+                                                : item.status === "CANCELLED"
+                                                    ? "#dc2626"
+                                                    : "#b45309",
+                                        textDecoration: "none"
+                                    }}
+                                >
+                                    {item.batch_status === "FINISHED"
+                                        ? "Selesai"
+                                        : item.status === "CANCELLED"
+                                            ? "Dibatalkan"
+                                            : "Terjadwal"}
                                 </span>
 
                             </div>
 
-                            <div className="upcoming-info">
+                        ))}
 
-                                <div className="upcoming-title">
-                                    {item.asset_type || "Booking QC"}
-                                </div>
+                    </div>
 
-                                <div className="upcoming-meta">
-                                    {item.company}
-                                    {" • "}
-                                    {item.asset_count || 0} asset
-                                    {" • "}
-                                    {item.location || "-"}
-                                </div>
 
-                                <div className="upcoming-requester">
-                                    {item.requester || "Requester belum diisi"}
-                                </div>
+                    {totalPages > 1 && (
 
-                            </div>
+                        <div className="upcoming-pagination">
 
-                            <span
-                                className={`status-badge ${STATUS_CLASS[item.status] || ""}`}
+                            <button
+                                type="button"
+                                className="upcoming-pagination-btn"
+                                onClick={() =>
+                                    setCurrentPage(prev =>
+                                        Math.max(1, prev - 1)
+                                    )
+                                }
+                                disabled={currentPage === 1}
                             >
-                                {STATUS_LABEL[item.status] || item.status}
+                                <i className="bi bi-chevron-left"></i>
+                            </button>
+
+
+                            <span className="upcoming-pagination-info">
+                                {currentPage} / {totalPages}
                             </span>
+
+
+                            <button
+                                type="button"
+                                className="upcoming-pagination-btn"
+                                onClick={() =>
+                                    setCurrentPage(prev =>
+                                        Math.min(totalPages, prev + 1)
+                                    )
+                                }
+                                disabled={currentPage === totalPages}
+                            >
+                                <i className="bi bi-chevron-right"></i>
+                            </button>
 
                         </div>
 
-                    ))}
+                    )}
 
-                </div>
+                </>
 
             )}
 
@@ -1279,6 +1770,14 @@ function CalendarApp() {
         } finally {
             setLoading(false);
         }
+    }
+
+    async function refreshBookingAfterUpload(updatedBooking) {
+    if (!updatedBooking) return;
+
+    setDetailBooking(updatedBooking);
+
+    await loadCalendar();
     }
 
     useEffect(() => {
@@ -1540,12 +2039,22 @@ function CalendarApp() {
     }
 
     function handleDateClick(dateKey) {
-        const date = new Date(`${dateKey}T00:00:00`);
-        const dayBookings =
-            bookings.filter(
-                item =>
-                    item.booking_date === dateKey
-            );
+
+        // Jika yang diklik adalah booking/event
+        if (
+            typeof dateKey === "object" &&
+            dateKey !== null &&
+            dateKey.id
+        ) {
+            setDetailBooking(dateKey);
+            return;
+        }
+
+    const dayBookings =
+        bookings.filter(
+            item =>
+                item.booking_date === dateKey
+        );
 
         if (dayBookings.length === 0 && isHoliday(date, dateKey)) {
             showToast(
@@ -1666,6 +2175,8 @@ function CalendarApp() {
                     openEditForm(detailBooking)
                 }
                 onCancel={handleCancel}
+                onToast={showToast}
+                onUploaded={refreshBookingAfterUpload}
             />
 
             </div>

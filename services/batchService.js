@@ -154,3 +154,91 @@ exports.getInventarisByBatch = (batchId) => {
     `).all(batchId);
 
 };
+// ==========================================
+// Hapus Batch ACTIVE
+// Reset Batch + Inventaris + Excel Booking
+// Booking tetap dipertahankan
+// ==========================================
+exports.deleteBatch = (batchId, company) => {
+
+    const batch = db.prepare(`
+        SELECT *
+        FROM batch
+        WHERE id = ?
+        AND company = ?
+    `).get(
+        batchId,
+        company
+    );
+
+    if (!batch) {
+        return {
+            success: false,
+            message: "Batch tidak ditemukan."
+        };
+    }
+
+
+    // ==========================================
+    // Hanya Batch ACTIVE
+    // ==========================================
+
+    if (batch.status !== "ACTIVE") {
+        return {
+            success: false,
+            message: "Hanya Batch ACTIVE yang dapat dihapus."
+        };
+    }
+
+
+    const transaction = db.transaction(() => {
+
+        // ==========================================
+        // Reset Booking
+        // ==========================================
+
+        if (batch.booking_id) {
+
+            db.prepare(`
+                UPDATE calendar_booking
+                SET
+                    excel_path = NULL,
+                    excel_original_name = NULL,
+                    excel_uploaded_at = NULL,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(
+                batch.booking_id
+            );
+
+        }
+
+
+        // ==========================================
+        // Hapus Batch
+        //
+        // Inventaris akan ikut terhapus karena
+        // foreign key batch_id -> batch.id
+        // menggunakan ON DELETE CASCADE.
+        // ==========================================
+
+        db.prepare(`
+            DELETE FROM batch
+            WHERE id = ?
+            AND company = ?
+        `).run(
+            batchId,
+            company
+        );
+
+    });
+
+
+    transaction();
+
+
+    return {
+        success: true,
+        batch
+    };
+};

@@ -1301,3 +1301,216 @@ body[data-theme="dark"] .swal2-popup .swal2-html-container .bg-light {
 body[data-theme="dark"] .swal2-popup .swal2-html-container strong {
     color: #f8fafc !important;
 }
+/* =========================================================
+   UPCOMING BOOKING
+   ========================================================= */
+
+.upcoming-booking-card {
+    margin-bottom: 18px;
+}
+
+.upcoming-booking-card .section-title {
+    margin-bottom: 20px;
+}
+
+.upcoming-booking-list {
+    display: grid;
+    gap: 12px;
+}
+
+.upcoming-booking-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.72);
+    transition: 0.2s ease;
+}
+
+.upcoming-booking-item:hover {
+    border-color: rgba(15, 77, 184, 0.22);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+}
+
+/* DATE */
+
+.upcoming-booking-date {
+    width: 64px;
+    min-width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--dashboard-accent-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.upcoming-booking-day {
+    font-size: 25px;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--dashboard-brand);
+}
+
+.upcoming-booking-month {
+    margin-top: 5px;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--dashboard-muted);
+}
+
+/* INFO */
+
+.upcoming-booking-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.upcoming-booking-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+.upcoming-booking-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    color: var(--dashboard-muted);
+    font-size: 12px;
+}
+
+.upcoming-booking-meta span {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.upcoming-booking-meta i,
+.upcoming-booking-date-text i {
+    color: var(--dashboard-brand);
+}
+
+.upcoming-booking-date-text {
+    margin-top: 6px;
+    color: var(--dashboard-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ACTION */
+
+.upcoming-booking-action {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.upcoming-booking-action .btn {
+    white-space: nowrap;
+}
+
+/* =========================================================
+   UPCOMING BOOKING - DARK MODE
+   ========================================================= */
+
+body[data-theme="dark"] .upcoming-booking-item {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: #334155;
+}
+
+body[data-theme="dark"] .upcoming-booking-item:hover {
+    border-color: #475569;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+
+body[data-theme="dark"] .upcoming-booking-title {
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .upcoming-booking-meta,
+body[data-theme="dark"] .upcoming-booking-date-text {
+    color: #94a3b8;
+}
+
+body[data-theme="dark"] .upcoming-booking-meta i,
+body[data-theme="dark"] .upcoming-booking-date-text i {
+    color: #60a5fa;
+}
+
+body[data-theme="dark"] .upcoming-booking-day {
+    color: #60a5fa;
+}
+
+body[data-theme="dark"] .upcoming-booking-month {
+    color: #94a3b8;
+}
+
+/* =========================================================
+   UPCOMING BOOKING - MOBILE
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .upcoming-booking-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .upcoming-booking-info {
+        flex: 1 1 calc(100% - 80px);
+    }
+
+    .upcoming-booking-action {
+        width: 100%;
+        margin-top: 2px;
+        padding-left: 80px;
+        justify-content: flex-start;
+    }
+
+    .upcoming-booking-action .btn {
+        width: 100%;
+    }
+}
+.dashboard-empty-summary-grid {
+    padding-left: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
+}@media (min-width: 992px) {
+    .dashboard-main .dashboard-empty-summary-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 0 !important;
+        box-sizing: border-box;
+    }
+
+    .dashboard-main .dashboard-empty-summary-grid > * {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+}
+/* =========================================================
+   FIX UPCOMING BOOKING HEIGHT
+   ========================================================= */
+
+.dashboard-main .upcoming-booking-card {
+    height: auto !important;
+    min-height: 0 !important;
+    align-self: flex-start;
+    box-sizing: border-box;
+}

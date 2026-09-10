@@ -28,6 +28,18 @@ router.post(
 );
 
 // ===========================
+// Jalankan Booking → Batch
+// ===========================
+router.post(
+    "/run-booking",
+    batchController.runBooking
+);
+
+router.post(
+    "/delete", 
+    batchController.deleteBatch);
+
+// ===========================
 // Detail Batch
 // ===========================
 router.get(

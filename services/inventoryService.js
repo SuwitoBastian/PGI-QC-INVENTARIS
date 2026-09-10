@@ -14,9 +14,10 @@ exports.createBatch = (batch) => {
             company,
             total_item,
             status,
-            created_at
+            created_at,
+            booking_id
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -26,7 +27,8 @@ exports.createBatch = (batch) => {
         batch.company || "PGI",
         batch.total_item,
         "ACTIVE",
-        batch.created_at
+        batch.created_at,
+        batch.booking_id || null
     );
 
     return result.lastInsertRowid;

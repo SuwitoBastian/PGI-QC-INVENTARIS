@@ -137,6 +137,16 @@ href="/css/app.css">
 
         </button>
 
+        <button
+            class="btn btn-danger ms-2"
+            id="btnDeleteBatch">
+
+            <i class="bi bi-trash3-fill me-2"></i>
+
+            Hapus Batch
+
+        </button>
+
     <% } %>
 
 <% }else{ %>
@@ -1045,6 +1055,155 @@ if (confirmClose) {
                 title: "Gagal",
 
                 text: result.message
+
+            });
+
+        }
+
+    });
+
+}
+
+</script>
+<script>
+
+const btnDeleteBatch =
+    document.getElementById("btnDeleteBatch");
+
+if (btnDeleteBatch) {
+
+    btnDeleteBatch.addEventListener("click", async () => {
+
+        const result = await Swal.fire({
+
+            icon: "warning",
+
+            title: "Hapus Batch?",
+
+            text: "Batch, seluruh inventaris, dan file Excel terkait akan dihapus.",
+
+            width: 460,
+
+            showCancelButton: true,
+
+            confirmButtonText:
+                '<i class="bi bi-trash3-fill me-2"></i>Ya, Hapus',
+
+            cancelButtonText: "Batal",
+
+            confirmButtonColor: "#dc3545",
+
+            cancelButtonColor: "#6c757d",
+
+            reverseButtons: true,
+
+            focusCancel: true
+
+        });
+
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+
+        Swal.fire({
+
+            title: "Menghapus Batch...",
+
+            text: "Mohon tunggu sebentar.",
+
+            allowOutsideClick: false,
+
+            allowEscapeKey: false,
+
+            showConfirmButton: false,
+
+            didOpen: () => {
+                Swal.showLoading();
+            }
+
+        });
+
+
+        try {
+
+            const response = await fetch(
+                "/batch/delete",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        batch_id: "<%= batch.id %>"
+                    })
+                }
+            );
+
+
+            const data = await response.json();
+
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.message ||
+                    "Gagal menghapus Batch."
+                );
+
+            }
+
+
+            await Swal.fire({
+
+                icon: "success",
+
+                title: "Batch Berhasil Dihapus",
+
+                html: `
+                    <p class="mb-2">
+                        Batch
+                        <strong>
+                            <%= batch.batch_code %>
+                        </strong>
+                        telah dihapus.
+                    </p>
+
+                    <p class="text-muted mb-0">
+                        Booking Kalender tetap tersedia
+                        dan dapat diproses kembali.
+                    </p>
+                `,
+
+                confirmButtonText: "OK",
+
+                confirmButtonColor: "#198754"
+
+            });
+
+
+            window.location.href = "/inventaris";
+
+
+        } catch (error) {
+
+            console.error(
+                "DELETE BATCH ERROR:",
+                error
+            );
+
+            Swal.fire({
+
+                icon: "error",
+
+                title: "Gagal Menghapus Batch",
+
+                text:
+                    error.message ||
+                    "Terjadi kesalahan saat menghapus Batch."
 
             });
 
