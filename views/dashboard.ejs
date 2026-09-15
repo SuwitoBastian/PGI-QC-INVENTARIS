@@ -74,6 +74,12 @@
                     : null,
             upcomingBookings: upcomingBookings || []
         }) %>;
+
+        window.__CURRENT_USER__ = <%- JSON.stringify(
+            typeof user !== "undefined" && user
+                ? user
+                : {}
+        ) %>;
     </script>
 
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>

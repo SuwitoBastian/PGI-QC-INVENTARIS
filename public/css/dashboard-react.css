@@ -1514,3 +1514,224 @@ body[data-theme="dark"] .upcoming-booking-month {
     align-self: flex-start;
     box-sizing: border-box;
 }
+/* =========================================================
+   ACCOUNT MENU
+   ========================================================= */
+
+.account-menu-wrapper {
+    position: relative;
+    flex: 0 0 auto;
+    z-index: 1100;
+}
+
+.account-menu-button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--dashboard-brand);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
+}
+
+.account-menu-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+}
+
+.account-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dashboard-accent-soft);
+    color: var(--dashboard-brand);
+    font-size: 15px;
+}
+
+/* DROPDOWN */
+
+.account-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 250px;
+    background: #fff;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+    padding: 10px;
+    z-index: 1200;
+    animation: accountDropdownIn .16s ease-out;
+}
+
+@keyframes accountDropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* USER INFO */
+
+.account-dropdown-user {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 8px 8px 10px;
+}
+
+.account-dropdown-avatar {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dashboard-accent-soft);
+    color: var(--dashboard-brand);
+    font-size: 18px;
+}
+
+.account-dropdown-info {
+    min-width: 0;
+}
+
+.account-dropdown-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-dropdown-role {
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--dashboard-muted);
+}
+
+/* DIVIDER */
+
+.account-dropdown-divider {
+    height: 1px;
+    background: var(--dashboard-border);
+    margin: 4px 2px 7px;
+}
+
+/* LOGOUT */
+
+.account-logout-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    border-radius: 10px;
+    padding: 10px 9px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #dc2626;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.account-logout-button:hover {
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.account-logout-button i {
+    font-size: 16px;
+}
+
+/* AREA LUAR DROPDOWN */
+
+.account-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1190;
+    background: transparent;
+}
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+body[data-theme="dark"] .account-menu-button {
+    background: #0f172a;
+    border-color: var(--dashboard-border);
+    color: var(--dashboard-text);
+}
+
+body[data-theme="dark"] .account-avatar {
+    background: rgba(148, 163, 184, 0.14);
+    color: #e5e7eb;
+}
+
+body[data-theme="dark"] .account-dropdown {
+    background: #111827;
+    border-color: #243041;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+}
+
+body[data-theme="dark"] .account-dropdown-name {
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .account-dropdown-role {
+    color: #94a3b8;
+}
+
+body[data-theme="dark"] .account-dropdown-divider {
+    background: #243041;
+}
+
+body[data-theme="dark"] .account-dropdown-avatar {
+    background: rgba(148, 163, 184, 0.14);
+    color: #e5e7eb;
+}
+
+body[data-theme="dark"] .account-logout-button {
+    color: #f87171;
+}
+
+body[data-theme="dark"] .account-logout-button:hover {
+    background: rgba(239, 68, 68, 0.10);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .account-dropdown {
+        position: fixed;
+        top: 74px;
+        right: 18px;
+        width: min(250px, calc(100vw - 36px));
+    }
+
+}

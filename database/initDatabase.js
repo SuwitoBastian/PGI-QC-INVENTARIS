@@ -301,6 +301,53 @@ CREATE INDEX IF NOT EXISTS idx_inventory_company
 ON inventaris(company);
 `).run();
 
+// =====================
+// TABEL USERS
+// =====================
+
+db.prepare(`
+CREATE TABLE IF NOT EXISTS users (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    username TEXT UNIQUE NOT NULL,
+
+    password_hash TEXT NOT NULL,
+
+    role TEXT NOT NULL,
+
+    company TEXT NOT NULL,
+
+    display_name TEXT NOT NULL,
+
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+);
+`).run();
+
+
+// =====================
+// INDEX USERS
+// =====================
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_users_username
+ON users(username);
+`).run();
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_users_company
+ON users(company);
+`).run();
+
+db.prepare(`
+CREATE INDEX IF NOT EXISTS idx_users_status
+ON users(status);
+`).run();
 
 console.log("");
 console.log("==================================");

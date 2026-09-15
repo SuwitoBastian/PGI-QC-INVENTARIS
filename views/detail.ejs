@@ -1035,7 +1035,43 @@ if (item.last_qc) {
 
     <% } %>
 
+    <!-- Handover Required -->
 
+    <% if(error === "handover-required"){ %>
+
+    <div
+        id="liveToast"
+        class="toast toast-warning border-0 shadow-lg">
+
+        <div class="d-flex">
+
+            <div class="toast-body">
+
+                <div class="fw-bold mb-1">
+
+                    <i class="bi bi-shield-exclamation me-2"></i>
+
+                    Tanda Terima Belum Disetujui
+
+                </div>
+
+                Tanda Terima <strong>GA → IT</strong> belum
+                disetujui oleh IT. QC belum dapat dilakukan.
+
+            </div>
+
+            <button
+                type="button"
+                class="btn-close me-3 mt-3"
+                data-bs-dismiss="toast"
+                aria-label="Close">
+            </button>
+
+        </div>
+
+    </div>
+
+    <% } %>
 
     <!-- Already QC -->
 

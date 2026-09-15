@@ -510,17 +510,18 @@ exports.exportExcel = async (company, res) => {
     res.end();
 
 };
-exports.exportBatch = async (batchId, res) => {
+exports.exportBatch = async (batchId, company, res) => {
 
     // ===============================
-    // Ambil Batch
+    // Ambil Batch Sesuai Company
     // ===============================
 
     const batch = db.prepare(`
         SELECT *
         FROM batch
         WHERE id = ?
-    `).get(batchId);
+        AND company = ?
+    `).get(batchId, company);
 
     if (!batch) {
 

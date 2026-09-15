@@ -43,6 +43,75 @@ href="/css/app.css">
 
 }
 
+    /* ==========================================
+       HANDOVER LOCK - INVENTARIS
+       ========================================== */
+
+    .inventory-card.handover-locked .card-body {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .inventory-card.handover-locked .handover-locked-content {
+        filter: grayscale(1);
+        opacity: 0.45;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .handover-lock-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.35);
+        cursor: not-allowed;
+    }
+
+    .handover-lock-message {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+    }
+
+    .handover-lock-message .lock-card {
+        max-width: 430px;
+        padding: 28px 32px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid rgba(108, 117, 125, 0.25);
+        border-radius: 18px;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    .handover-lock-message .lock-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        font-size: 26px;
+    }
+
+    .handover-lock-message h4 {
+        margin-bottom: 8px;
+        color: #495057;
+        font-weight: 700;
+    }
+
+    .handover-lock-message p {
+        margin-bottom: 0;
+        color: #6c757d;
+    }
+
+
 </style>
 
 </head>
@@ -167,10 +236,12 @@ href="/css/app.css">
 
 </div>
 
-<div class="inventory-card">
+<div class="inventory-card <%= handoverLocked ? 'handover-locked' : '' %>">
 
 <div class="card-body">
     <% if(batch){ %>
+
+    <div class="handover-locked-content">
 
 <div class="batch-header">
 
@@ -525,6 +596,32 @@ class="table inventory-table-main align-middle mb-0">
     </span>
 
 </div>
+
+    </div>
+
+    <% if(handoverLocked){ %>
+
+        <div class="handover-lock-overlay"></div>
+
+        <div class="handover-lock-message">
+            <div class="lock-card">
+
+                <div class="lock-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+
+                <h4>Inventaris Terkunci</h4>
+
+                <p>
+                    Tanda Terima <strong>GA → IT</strong> belum disetujui
+                    oleh IT. Proses QC belum dapat dilakukan.
+                </p>
+
+            </div>
+        </div>
+
+    <% } %>
+
 <% } else { %>
 
 <div class="empty-batch">
@@ -566,6 +663,7 @@ class="table inventory-table-main align-middle mb-0">
 </div>
 
 </div>
+
 <div class="modal fade" id="closeBatchModal" tabindex="-1">
 
     <div class="modal-dialog modal-dialog-centered">

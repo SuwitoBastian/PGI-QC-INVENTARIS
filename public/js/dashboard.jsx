@@ -2,6 +2,8 @@ const { useMemo, useState, useEffect } = React;
 
 const dashboardData = window.__DASHBOARD_DATA__ || {};
 
+const currentUser = window.__CURRENT_USER__ || {};
+
 const upcomingBookingPaginationStyles = `
     .upcoming-booking-pagination {
         display: flex;
@@ -203,6 +205,7 @@ function DonutChart({ summary }) {
     ];
 
     const total = values.reduce((acc, item) => acc + item.value, 0) || 1;
+    const visibleValues = values.filter(item => item.value > 0);
     const radius = 74;
     const stroke = 20;
     const circumference = 2 * Math.PI * radius;
@@ -218,7 +221,7 @@ function DonutChart({ summary }) {
                     cy="105"
                     r={radius}
                 ></circle>
-                {values.map((item, index) => {
+                {visibleValues.map((item, index) => {
                     const dash = (item.value / total) * circumference;
                     const offset = -runningOffset;
                     runningOffset += dash;
@@ -254,6 +257,9 @@ function Sidebar({ data, onClose }) {
     const currentBatch = data.currentBatch;
     const importLabel = currentBatch ? "Import Tambahan" : "Import Batch Baru";
 
+    const role = String(currentUser?.role || "").trim().toUpperCase();
+    const isIT = role === "IT";
+
     return (
         <aside className="dashboard-sidebar">
             <div className="sidebar-brand">
@@ -283,23 +289,47 @@ function Sidebar({ data, onClose }) {
                 </SidebarLink>
             </nav>
 
-            <div className="sidebar-card">
-                <div className="sidebar-card-title">Pilih Perusahaan</div>
-                <form action="/company" method="POST" className="company-switcher">
-                    <input type="hidden" name="company" value="PGI" />
-                    <button type="submit" className={`company-option ${company === "PGI" ? "active" : ""}`}>
-                        <span>PGI - Pusat Gadai</span>
-                        {company === "PGI" ? <i className="bi bi-check-lg"></i> : <i className="bi bi-arrow-right"></i>}
-                    </button>
-                </form>
-                <form action="/company" method="POST" className="company-switcher">
-                    <input type="hidden" name="company" value="PEI" />
-                    <button type="submit" className={`company-option ${company === "PEI" ? "active" : ""}`}>
-                        <span>PEI - Pusat Emas</span>
-                        {company === "PEI" ? <i className="bi bi-check-lg"></i> : <i className="bi bi-arrow-right"></i>}
-                    </button>
-                </form>
-            </div>
+            {isIT && (
+                <div className="sidebar-card">
+                    <div className="sidebar-card-title">Pilih Perusahaan</div>
+
+                    <form action="/company" method="POST" className="company-switcher">
+                        <input type="hidden" name="company" value="PGI" />
+
+                        <button
+                            type="submit"
+                            className={`company-option ${
+                                company === "PGI" ? "active" : ""
+                            }`}
+                        >
+                            <span>PGI - Pusat Gadai</span>
+
+                            {company === "PGI"
+                                ? <i className="bi bi-check-lg"></i>
+                                : <i className="bi bi-arrow-right"></i>
+                            }
+                        </button>
+                    </form>
+
+                    <form action="/company" method="POST" className="company-switcher">
+                        <input type="hidden" name="company" value="PEI" />
+
+                        <button
+                            type="submit"
+                            className={`company-option ${
+                                company === "PEI" ? "active" : ""
+                            }`}
+                        >
+                            <span>PEI - Pusat Emas</span>
+
+                            {company === "PEI"
+                                ? <i className="bi bi-check-lg"></i>
+                                : <i className="bi bi-arrow-right"></i>
+                            }
+                        </button>
+                    </form>
+                </div>
+            )}
 
         </aside>
     );
@@ -328,23 +358,145 @@ function ThemeToggle() {
     );
 }
 
-function ActivityNotification() {
-    const company = String(
-        dashboardData?.company || "PGI"
-    ).toUpperCase();
+function AccountMenu() {
+    const [open, setOpen] = useState(false);
 
-    const storageKey = `activity_last_seen_id_${company}`;
+    const displayName =
+        currentUser.display_name ||
+        currentUser.displayName ||
+        "User";
+
+    const role = currentUser.role || "-";
+    const company = currentUser.company || "-";
+
+    const handleLogout = () => {
+
+        const form =
+            document.createElement("form");
+
+        form.method = "POST";
+
+        form.action = "/logout";
+
+        document.body.appendChild(form);
+
+        form.submit();
+
+    };
+
+    return (
+        <div className="account-menu-wrapper">
+            <button
+                type="button"
+                className="account-menu-button"
+                onClick={() => setOpen(prev => !prev)}
+                aria-label="Menu akun"
+                aria-expanded={open}
+            >
+                <span className="account-avatar">
+                    <i className="bi bi-person-fill"></i>
+                </span>
+            </button>
+
+            {open && (
+                <>
+                    <div
+                        className="account-menu-overlay"
+                        onClick={() => setOpen(false)}
+                    ></div>
+
+                    <div className="account-dropdown">
+                        <div className="account-dropdown-user">
+                            <div className="account-dropdown-avatar">
+                                <i className="bi bi-person-fill"></i>
+                            </div>
+
+                            <div className="account-dropdown-info">
+                                <div className="account-dropdown-name">
+                                    {displayName}
+                                </div>
+
+                                <div className="account-dropdown-role">
+                                    {role} · {company}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="account-dropdown-divider"></div>
+
+                        <button
+                            type="button"
+                            className="account-logout-button"
+                            onClick={handleLogout}
+                        >
+                            <i className="bi bi-box-arrow-right"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
+function ActivityNotification() {
+    const userRole = String(
+        currentUser?.role || ""
+    )
+        .trim()
+        .toUpperCase();
+
+    const isIT = userRole === "IT";
+
+    // =====================================
+    // COMPANY
+    // =====================================
+
+    const userCompany = String(
+        dashboardData?.company || "PGI"
+    )
+        .trim()
+        .toUpperCase();
+
+    // IT punya pilihan:
+    // ALL / PGI / PEI
+    //
+    // GA tetap terkunci ke company masing-masing.
+    const [companyFilter, setCompanyFilter] = useState(
+        isIT ? "ALL" : userCompany
+    );
+
+    const effectiveCompany = isIT
+        ? companyFilter
+        : userCompany;
+
+
+    // =====================================
+    // STORAGE KEY
+    // =====================================
+
+    const storageKey =
+        `activity_last_seen_id_${effectiveCompany}`;
+
+
+    // =====================================
+    // STATE
+    // =====================================
 
     const [activities, setActivities] = useState([]);
     const [open, setOpen] = useState(false);
     const [closing, setClosing] = useState(false);
 
-    // Simpan last seen dalam ref supaya polling
-    // selalu menggunakan nilai terbaru.
     const lastSeenRef = React.useRef(null);
 
+
+    // =====================================
+    // LAST SEEN
+    // =====================================
+
     const [lastSeenId, setLastSeenId] = useState(() => {
-        const saved = localStorage.getItem(storageKey);
+        const saved =
+            localStorage.getItem(storageKey);
 
         if (saved === null) {
             return null;
@@ -352,8 +504,11 @@ function ActivityNotification() {
 
         const value = Number(saved);
 
-        return Number.isFinite(value) ? value : null;
+        return Number.isFinite(value)
+            ? value
+            : null;
     });
+
 
     // =====================================
     // FETCH ACTIVITY
@@ -361,52 +516,91 @@ function ActivityNotification() {
 
     const fetchActivities = async () => {
         try {
-            const response = await fetch(
-                "/api/activity?limit=10",
-                {
+
+            let url =
+                "/api/activity?limit=10";
+
+            // IT:
+            // ALL  → semua company
+            // PGI  → PGI saja
+            // PEI  → PEI saja
+            if (
+                isIT &&
+                (
+                    companyFilter === "PGI" ||
+                    companyFilter === "PEI"
+                )
+            ) {
+                url +=
+                    `&company=${encodeURIComponent(
+                        companyFilter
+                    )}`;
+            }
+
+
+            const response =
+                await fetch(url, {
                     cache: "no-store"
-                }
-            );
+                });
+
 
             if (!response.ok) {
                 return;
             }
 
-            const result = await response.json();
+
+            const result =
+                await response.json();
+
 
             if (
                 !result.success ||
-                !Array.isArray(result.activities)
+                !Array.isArray(
+                    result.activities
+                )
             ) {
                 return;
             }
 
-            const latestActivities = result.activities
-                .slice(0, 10)
-                .sort(
-                    (a, b) =>
-                        Number(b.id) - Number(a.id)
-                );
 
-            setActivities(latestActivities);
+            const latestActivities =
+                result.activities
+                    .slice(0, 10)
+                    .sort(
+                        (a, b) =>
+                            Number(b.id) -
+                            Number(a.id)
+                    );
+
+
+            setActivities(
+                latestActivities
+            );
+
 
             // =====================================
             // FIRST VISIT
             // =====================================
-            // Kalau belum pernah membuka notification
-            // untuk company ini, activity lama tidak
-            // dihitung sebagai unread.
+
             if (
                 lastSeenRef.current === null &&
                 latestActivities.length > 0
             ) {
-                const latestId = Number(
-                    latestActivities[0].id
+
+                const latestId =
+                    Number(
+                        latestActivities[0].id
+                    );
+
+
+                lastSeenRef.current =
+                    latestId;
+
+
+                setLastSeenId(
+                    latestId
                 );
 
-                lastSeenRef.current = latestId;
-
-                setLastSeenId(latestId);
 
                 localStorage.setItem(
                     storageKey,
@@ -415,49 +609,78 @@ function ActivityNotification() {
             }
 
         } catch (error) {
+
             console.error(
                 "Gagal mengambil activity notification:",
                 error
             );
+
         }
     };
 
+
     // =====================================
-    // INITIAL LOAD + POLLING 10 DETIK
+    // FILTER CHANGE
     // =====================================
 
     useEffect(() => {
+
+        // Reset activity ketika filter berubah
+        setActivities([]);
+
         setOpen(false);
 
         const saved =
-            localStorage.getItem(storageKey);
+            localStorage.getItem(
+                `activity_last_seen_id_${effectiveCompany}`
+            );
+
 
         let initialLastSeen = null;
 
-        if (saved !== null) {
-            const value = Number(saved);
 
-            if (Number.isFinite(value)) {
-                initialLastSeen = value;
+        if (saved !== null) {
+
+            const value =
+                Number(saved);
+
+            if (
+                Number.isFinite(value)
+            ) {
+                initialLastSeen =
+                    value;
             }
         }
 
-        lastSeenRef.current = initialLastSeen;
 
-        setLastSeenId(initialLastSeen);
+        lastSeenRef.current =
+            initialLastSeen;
+
+        setLastSeenId(
+            initialLastSeen
+        );
+
 
         // Fetch pertama
         fetchActivities();
 
+
         // Polling setiap 10 detik
-        const interval = setInterval(() => {
-            fetchActivities();
-        }, 10000);
+        const interval =
+            setInterval(() => {
+                fetchActivities();
+            }, 10000);
+
 
         return () => {
             clearInterval(interval);
         };
-    }, [company]);
+
+    }, [
+        companyFilter,
+        effectiveCompany
+    ]);
+
 
     // =====================================
     // UNREAD COUNT
@@ -467,34 +690,43 @@ function ActivityNotification() {
         lastSeenId === null
             ? 0
             : activities.filter(
-                  activity =>
-                      Number(activity.id) >
-                      lastSeenId
-              ).length;
+                activity =>
+                    Number(activity.id) >
+                    lastSeenId
+            ).length;
+
 
     // =====================================
     // OPEN / MARK AS SEEN
     // =====================================
 
     const handleOpen = () => {
-        const nextOpen = !open;
+
+        const nextOpen =
+            !open;
 
         setOpen(nextOpen);
 
-        // Hanya ketika panel dibuka,
-        // activity yang sedang tampil dianggap
-        // sudah dilihat.
+
         if (
             nextOpen &&
             activities.length > 0
         ) {
-            const latestId = Number(
-                activities[0].id
+
+            const latestId =
+                Number(
+                    activities[0].id
+                );
+
+
+            lastSeenRef.current =
+                latestId;
+
+
+            setLastSeenId(
+                latestId
             );
 
-            lastSeenRef.current = latestId;
-
-            setLastSeenId(latestId);
 
             localStorage.setItem(
                 storageKey,
@@ -503,56 +735,93 @@ function ActivityNotification() {
         }
     };
 
+
     // =====================================
-    // CLOSE ONLY
+    // CLOSE
     // =====================================
 
     const handleClose = () => {
-        if (!open || closing) return;
+
+        if (
+            !open ||
+            closing
+        ) {
+            return;
+        }
+
 
         setClosing(true);
 
+
         setTimeout(() => {
+
             setOpen(false);
+
             setClosing(false);
+
         }, 160);
     };
+
 
     // =====================================
     // FORMAT TIME
     // =====================================
 
     const formatTime = dateString => {
+
         if (!dateString) {
             return "-";
         }
 
-        const normalized = String(dateString)
-            .replace(" ", "T");
 
-        // created_at dari SQLite = UTC
-        const date = new Date(`${normalized}Z`);
+        const normalized =
+            String(dateString)
+                .replace(" ", "T");
 
-        if (Number.isNaN(date.getTime())) {
+
+        // created_at SQLite = UTC
+        const date =
+            new Date(
+                `${normalized}Z`
+            );
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
             return dateString;
         }
 
-        return date.toLocaleString("id-ID", {
-            timeZone: "Asia/Jakarta",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        });
+
+        return date.toLocaleString(
+            "id-ID",
+            {
+                timeZone:
+                    "Asia/Jakarta",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
     };
+
 
     // =====================================
     // ICON ACTIVITY
     // =====================================
 
     const getIcon = type => {
+
         switch (type) {
+
+            // LOGIN
+            case "LOGIN":
+                return "bi bi-box-arrow-in-right text-success";
+
 
             // QC
             case "QC_DONE":
@@ -564,6 +833,7 @@ function ActivityNotification() {
             case "QC_RESET":
                 return "bi bi-arrow-counterclockwise text-warning";
 
+
             // BATCH
             case "BATCH_CREATED":
                 return "bi bi-plus-circle-fill text-primary";
@@ -573,6 +843,7 @@ function ActivityNotification() {
 
             case "BATCH_CLOSED":
                 return "bi bi-box-arrow-down text-secondary";
+
 
             // BOOKING
             case "BOOKING_CREATED":
@@ -587,10 +858,36 @@ function ActivityNotification() {
             case "BOOKING_DELETED":
                 return "bi bi-trash-fill text-danger";
 
+
+            // HANDOVER
+            case "GA_TO_IT_CREATED":
+                return "bi bi-arrow-right-circle-fill text-primary";
+
+            case "GA_TO_IT_APPROVED":
+                return "bi bi-check2-circle text-success";
+
+            case "IT_TO_GA_CREATED":
+                return "bi bi-arrow-left-circle-fill text-primary";
+
+            case "IT_TO_GA_APPROVED":
+                return "bi bi-check2-circle text-success";
+
+
+            // PREPARATION
+            case "PREPARATION_EXCEL_UPLOADED":
+                return "bi bi-file-earmark-excel-fill text-success";
+
+
+            // BOOKING VIEW
+            case "BOOKING_VIEWED":
+                return "bi bi-eye-fill text-info";
+
+
             default:
                 return "bi bi-info-circle-fill text-primary";
         }
     };
+
 
     // =====================================
     // RENDER
@@ -620,34 +917,48 @@ function ActivityNotification() {
                 )}
             </button>
 
+
             {/* =====================================
                 PANEL
             ===================================== */}
 
             {open && (
                 <>
-                    {/* AREA LUAR */}
                     <div
                         className="activity-overlay"
                         onClick={handleClose}
                     ></div>
 
-                    {/* PANEL NOTIFICATION */}
-                    <div className={`activity-panel ${closing ? "closing" : ""}`}>
+
+                    <div
+                        className={`activity-panel ${
+                            closing
+                                ? "closing"
+                                : ""
+                        }`}
+                    >
 
                         {/* HEADER */}
+
                         <div className="activity-panel-header">
 
                             <div>
+
                                 <div className="activity-panel-title">
                                     Notifikasi
                                 </div>
 
+
                                 <div className="activity-panel-subtitle">
                                     Aktivitas terbaru{" "}
-                                    {company}
+
+                                    {isIT
+                                        ? "Staff IT"
+                                        : effectiveCompany}
                                 </div>
+
                             </div>
+
 
                             <button
                                 type="button"
@@ -660,7 +971,53 @@ function ActivityNotification() {
 
                         </div>
 
-                        {/* LIST */}
+
+                        {/* =====================================
+                            COMPANY FILTER — KHUSUS IT
+                        ===================================== */}
+
+                        {isIT && (
+                            <div
+                                style={{
+                                    padding:
+                                        "10px 16px",
+                                    borderBottom:
+                                        "1px solid rgba(148,163,184,.18)"
+                                }}
+                            >
+
+                                <select
+                                    value={
+                                        companyFilter
+                                    }
+                                    onChange={e =>
+                                        setCompanyFilter(
+                                            e.target.value
+                                        )
+                                    }
+                                    className="form-select form-select-sm"
+                                >
+                                    <option value="ALL">
+                                        Semua Perusahaan
+                                    </option>
+
+                                    <option value="PGI">
+                                        PGI - Pusat Gadai
+                                    </option>
+
+                                    <option value="PEI">
+                                        PEI - Pusat Emas
+                                    </option>
+                                </select>
+
+                            </div>
+                        )}
+
+
+                        {/* =====================================
+                            LIST
+                        ===================================== */}
+
                         <div className="activity-list">
 
                             {activities.length === 0 ? (
@@ -685,7 +1042,17 @@ function ActivityNotification() {
                                             Number(
                                                 activity.id
                                             ) >
-                                                lastSeenId;
+                                            lastSeenId;
+
+
+                                        const activityCompany =
+                                            String(
+                                                activity.company ||
+                                                effectiveCompany
+                                            )
+                                                .trim()
+                                                .toUpperCase();
+
 
                                         return (
                                             <div
@@ -700,15 +1067,22 @@ function ActivityNotification() {
                                             >
 
                                                 {/* ICON */}
+
                                                 <div className="activity-icon">
+
                                                     <i
-                                                        className={getIcon(
-                                                            activity.type
-                                                        )}
+                                                        className={
+                                                            getIcon(
+                                                                activity.type
+                                                            )
+                                                        }
                                                     ></i>
+
                                                 </div>
 
+
                                                 {/* CONTENT */}
+
                                                 <div className="activity-content">
 
                                                     <div className="activity-title-row">
@@ -720,15 +1094,17 @@ function ActivityNotification() {
                                                             }
                                                         </div>
 
+
                                                         <span
-                                                            className={`activity-company ${company.toLowerCase()}`}
+                                                            className={`activity-company ${activityCompany.toLowerCase()}`}
                                                         >
                                                             {
-                                                                company
+                                                                activityCompany
                                                             }
                                                         </span>
 
                                                     </div>
+
 
                                                     <div className="activity-message">
                                                         {
@@ -737,10 +1113,13 @@ function ActivityNotification() {
                                                         }
                                                     </div>
 
+
                                                     <div className="activity-time">
-                                                        {formatTime(
-                                                            activity.created_at
-                                                        )}
+                                                        {
+                                                            formatTime(
+                                                                activity.created_at
+                                                            )
+                                                        }
                                                     </div>
 
                                                 </div>
@@ -882,6 +1261,8 @@ function DashboardApp() {
                             <div className="hero-actions">
 
                                 <ActivityNotification />
+
+                                <AccountMenu />
 
                                 <ThemeToggle />
 
@@ -1353,6 +1734,8 @@ function DashboardApp() {
 
                                 <ActivityNotification />
 
+                                <AccountMenu />
+
                                 <ThemeToggle />
 
                                 <div className="hero-chip">
@@ -1404,24 +1787,6 @@ function DashboardApp() {
 
                                     <div className="dashboard-no-batch-icon">
                                         <i className="bi bi-exclamation-triangle-fill"></i>
-                                    </div>
-
-                                    <div className="dashboard-no-batch-actions">
-                                        <a
-                                            href="/batch"
-                                            className="btn btn-primary btn-sm"
-                                        >
-                                            <i className="bi bi-upload me-1"></i>
-                                            Import Batch
-                                        </a>
-
-                                        <a
-                                            href="/inventaris"
-                                            className="btn btn-outline-secondary btn-sm"
-                                        >
-                                            <i className="bi bi-box-seam me-1"></i>
-                                            Inventaris
-                                        </a>
                                     </div>
 
                                 </div>

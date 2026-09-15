@@ -1,5 +1,22 @@
 const inventoryService = require("../services/inventoryService");
 const activityService = require("../services/activityService");
+const handoverService = require("../services/handoverService");
+
+// ===========================
+// Helper
+// ===========================
+
+function getCompany(req) {
+    return String(req.company || "").trim().toUpperCase();
+}
+
+function isValidCompany(company) {
+    return ["PGI", "PEI"].includes(company);
+}
+
+function isAuthorizedItem(item, company) {
+    return item && item.company === company;
+}
 
 
 // ===========================
@@ -8,60 +25,60 @@ const activityService = require("../services/activityService");
 
 exports.index = (req, res) => {
 
-    const batch =
-        inventoryService.getActiveBatch(
-            req.company
-        );
+    const company = getCompany(req);
 
-
-    if (!batch) {
-
-        return res.redirect("/");
-
+    if (!isValidCompany(company)) {
+        return res.status(403).send("Company tidak valid.");
     }
 
+    const batch = inventoryService.getActiveBatch(company);
 
-    const keyword =
-        req.query.keyword || "";
+    if (!batch) {
+        return res.redirect("/");
+    }
 
+    const keyword = req.query.keyword || "";
+    const status = req.query.status || "";
+    const jenis = req.query.jenis || "";
 
-    const status =
-        req.query.status || "";
+    const items = inventoryService.searchInventaris(
+        batch.id,
+        keyword,
+        status,
+        jenis
+    );
 
+    // ==========================================
+    // HANDOVER GATE
+    // Company wajib memiliki GA → IT APPROVED
+    // ==========================================
 
-    const jenis =
-        req.query.jenis || "";
+    let handoverLocked = false;
 
+    if (batch.company === company) {
 
-    const items =
-        inventoryService.searchInventaris(
+        const gaToItApproved =
+            handoverService.isGaToItApproved(batch.id);
 
-            batch.id,
+        handoverLocked = !gaToItApproved;
+    }
 
-            keyword,
-
-            status,
-
-            jenis
-
-        );
-
-
-    res.render("inventaris", {
+    return res.render("inventaris", {
 
         batch,
-
         items,
 
         keyword,
-
         status,
-
         jenis,
 
         isHistory: false,
 
-        currentPage: "inventaris"
+        currentPage: "inventaris",
+
+        // TRUE = halaman inventaris terkunci
+        // FALSE = inventaris normal
+        handoverLocked
 
     });
 
@@ -74,22 +91,55 @@ exports.index = (req, res) => {
 
 exports.detail = (req, res) => {
 
-    const item =
-        inventoryService.getById(
-            req.params.id
-        );
+    const company = getCompany(req);
 
+    if (!isValidCompany(company)) {
+        return res.status(403).send("Company tidak valid.");
+    }
+
+    const item =
+        inventoryService.getById(req.params.id);
 
     if (!item) {
 
-        return res.send(
+        return res.status(404).send(
             "Data tidak ditemukan"
         );
 
     }
 
+    // =====================================
+    // COMPANY AUTHORIZATION
+    // User hanya boleh melihat inventory
+    // milik company yang sedang aktif.
+    // =====================================
 
-    res.render("detail", {
+    if (!isAuthorizedItem(item, company)) {
+
+        return res.status(403).send(
+            "Anda tidak memiliki akses ke data inventaris ini."
+        );
+
+    }
+
+    // =====================================
+    // GATE TANDA TERIMA GA → IT
+    // =====================================
+
+    const gaToItApproved =
+        handoverService.isGaToItApproved(
+            item.batch_id
+        );
+
+    if (!gaToItApproved) {
+
+        return res.redirect(
+            `/inventaris?error=handover-required`
+        );
+
+    }
+
+    return res.render("detail", {
 
         item,
 
@@ -116,16 +166,20 @@ exports.manualQC = (req, res) => {
     const id =
         req.params.id;
 
-
     const status =
         req.body.status;
-
 
     const rejectReason =
         (
             req.body.reject_reason ||
             ""
         ).trim();
+
+    const company = getCompany(req);
+
+    if (!isValidCompany(company)) {
+        return res.status(403).send("Company tidak valid.");
+    }
 
 
     // =====================================
@@ -145,17 +199,65 @@ exports.manualQC = (req, res) => {
 
 
     // =====================================
+    // Status QC harus valid
+    // =====================================
+
+    if (
+        status !== "DONE" &&
+        status !== "REJECT"
+    ) {
+
+        return res.redirect(
+            `/inventaris/${id}?error=invalid-status`
+        );
+
+    }
+
+
+    // =====================================
     // Ambil data inventaris
     // =====================================
 
     const item =
         inventoryService.getById(id);
 
-
     if (!item) {
 
         return res.redirect(
             "/inventaris?error=not-found"
+        );
+
+    }
+
+
+    // =====================================
+    // COMPANY AUTHORIZATION
+    // Jangan pernah mengizinkan user
+    // mengubah inventory company lain.
+    // =====================================
+
+    if (!isAuthorizedItem(item, company)) {
+
+        return res.status(403).send(
+            "Anda tidak memiliki akses ke data inventaris ini."
+        );
+
+    }
+
+
+    // =====================================
+    // GATE TANDA TERIMA GA → IT
+    // =====================================
+
+    const gaToItApproved =
+        handoverService.isGaToItApproved(
+            item.batch_id
+        );
+
+    if (!gaToItApproved) {
+
+        return res.redirect(
+            `/inventaris/${id}?error=handover-required`
         );
 
     }
@@ -182,13 +284,9 @@ exports.manualQC = (req, res) => {
 
     const result =
         inventoryService.manualQC(
-
             id,
-
             status,
-
             rejectReason
-
         );
 
 
@@ -286,6 +384,12 @@ exports.editQC = (req, res) => {
     const id =
         req.params.id;
 
+    const company = getCompany(req);
+
+    if (!isValidCompany(company)) {
+        return res.status(403).send("Company tidak valid.");
+    }
+
 
     const item =
         inventoryService.getById(id);
@@ -299,6 +403,41 @@ exports.editQC = (req, res) => {
 
     }
 
+
+    // =====================================
+    // COMPANY AUTHORIZATION
+    // =====================================
+
+    if (!isAuthorizedItem(item, company)) {
+
+        return res.status(403).send(
+            "Anda tidak memiliki akses ke data inventaris ini."
+        );
+
+    }
+
+
+    // =====================================
+    // GATE TANDA TERIMA GA → IT
+    // =====================================
+
+    const gaToItApproved =
+        handoverService.isGaToItApproved(
+            item.batch_id
+        );
+
+    if (!gaToItApproved) {
+
+        return res.redirect(
+            `/inventaris/${id}?error=handover-required`
+        );
+
+    }
+
+
+    // =====================================
+    // Hanya hasil QC yang boleh di-reset
+    // =====================================
 
     if (
         item.status === "PENDING"

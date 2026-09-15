@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Login - QC Inventaris</title>
+
+
+    <!-- FAVICON -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="/images/favicon.png"
+    >
+
+
+    <!-- BOOTSTRAP -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- BOOTSTRAP ICONS -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+
+    <style>
+
+        /* =========================================
+           RESET
+        ========================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+
+            margin: 0;
+            padding: 0;
+
+            width: 100%;
+            min-height: 100%;
+
+        }
+
+
+        body {
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            color: #10213f;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f4f8ff 0%,
+                    #edf4ff 50%,
+                    #f7faff 100%
+                );
+
+        }
+
+
+        /* =========================================
+           PAGE
+        ========================================= */
+
+        .login-page {
+
+            width: 100%;
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px 20px;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =========================================
+           BACKGROUND DECORATION
+        ========================================= */
+
+        .login-bg-circle {
+
+            position: absolute;
+
+            border-radius: 50%;
+
+            pointer-events: none;
+
+        }
+
+
+        .login-bg-circle.top {
+
+            width: 360px;
+            height: 360px;
+
+            top: -205px;
+            right: -115px;
+
+            background:
+                rgba(37, 99, 235, 0.055);
+
+        }
+
+
+        .login-bg-circle.bottom {
+
+            width: 330px;
+            height: 330px;
+
+            bottom: -215px;
+            left: -120px;
+
+            background:
+                rgba(37, 99, 235, 0.055);
+
+        }
+
+
+        /* =========================================
+        LOGIN CARD
+        ========================================= */
+
+        .login-card {
+            position: relative;
+
+            z-index: 2;
+
+            width: 100%;
+
+            max-width: 545px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #e7edf7 0%,
+                    #dfe7f3 100%
+                );
+
+            border: 1px solid rgba(255, 255, 255, 0.75);
+
+            border-radius: 22px;
+
+            padding:
+                26px 38px 17px;
+
+            box-shadow:
+                0 24px 60px
+                rgba(35, 76, 130, 0.18);
+        }
+
+
+        /* =========================================
+           BRAND
+        ========================================= */
+
+        .login-brand {
+
+            text-align: center;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .login-logo {
+
+            width: 64px;
+            height: 64px;
+
+            object-fit: contain;
+
+            display: block;
+
+            margin:
+                0 auto 7px;
+        }
+
+        .login-brand-label {
+
+            color: #2563eb;
+
+            font-size: 15px;
+
+            font-weight: 800;
+
+            letter-spacing: 5px;
+
+            margin-bottom: 3px;
+        }
+
+
+        .login-brand-title {
+
+            margin: 0;
+
+            color: #10213f;
+
+            font-size: 26px;
+
+            line-height: 1.2;
+
+            font-weight: 800;
+
+            letter-spacing: -0.5px;
+        }
+
+
+        .login-brand-description {
+
+            margin:
+                6px 0 0;
+
+            color: #71829d;
+
+            font-size: 14px;
+
+            line-height: 1.45;
+        }
+
+
+        /* =========================================
+           ERROR
+        ========================================= */
+
+        .login-error {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            width: 100%;
+
+            padding:
+                11px 14px;
+
+            margin-bottom: 18px;
+
+            border-radius: 10px;
+
+            background: #fff1f2;
+
+            border:
+                1px solid
+                #fecdd3;
+
+            color: #be123c;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+        }
+
+
+        /* =========================================
+           FORM
+        ========================================= */
+
+        .login-form {
+
+            width: 100%;
+
+        }
+
+
+        .login-field {
+
+            width: 100%;
+
+            margin-bottom: 16px;
+
+        }
+
+
+        .login-label {
+
+            display: block;
+
+            margin-bottom: 6px;
+
+            color: #10213f;
+
+            font-size: 14px;
+
+            font-weight: 700;
+        }
+
+
+        /* =========================================
+           INPUT
+        ========================================= */
+
+        .login-input-wrapper {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 52px;
+
+        }
+
+
+        .login-input-icon {
+
+            position: absolute;
+
+            left: 16px;
+
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            color: #8194b2;
+
+            font-size: 18px;
+
+            z-index: 2;
+
+            pointer-events: none;
+
+        }
+
+
+        .login-input {
+
+            width: 100%;
+
+            height: 52px;
+
+            padding:
+                0 50px;
+
+            border:
+                1px solid
+                #d7e1ef;
+
+            border-radius: 10px;
+
+            outline: none;
+
+            background: #ffffff;
+
+            color: #172b4d;
+
+            font-size: 14px;
+
+            transition:
+                border-color .2s ease,
+                box-shadow .2s ease;
+
+        }
+
+
+        .login-input::placeholder {
+
+            color: #9aabc3;
+
+        }
+
+
+        .login-input:hover {
+
+            border-color:
+                #c7d4e6;
+
+        }
+
+
+        .login-input:focus {
+
+            border-color:
+                #3478ee;
+
+            box-shadow:
+                0 0 0 4px
+                rgba(37, 99, 235, 0.09);
+
+        }
+
+
+        /* =========================================
+           PASSWORD TOGGLE
+        ========================================= */
+
+        .login-password-toggle {
+
+            position: absolute;
+
+            right: 13px;
+
+            top: 50%;
+
+            transform:
+                translateY(-50%);
+
+            width: 34px;
+
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 0;
+
+            border: 0;
+
+            border-radius: 7px;
+
+            background: transparent;
+
+            color: #8194b2;
+
+            font-size: 19px;
+
+            cursor: pointer;
+
+        }
+
+
+        .login-password-toggle:hover {
+
+            color: #2563eb;
+
+            background:
+                rgba(37, 99, 235, 0.06);
+
+        }
+
+
+        /* =========================================
+           BUTTON
+        ========================================= */
+
+        .login-button {
+
+            width: 100%;
+
+            height: 54px;
+
+            margin-top: 2px;
+
+            border: 0;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2d6bea,
+                    #2360d5
+                );
+
+            color: #ffffff;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 9px;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 12px 28px
+                rgba(37, 99, 235, 0.20);
+
+            transition:
+                transform .15s ease,
+                box-shadow .15s ease,
+                opacity .15s ease;
+
+        }
+
+
+        .login-button:hover:not(:disabled) {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 15px 32px
+                rgba(37, 99, 235, 0.28);
+
+        }
+
+
+        .login-button:active:not(:disabled) {
+
+            transform:
+                translateY(0);
+
+        }
+
+
+        .login-button:disabled {
+
+            opacity: .72;
+
+            cursor: not-allowed;
+
+        }
+
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+
+        .login-footer {
+
+            text-align: center;
+
+            margin-top: 14px;
+
+            color: #8091aa;
+
+            font-size: 11px;
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .login-page {
+                padding:
+                    20px 16px;
+            }
+
+            .login-card {
+                max-width: 100%;
+
+                padding:
+                    25px 22px 17px;
+
+                border-radius: 20px;
+            }
+
+            .login-logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .login-brand-label {
+                font-size: 14px;
+                letter-spacing: 4px;
+            }
+
+            .login-brand-title {
+                font-size: 23px;
+            }
+
+            .login-brand-description {
+                font-size: 13px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="login-page">
+
+
+        <!-- BACKGROUND -->
+
+        <div
+            class="login-bg-circle top">
+        </div>
+
+
+        <div
+            class="login-bg-circle bottom">
+        </div>
+
+
+        <!-- LOGIN CARD -->
+
+        <div class="login-card">
+
+            <div id="login-root"></div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =========================================
+         REACT
+    ========================================== -->
+
+    <script
+        src="https://unpkg.com/react@18/umd/react.development.js">
+    </script>
+
+
+    <script
+        src="https://unpkg.com/react-dom@18/umd/react-dom.development.js">
+    </script>
+
+
+    <!-- =========================================
+         BABEL
+    ========================================== -->
+
+    <script
+        src="https://unpkg.com/@babel/standalone/babel.min.js">
+    </script>
+
+
+    <!-- =========================================
+         LOGIN JSX
+    ========================================== -->
+
+    <script
+        type="text/babel"
+        src="/js/login.jsx">
+    </script>
+
+
+</body>
+
+</html>

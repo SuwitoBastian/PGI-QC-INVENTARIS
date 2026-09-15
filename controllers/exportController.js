@@ -24,16 +24,17 @@ exports.exportExcel = async (req, res) => {
 // ======================================
 // Export Batch History
 // ======================================
+// ======================================
+// Export Batch History
+// ======================================
 exports.exportBatch = async (req, res) => {
 
     try {
 
         await exportService.exportBatch(
-
             req.params.id,
-
+            req.company,
             res
-
         );
 
     } catch (err) {

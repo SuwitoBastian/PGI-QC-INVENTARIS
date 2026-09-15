@@ -1101,7 +1101,7 @@ exports.uploadExcel = (req, res) => {
                     existing.company,
 
                 type:
-                    "BOOKING_EXCEL_UPLOADED",
+                    "PREPARATION_EXCEL_UPLOADED",
 
                 title:
                     "Excel Booking Diupload",

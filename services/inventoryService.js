@@ -321,71 +321,149 @@ exports.findByNF = (barcode) => {
 };
 // =====================================
 // Cari dari banyak kandidat OCR
+// Prioritas:
+// 1. Inventory PENDING
+// 2. Batch ACTIVE
+// 3. Jika lebih dari 1 kandidat/item cocok,
+//    jangan asal pilih
 // =====================================
 
 exports.findByCandidates = (candidates) => {
 
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+        return null;
+    }
+
     for (const barcode of candidates) {
 
-        const item = db.prepare(`
-            SELECT *
-            FROM inventaris
+        const rows = db.prepare(`
+            SELECT
+                i.*,
+                b.batch_code,
+                b.company AS batch_company,
+                b.status AS batch_status
+            FROM inventaris i
+            INNER JOIN batch b
+                ON b.id = i.batch_id
             WHERE
-                TRIM(nf)=TRIM(?)
-                OR
-                TRIM(imei)=TRIM(?)
-            LIMIT 1
-        `).get(
+                (
+                    TRIM(i.nf) = TRIM(?)
+                    OR
+                    TRIM(i.imei) = TRIM(?)
+                )
+                AND b.status = 'ACTIVE'
+            ORDER BY
+                CASE
+                    WHEN i.status = 'PENDING' THEN 0
+                    ELSE 1
+                END,
+                i.id DESC
+        `).all(
             barcode,
             barcode
         );
 
-        if (item) {
+        if (!rows.length) {
+            continue;
+        }
+
+        // =====================================
+        // Prioritaskan item PENDING
+        // =====================================
+
+        const pendingRows = rows.filter(
+            item => item.status === "PENDING"
+        );
+
+        // =====================================
+        // Jika hanya ada 1 PENDING
+        // → aman dipilih
+        // =====================================
+
+        if (pendingRows.length === 1) {
 
             return {
-
-                item,
-
-                barcode
-
+                item: pendingRows[0],
+                barcode,
+                ambiguous: false
             };
 
         }
 
+        // =====================================
+        // Jika ada >1 PENDING
+        // → jangan tebak
+        // =====================================
+
+        if (pendingRows.length > 1) {
+
+            return {
+                item: null,
+                barcode,
+                ambiguous: true,
+                matches: pendingRows
+            };
+
+        }
+
+        // =====================================
+        // Kalau tidak ada PENDING,
+        // berarti semua sudah diproses
+        // → tetap ambil satu untuk memberi
+        // informasi status lama
+        // =====================================
+
+        return {
+            item: rows[0],
+            barcode,
+            ambiguous: false
+        };
     }
 
     return null;
-
 };
 // =====================================
-// OCR - Update Status QC
+// OCR - Update Status QC berdasarkan ID
 // =====================================
-exports.updateStatus = (
-    barcode,
+
+exports.updateStatusById = (
+    id,
     status,
     rejectReason,
     photoPath
 ) => {
 
-    db.prepare(`
+    if (!id) {
+        throw new Error(
+            "ID inventaris tidak ditemukan."
+        );
+    }
+
+    const result = db.prepare(`
         UPDATE inventaris
         SET
-            status=?,
-            reject_reason=?,
-            photo_path=?,
-            last_qc=datetime('now','localtime')
-        WHERE
-            TRIM(nf)=TRIM(?)
-            OR
-            TRIM(imei)=TRIM(?)
+            status = ?,
+            reject_reason = ?,
+            photo_path = ?,
+            last_qc = datetime('now','localtime'),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        AND status = 'PENDING'
     `).run(
         status,
-        rejectReason,
-        photoPath,
-        barcode,
-        barcode
+        rejectReason || "",
+        photoPath || null,
+        id
     );
 
+    if (result.changes === 0) {
+        throw new Error(
+            "Inventaris tidak dapat diupdate. " +
+            "Data mungkin sudah diproses."
+        );
+    }
+
+    return result;
 };
 // =====================================
 // Cek NF pada Batch
@@ -607,4 +685,19 @@ exports.resetQC = (id) => {
         WHERE id = ?
     `).run(id);
 
+};
+// ==========================================
+// GET HANDOVER SUMMARY BY BATCH
+// ==========================================
+
+exports.getHandoverSummaryByBatch = (batchId) => {
+    return db.prepare(`
+        SELECT
+            jenis,
+            COUNT(*) AS qty
+        FROM inventaris
+        WHERE batch_id = ?
+        GROUP BY jenis
+        ORDER BY jenis ASC
+    `).all(batchId);
 };

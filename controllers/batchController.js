@@ -5,75 +5,137 @@ const inventoryService = require("../services/inventoryService");
 const batchService = require("../services/batchService");
 const calendarService = require("../services/calendarService");
 const activityService = require("../services/activityService");
+const handoverService = require("../services/handoverService");
 
 
-// ===========================
-// Halaman Import
-// ===========================
+// =====================================================
+// HELPER
+// =====================================================
+
+function getCompany(req) {
+    return String(req.company || "")
+        .trim()
+        .toUpperCase();
+}
+
+function isValidCompany(company) {
+    return ["PGI", "PEI"].includes(company);
+}
+
+
+// =====================================================
+// HALAMAN BATCH / IMPORT
+// =====================================================
+
 exports.index = (req, res) => {
 
-    let company = req.company || "PGI";
+    try {
 
-    let booking = null;
+        const company = getCompany(req);
 
-
-    // ==========================================
-    // Jika halaman dibuka dari Booking Kalender
-    // ==========================================
-
-    if (req.query.booking_id) {
-
-        booking =
-            calendarService.getBookingById(
-                req.query.booking_id
+        if (!isValidCompany(company)) {
+            return res.status(400).send(
+                "Company tidak valid."
             );
+        }
 
+        let booking = null;
 
-        // Jika booking ditemukan,
-        // gunakan company dari booking
+        // =================================================
+        // Jika halaman dibuka dari Booking Kalender
+        // =================================================
 
-        if (booking) {
+        if (req.query.booking_id) {
 
-            company = booking.company;
+            booking =
+                calendarService.getBookingById(
+                    req.query.booking_id
+                );
+
+            if (!booking) {
+
+                return res.status(404).send(
+                    "Booking Kalender tidak ditemukan."
+                );
+
+            }
+
+            // =================================================
+            // SECURITY:
+            // Booking harus milik company user
+            // =================================================
+
+            if (
+                String(booking.company || "")
+                    .trim()
+                    .toUpperCase() !== company
+            ) {
+
+                return res.status(403).send(`
+                    <h2>Akses Booking ditolak.</h2>
+
+                    <p>
+                        Booking ini milik company
+                        <strong>${booking.company}</strong>.
+                    </p>
+
+                    <br>
+
+                    <a href="/kalender">
+                        Kembali ke Kalender
+                    </a>
+                `);
+
+            }
 
         }
 
+        // =================================================
+        // Batch ACTIVE berdasarkan company user
+        // =================================================
+
+        const activeBatch =
+            batchService.getActiveBatch(company);
+
+        return res.render("batch", {
+
+            activeBatch,
+
+            booking,
+
+            company,
+
+            currentPage: "batch"
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "BATCH INDEX ERROR:",
+            error
+        );
+
+        return res.status(500).send(
+            "Terjadi kesalahan saat membuka Batch."
+        );
+
     }
-
-
-    // ==========================================
-    // Ambil Batch Active berdasarkan company
-    // ==========================================
-
-    const activeBatch =
-        batchService.getActiveBatch(company);
-
-
-    res.render("batch", {
-
-        activeBatch,
-
-        booking,
-
-        company,
-
-        currentPage: "batch"
-
-    });
 
 };
 
 
-// ===========================
-// Import Excel
-// ===========================
+// =====================================================
+// IMPORT EXCEL
+// =====================================================
+
 exports.importExcel = (req, res) => {
 
     try {
 
-        // ===========================
+        // =================================================
         // Cek file
-        // ===========================
+        // =================================================
 
         if (!req.file) {
 
@@ -84,19 +146,27 @@ exports.importExcel = (req, res) => {
         }
 
 
-        // ===========================
-        // Company
-        // ===========================
+        // =================================================
+        // Company selalu berasal dari session
+        // =================================================
 
-        let company =
-            req.company || "PGI";
+        const company = getCompany(req);
+
+        if (!isValidCompany(company)) {
+
+            return res.status(400).send(
+                "Company tidak valid."
+            );
+
+        }
+
 
         let booking = null;
 
 
-        // ==========================================
+        // =================================================
         // Jika import berasal dari Booking Kalender
-        // ==========================================
+        // =================================================
 
         if (req.body.booking_id) {
 
@@ -106,7 +176,9 @@ exports.importExcel = (req, res) => {
                 );
 
 
+            // =================================================
             // Booking tidak ditemukan
+            // =================================================
 
             if (!booking) {
 
@@ -123,7 +195,43 @@ exports.importExcel = (req, res) => {
             }
 
 
+            // =================================================
+            // SECURITY:
+            // Booking HARUS milik company user
+            // =================================================
+
+            if (
+                String(booking.company || "")
+                    .trim()
+                    .toUpperCase() !== company
+            ) {
+
+                return res.status(403).send(`
+                    <h2>Akses Booking ditolak.</h2>
+
+                    <p>
+                        Booking ini milik company
+                        <strong>${booking.company}</strong>.
+                    </p>
+
+                    <p>
+                        Anda tidak memiliki akses
+                        untuk menggunakan Booking tersebut.
+                    </p>
+
+                    <br>
+
+                    <a href="/kalender">
+                        Kembali ke Kalender
+                    </a>
+                `);
+
+            }
+
+
+            // =================================================
             // Booking dibatalkan
+            // =================================================
 
             if (booking.status === "CANCELLED") {
 
@@ -144,14 +252,21 @@ exports.importExcel = (req, res) => {
 
             }
 
-            // ==========================================
+
+            // =================================================
             // BOOKING SUDAH MEMILIKI BATCH
-            // ==========================================
+            // =================================================
 
             if (booking.batch_id) {
 
+                // =============================================
                 // Batch sudah selesai
-                if (booking.batch_status === "FINISHED") {
+                // =============================================
+
+                if (
+                    booking.batch_status === "FINISHED"
+                ) {
+
                     return res.status(400).send(`
                         <h2>Booking sudah selesai.</h2>
 
@@ -179,9 +294,14 @@ exports.importExcel = (req, res) => {
                             Kembali ke Kalender
                         </a>
                     `);
+
                 }
 
+
+                // =============================================
                 // Batch masih ACTIVE
+                // =============================================
+
                 return res.status(400).send(`
                     <h2>Booking sudah memiliki Batch.</h2>
 
@@ -208,31 +328,23 @@ exports.importExcel = (req, res) => {
                         Kembali ke Kalender
                     </a>
                 `);
+
             }
-
-
-            // ==========================================
-            // PENTING
-            // Company mengikuti Booking
-            // ==========================================
-
-            company =
-                booking.company;
 
         }
 
 
-        // ===========================
-        // Cek Batch Aktif
-        // ===========================
+        // =================================================
+        // Batch ACTIVE
+        // =================================================
 
         const activeBatch =
             batchService.getActiveBatch(company);
 
 
-        // ===========================
+        // =================================================
         // Baca Excel
-        // ===========================
+        // =================================================
 
         const data =
             excelService.readExcel(
@@ -240,9 +352,9 @@ exports.importExcel = (req, res) => {
             );
 
 
-        // ===========================
+        // =================================================
         // Validasi Header
-        // ===========================
+        // =================================================
 
         const validation =
             excelService.validateHeader(
@@ -259,9 +371,9 @@ exports.importExcel = (req, res) => {
         }
 
 
-        // ===========================
+        // =================================================
         // Mapping Data
-        // ===========================
+        // =================================================
 
         const mappedData =
             excelService.mapData(
@@ -269,9 +381,11 @@ exports.importExcel = (req, res) => {
             );
 
 
-        // ===========================
+        // =================================================
         // Set Company
-        // ===========================
+        // SECURITY:
+        // Tidak mengambil company dari Excel
+        // =================================================
 
         mappedData.forEach(item => {
 
@@ -281,9 +395,9 @@ exports.importExcel = (req, res) => {
         });
 
 
-        // ===========================
+        // =================================================
         // Validasi Isi Data
-        // ===========================
+        // =================================================
 
         const errors =
             excelService.validateData(
@@ -300,11 +414,13 @@ exports.importExcel = (req, res) => {
         }
 
 
-        // ======================================
-        // IMPORT KE BATCH AKTIF
-        // ======================================
+        // =================================================
+        // IMPORT KE BATCH ACTIVE
+        // =================================================
 
-        if (req.body.importType === "append") {
+        if (
+            req.body.importType === "append"
+        ) {
 
             if (!activeBatch) {
 
@@ -326,6 +442,23 @@ exports.importExcel = (req, res) => {
             }
 
 
+            // =============================================
+            // Pastikan batch active juga milik company
+            // =============================================
+
+            if (
+                String(activeBatch.company || "")
+                    .trim()
+                    .toUpperCase() !== company
+            ) {
+
+                return res.status(403).send(
+                    "Akses Batch ditolak."
+                );
+
+            }
+
+
             mappedData.forEach(item => {
 
                 item.batch_id =
@@ -341,9 +474,9 @@ exports.importExcel = (req, res) => {
                 );
 
 
-            // ======================================
-            // ACTIVITY LOG - IMPORT TAMBAHAN
-            // ======================================
+            // =============================================
+            // Activity Log
+            // =============================================
 
             try {
 
@@ -395,10 +528,9 @@ exports.importExcel = (req, res) => {
         }
 
 
-        // ======================================
+        // =================================================
         // IMPORT BATCH BARU
-        // Cek apakah masih ada batch ACTIVE
-        // ======================================
+        // =================================================
 
         if (activeBatch) {
 
@@ -423,19 +555,9 @@ exports.importExcel = (req, res) => {
         }
 
 
-        // ======================================
+        // =================================================
         // Generate Batch Code
-        // ======================================
-
-        const batchCode =
-            batchService.generateBatchCode(
-                company
-            );
-
-
-        // ======================================
-        // Simpan Batch
-        // ======================================
+        // =================================================
 
         const dayjs =
             require("dayjs");
@@ -444,36 +566,187 @@ exports.importExcel = (req, res) => {
 
         dayjs.locale("id");
 
-        
-        let matchedBooking = null;
 
-        let bookingDate = null;
-
-        const rawBookingDate = mappedData[0]?.tanggal_masuk;
-
-        if (rawBookingDate) {
-            if (typeof rawBookingDate === "number") {
-                const excelDate = new Date(
-                    (rawBookingDate - 25569) * 86400 * 1000
-                );
-
-                bookingDate = dayjs(excelDate).format("YYYY-MM-DD");
-            } else {
-                bookingDate = dayjs(rawBookingDate).format("YYYY-MM-DD");
-            }
-        }
-
-        if (bookingDate) {
-            const candidates = calendarService.findMatchingBooking(
-                company,
-                bookingDate,
-                mappedData.length
+        const batchCode =
+            batchService.generateBatchCode(
+                company
             );
 
-            if (candidates.length === 1) {
-                matchedBooking = candidates[0];
+
+        // =================================================
+        // BOOKING RELATION
+        // =================================================
+
+        let matchedBooking = null;
+
+
+        // =================================================
+        // IMPORT DARI CALENDAR
+        // =================================================
+
+        if (booking) {
+
+            matchedBooking =
+                booking;
+
+            console.log(
+                "================================"
+            );
+
+            console.log(
+                "IMPORT DARI CALENDAR"
+            );
+
+            console.log(
+                "Booking ID :",
+                booking.id
+            );
+
+            console.log(
+                "Company    :",
+                booking.company
+            );
+
+            console.log(
+                "Tanggal    :",
+                booking.booking_date
+            );
+
+            console.log(
+                "================================"
+            );
+
+        } else {
+
+            // =================================================
+            // IMPORT BIASA DARI BATCH MANAGEMENT
+            // Mekanisme matching lama tetap dipertahankan
+            // =================================================
+
+            let bookingDate = null;
+
+            const rawBookingDate =
+                mappedData[0]?.tanggal_masuk;
+
+
+            if (rawBookingDate) {
+
+                if (
+                    typeof rawBookingDate ===
+                    "number"
+                ) {
+
+                    const excelDate =
+                        new Date(
+                            (rawBookingDate - 25569) *
+                            86400 *
+                            1000
+                        );
+
+                    bookingDate =
+                        dayjs(
+                            excelDate
+                        ).format(
+                            "YYYY-MM-DD"
+                        );
+
+                } else {
+
+                    bookingDate =
+                        dayjs(
+                            rawBookingDate
+                        ).format(
+                            "YYYY-MM-DD"
+                        );
+
+                }
+
             }
+
+
+            if (bookingDate) {
+
+                const candidates =
+                    calendarService.findMatchingBooking(
+                        company,
+                        bookingDate,
+                        mappedData.length
+                    );
+
+
+                if (
+                    candidates.length === 1
+                ) {
+
+                    matchedBooking =
+                        candidates[0];
+
+                }
+
+            }
+
         }
+
+
+        // =================================================
+        // SIMPAN EXCEL KE BOOKING
+        // Hanya jika import berasal dari Calendar
+        // =================================================
+
+        if (booking) {
+
+            const attachResult =
+                calendarService.attachExcelToBooking(
+                    booking.id,
+                    {
+
+                        excel_path:
+                            req.file.path,
+
+                        excel_original_name:
+                            req.file.originalname
+
+                    }
+                );
+
+
+            if (!attachResult.success) {
+
+                return res.status(400).send(`
+                    <h2>Gagal menyimpan Excel ke Booking.</h2>
+
+                    <p>
+                        ${
+                            attachResult.message ||
+                            "File Excel tidak dapat disimpan ke Booking."
+                        }
+                    </p>
+
+                    <br>
+
+                    <a href="/kalender">
+                        Kembali ke Kalender
+                    </a>
+                `);
+
+            }
+
+
+            // =============================================
+            // Ambil booking terbaru
+            // =============================================
+
+            booking =
+                calendarService.getBookingById(
+                    booking.id
+                );
+
+        }
+
+
+        // =================================================
+        // SIMPAN BATCH
+        // =================================================
 
         const batchId =
             batchService.createBatch({
@@ -498,24 +771,23 @@ exports.importExcel = (req, res) => {
                     dayjs().format(
                         "YYYY-MM-DD HH:mm:ss"
                     ),
-                
-                booking_id: matchedBooking ? matchedBooking.id : null
+
+                booking_id:
+                    matchedBooking
+                        ? matchedBooking.id
+                        : null
 
             });
 
 
-        // ======================================
+        // =================================================
         // Tambahkan batch_id
-        // ======================================
+        // =================================================
 
         mappedData.forEach(item => {
 
             item.batch_id =
                 batchId;
-
-
-            // Semua import baru
-            // dimulai dari PENDING
 
             item.status =
                 "PENDING";
@@ -525,6 +797,10 @@ exports.importExcel = (req, res) => {
 
         });
 
+
+        // =================================================
+        // DEBUG
+        // =================================================
 
         console.log(
             "================================"
@@ -542,14 +818,19 @@ exports.importExcel = (req, res) => {
 
         console.log(
             "Booking ID        :",
-            booking
-                ? booking.id
+            matchedBooking
+                ? matchedBooking.id
                 : "-"
         );
 
         console.log(
-            "Data Pertama      :",
-            mappedData[0]
+            "Batch ID          :",
+            batchId
+        );
+
+        console.log(
+            "Batch Code        :",
+            batchCode
         );
 
         console.log(
@@ -557,25 +838,23 @@ exports.importExcel = (req, res) => {
         );
 
 
-        // ======================================
+        // =================================================
         // Simpan Inventaris
-        // ======================================
+        // =================================================
 
         inventoryService.insertInventaris(
             mappedData
         );
 
 
-        // Debug
-
         console.table(
             mappedData
         );
 
 
-        // ======================================
-        // ACTIVITY LOG - BATCH BARU
-        // ======================================
+        // =================================================
+        // ACTIVITY LOG
+        // =================================================
 
         try {
 
@@ -598,10 +877,6 @@ exports.importExcel = (req, res) => {
 
             });
 
-
-            // ==================================
-            // ACTIVITY LOG - IMPORT
-            // ==================================
 
             activityService.createActivity({
 
@@ -632,9 +907,9 @@ exports.importExcel = (req, res) => {
         }
 
 
-        // ======================================
+        // =================================================
         // Response
-        // ======================================
+        // =================================================
 
         return res.render(
             "import-result",
@@ -700,61 +975,94 @@ exports.importExcel = (req, res) => {
 
 };
 
-/**
- * ==========================================
- * Buat Batch dari Booking Kalender
- * ==========================================
- */
+
+// =====================================================
+// BUAT BATCH DARI BOOKING KALENDER
+// =====================================================
+
 exports.runBooking = (req, res) => {
 
     try {
 
-        const bookingId = req.body.booking_id || req.query.booking_id;
+        const bookingId =
+            req.body.booking_id ||
+            req.query.booking_id;
+
 
         if (!bookingId) {
+
             return res.status(400).send(`
                 <h2>Booking ID tidak ditemukan.</h2>
+
                 <br>
-                <a href="/kalender">Kembali ke Kalender</a>
+
+                <a href="/kalender">
+                    Kembali ke Kalender
+                </a>
             `);
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Ambil Booking
-        // ==========================================
+        // =================================================
 
         const booking =
-            calendarService.getBookingById(bookingId);
+            calendarService.getBookingById(
+                bookingId
+            );
 
 
         if (!booking) {
+
             return res.status(404).send(`
                 <h2>Booking Kalender tidak ditemukan.</h2>
+
                 <br>
-                <a href="/kalender">Kembali ke Kalender</a>
+
+                <a href="/kalender">
+                    Kembali ke Kalender
+                </a>
             `);
+
         }
 
 
-        // ==========================================
-        // Validasi Company
-        // ==========================================
+        // =================================================
+        // Company user
+        // =================================================
 
         const company =
-            String(req.company || "").trim().toUpperCase();
+            getCompany(req);
 
 
-        if (!["PGI", "PEI"].includes(company)) {
+        if (!isValidCompany(company)) {
+
             return res.status(400).send(`
                 <h2>Company tidak valid.</h2>
+
                 <br>
-                <a href="/kalender">Kembali ke Kalender</a>
+
+                <a href="/kalender">
+                    Kembali ke Kalender
+                </a>
             `);
+
         }
 
 
-        if (booking.company !== company) {
+        // =================================================
+        // SECURITY:
+        // Booking harus milik company user
+        // =================================================
+
+        if (
+            String(booking.company || "")
+                .trim()
+                .toUpperCase() !== company
+        ) {
+
             return res.status(403).send(`
                 <h2>Akses Booking ditolak.</h2>
 
@@ -764,16 +1072,23 @@ exports.runBooking = (req, res) => {
                 </p>
 
                 <br>
-                <a href="/kalender">Kembali ke Kalender</a>
+
+                <a href="/kalender">
+                    Kembali ke Kalender
+                </a>
             `);
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Booking Cancelled
-        // ==========================================
+        // =================================================
 
-        if (booking.status === "CANCELLED") {
+        if (
+            booking.status === "CANCELLED"
+        ) {
+
             return res.status(400).send(`
                 <h2>Booking Kalender sudah dibatalkan.</h2>
 
@@ -783,22 +1098,25 @@ exports.runBooking = (req, res) => {
                 </p>
 
                 <br>
-                <a href="/kalender">Kembali ke Kalender</a>
+
+                <a href="/kalender">
+                    Kembali ke Kalender
+                </a>
             `);
+
         }
 
 
-        // ==========================================
-        // Cek apakah Batch sudah pernah dibuat
-        // ==========================================
-
-        // ==========================================
+        // =================================================
         // BOOKING SUDAH MEMILIKI BATCH
-        // ==========================================
+        // =================================================
+
         if (booking.batch_id) {
 
-            // Batch sudah selesai
-            if (booking.batch_status === "FINISHED") {
+            if (
+                booking.batch_status === "FINISHED"
+            ) {
+
                 return res.status(400).send(`
                     <h2>Booking sudah selesai.</h2>
 
@@ -821,33 +1139,42 @@ exports.runBooking = (req, res) => {
                         Kembali ke Kalender
                     </a>
                 `);
+
             }
 
-            // Batch masih ACTIVE
+
             return res.redirect(
                 `/batch/${booking.batch_id}`
             );
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Excel wajib tersedia
-        // ==========================================
+        // =================================================
 
         if (!booking.excel_path) {
-            return res.redirect(`/batch?booking_id=${booking.id}`);
+
+            return res.redirect(
+                `/batch?booking_id=${booking.id}`
+            );
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Cek Batch ACTIVE
-        // ==========================================
+        // =================================================
 
         const activeBatch =
-            batchService.getActiveBatch(company);
+            batchService.getActiveBatch(
+                company
+            );
 
 
         if (activeBatch) {
+
             return res.status(400).send(`
                 <h2>Masih ada Batch ACTIVE.</h2>
 
@@ -862,16 +1189,18 @@ exports.runBooking = (req, res) => {
                 </p>
 
                 <br>
+
                 <a href="/batch/${activeBatch.id}">
                     Lihat Batch
                 </a>
             `);
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Baca Excel dari Booking
-        // ==========================================
+        // =================================================
 
         const data =
             excelService.readExcel(
@@ -879,17 +1208,18 @@ exports.runBooking = (req, res) => {
             );
 
 
-        // ==========================================
+        // =================================================
         // Validasi Header
-        // ==========================================
+        // =================================================
 
         const validation =
-            excelService.validateHeader(data);
-
-        
+            excelService.validateHeader(
+                data
+            );
 
 
         if (!validation.valid) {
+
             return res.status(400).send(`
                 <h2>Format Excel tidak valid.</h2>
 
@@ -898,29 +1228,39 @@ exports.runBooking = (req, res) => {
                 </p>
 
                 <br>
+
                 <a href="/kalender">
                     Kembali ke Kalender
                 </a>
             `);
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Mapping Data
-        // ==========================================
+        // =================================================
 
         const mappedData =
-            excelService.mapData(data);
+            excelService.mapData(
+                data
+            );
 
-        // ==========================================
+
+        // =================================================
         // LIMIT MAKSIMAL 50 ASET
-        // ==========================================
-        if (mappedData.length > 50) {
+        // =================================================
+
+        if (
+            mappedData.length > 50
+        ) {
+
             return res.status(400).send(`
                 <h2>Jumlah aset melebihi batas.</h2>
 
                 <p>
-                    Excel berisi <strong>${mappedData.length} aset</strong>.
+                    Excel berisi
+                    <strong>${mappedData.length} aset</strong>.
                 </p>
 
                 <p>
@@ -934,27 +1274,34 @@ exports.runBooking = (req, res) => {
                     Kembali ke Kalender
                 </a>
             `);
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Set Company
-        // ==========================================
+        // =================================================
 
         mappedData.forEach(item => {
-            item.company = company;
+
+            item.company =
+                company;
+
         });
 
 
-        // ==========================================
+        // =================================================
         // Validasi Isi Data
-        // ==========================================
+        // =================================================
 
         const errors =
-            excelService.validateData(mappedData);
+            excelService.validateData(
+                mappedData
+            );
 
 
         if (errors.length > 0) {
+
             return res.status(400).send(`
                 <h2>Data Excel tidak valid.</h2>
 
@@ -963,24 +1310,28 @@ exports.runBooking = (req, res) => {
                 </p>
 
                 <br>
+
                 <a href="/kalender">
                     Kembali ke Kalender
                 </a>
             `);
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Generate Batch Code
-        // ==========================================
+        // =================================================
 
         const batchCode =
-            batchService.generateBatchCode(company);
+            batchService.generateBatchCode(
+                company
+            );
 
 
-        // ==========================================
+        // =================================================
         // Generate Batch Name
-        // ==========================================
+        // =================================================
 
         const batchName =
             booking.excel_original_name
@@ -990,9 +1341,9 @@ exports.runBooking = (req, res) => {
                 : `Booking ${booking.id}`;
 
 
-        // ==========================================
+        // =================================================
         // Buat Batch
-        // ==========================================
+        // =================================================
 
         const dayjs =
             require("dayjs");
@@ -1031,9 +1382,9 @@ exports.runBooking = (req, res) => {
             });
 
 
-        // ==========================================
+        // =================================================
         // Hubungkan Inventaris ke Batch
-        // ==========================================
+        // =================================================
 
         mappedData.forEach(item => {
 
@@ -1049,17 +1400,18 @@ exports.runBooking = (req, res) => {
         });
 
 
-        // ==========================================
+        // =================================================
         // Simpan Inventaris
-        // ==========================================
+        // =================================================
 
         inventoryService.insertInventaris(
             mappedData
         );
 
-        // ==========================================
+
+        // =================================================
         // Activity Log
-        // ==========================================
+        // =================================================
 
         try {
 
@@ -1083,7 +1435,6 @@ exports.runBooking = (req, res) => {
 
             });
 
-
         } catch (activityError) {
 
             console.error(
@@ -1094,9 +1445,9 @@ exports.runBooking = (req, res) => {
         }
 
 
-        // ==========================================
+        // =================================================
         // Response
-        // ==========================================
+        // =================================================
 
         return res.redirect(
             `/batch/${batchId}`
@@ -1129,21 +1480,40 @@ exports.runBooking = (req, res) => {
 
 };
 
-// ===========================
-// Tutup Batch
-// ===========================
+
+// =====================================================
+// TUTUP BATCH
+// =====================================================
 
 exports.closeBatch = (req, res) => {
 
     try {
 
-        // ======================================
+        const company =
+            getCompany(req);
+
+
+        if (!isValidCompany(company)) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Company tidak valid."
+
+            });
+
+        }
+
+
+        // =================================================
         // Cek apakah batch boleh ditutup
-        // ======================================
+        // =================================================
 
         const result =
             batchService.canCloseBatch(
-                req.company
+                company
             );
 
 
@@ -1161,28 +1531,28 @@ exports.closeBatch = (req, res) => {
         }
 
 
-        // ======================================
-        // Ambil Batch Aktif Sebelum Ditutup
-        // ======================================
+        // =================================================
+        // Ambil Batch Aktif sebelum ditutup
+        // =================================================
 
         const activeBatch =
             batchService.getActiveBatch(
-                req.company
+                company
             );
 
 
-        // ======================================
+        // =================================================
         // Tutup Batch
-        // ======================================
+        // =================================================
 
         batchService.closeBatch(
-            req.company
+            company
         );
 
 
-        // ======================================
-        // ACTIVITY LOG - BATCH CLOSED
-        // ======================================
+        // =================================================
+        // Activity Log
+        // =================================================
 
         try {
 
@@ -1220,10 +1590,6 @@ exports.closeBatch = (req, res) => {
         }
 
 
-        // ======================================
-        // Response
-        // ======================================
-
         return res.json({
 
             success: true,
@@ -1256,205 +1622,421 @@ exports.closeBatch = (req, res) => {
 };
 
 
-// ===========================
-// Detail Batch
-// ===========================
+// =====================================================
+// DETAIL BATCH
+// =====================================================
 
 exports.detail = (req, res) => {
 
-    const batch =
-        batchService.getBatchById(
-            req.params.id
-        );
-
-
-    if (!batch) {
-
-        return res.status(404).send(
-            "Batch tidak ditemukan."
-        );
-
-    }
-
-
-    const keyword =
-        req.query.keyword || "";
-
-
-    const status =
-        req.query.status || "";
-
-
-    const jenis =
-        req.query.jenis || "";
-
-
-    const items =
-        inventoryService.searchInventaris(
-
-            batch.id,
-
-            keyword,
-
-            status,
-
-            jenis
-
-        );
-
-
-    res.render("inventaris", {
-
-        batch,
-
-        items,
-
-        keyword,
-
-        status,
-
-        jenis,
-
-        isHistory: true,
-
-        currentPage: "batch-history"
-
-    });
-
-};
-
-
-// ===========================
-// Halaman Riwayat Batch
-// ===========================
-
-exports.history = (req, res) => {
-
-    const activeBatch =
-        batchService.getActiveBatch(
-            req.company
-        );
-
-
-    const history =
-        batchService.getHistory(
-            req.company
-        );
-
-
-    res.render("history", {
-
-        activeBatch,
-
-        history,
-
-        company:
-            req.company,
-
-        currentPage:
-            "history"
-
-    });
-
-};
-// ==========================================
-// Hapus Batch ACTIVE
-// Reset Batch + Inventaris + Excel Booking
-// Booking tetap dipertahankan
-// ==========================================
-exports.deleteBatch = (req, res) => {
     try {
 
-        const company = String(
-            req.company || ""
-        ).trim().toUpperCase();
+        const company =
+            getCompany(req);
 
-        const batchId = Number(
-            req.body.batch_id || req.query.batch_id
-        );
 
-        if (!company) {
-            return res.status(400).json({
-                success: false,
-                message: "Company tidak ditemukan."
-            });
+        if (!isValidCompany(company)) {
+
+            return res.status(400).send(
+                "Company tidak valid."
+            );
+
         }
 
-        if (!batchId) {
-            return res.status(400).json({
-                success: false,
-                message: "Batch ID tidak valid."
-            });
-        }
-
-
-        // ==========================================
-        // Ambil Batch terlebih dahulu
-        // ==========================================
 
         const batch =
-            batchService.getBatchById(batchId);
+            batchService.getBatchById(
+                req.params.id
+            );
+
+
+        // =================================================
+        // Batch tidak ditemukan
+        // =================================================
 
         if (!batch) {
-            return res.status(404).json({
-                success: false,
-                message: "Batch tidak ditemukan."
-            });
+
+            return res.status(404).send(
+                "Batch tidak ditemukan."
+            );
+
         }
 
 
-        // ==========================================
-        // Proteksi Company
-        // ==========================================
+        // =================================================
+        // SECURITY:
+        // Batch harus milik company user
+        // =================================================
 
         if (
             String(batch.company || "")
                 .trim()
                 .toUpperCase() !== company
         ) {
-            return res.status(403).json({
-                success: false,
-                message: "Batch bukan milik company aktif."
-            });
+
+            return res.status(403).send(`
+                <h2>Akses Batch ditolak.</h2>
+
+                <p>
+                    Batch ini bukan milik company
+                    <strong>${company}</strong>.
+                </p>
+
+                <br>
+
+                <a href="/batch">
+                    Kembali ke Batch
+                </a>
+            `);
+
         }
 
 
-        // ==========================================
-        // Hanya ACTIVE
-        // ==========================================
+        // =================================================
+        // Filter
+        // =================================================
 
-        if (batch.status !== "ACTIVE") {
+        const keyword =
+            req.query.keyword || "";
+
+        const status =
+            req.query.status || "";
+
+        const jenis =
+            req.query.jenis || "";
+
+
+        // =================================================
+        // Ambil Inventaris
+        // =================================================
+
+        const items =
+            inventoryService.searchInventaris(
+
+                batch.id,
+
+                keyword,
+
+                status,
+
+                jenis
+
+            );
+
+
+        // =================================================
+        // Render
+        // =================================================
+
+        return res.render("inventaris", {
+
+            batch,
+
+            items,
+
+            keyword,
+
+            status,
+
+            jenis,
+
+            isHistory: true,
+
+            currentPage:
+                "batch-history",
+
+            handoverLocked:
+                false
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "BATCH DETAIL ERROR:",
+            error
+        );
+
+
+        return res.status(500).send(
+            "Terjadi kesalahan saat membuka Batch."
+        );
+
+    }
+
+};
+
+
+// =====================================================
+// RIWAYAT BATCH
+// =====================================================
+
+exports.history = (req, res) => {
+
+    try {
+
+        const company =
+            getCompany(req);
+
+
+        if (!isValidCompany(company)) {
+
+            return res.status(400).send(
+                "Company tidak valid."
+            );
+
+        }
+
+
+        const activeBatch =
+            batchService.getActiveBatch(
+                company
+            );
+
+
+        let history =
+            batchService.getHistory(
+                company
+            );
+
+
+        // =================================================
+        // IT → GA STATUS
+        // =================================================
+
+        history =
+            history.map((batch) => {
+
+                const handovers =
+                    handoverService.getByBatch(
+                        batch.id
+                    );
+
+
+                const itToGa =
+                    handovers.find(
+                        (item) =>
+                            item.direction ===
+                            "IT_TO_GA"
+                    ) || null;
+
+
+                let itToGaState =
+                    "NOT_CREATED";
+
+
+                if (itToGa) {
+
+                    if (
+                        itToGa.status ===
+                        "APPROVED"
+                    ) {
+
+                        itToGaState =
+                            "APPROVED";
+
+                    } else {
+
+                        itToGaState =
+                            "PENDING";
+
+                    }
+
+                }
+
+
+                return {
+
+                    ...batch,
+
+                    it_to_ga:
+                        itToGa,
+
+                    it_to_ga_state:
+                        itToGaState
+
+                };
+
+            });
+
+
+        return res.render(
+            "history",
+            {
+
+                activeBatch,
+
+                history,
+
+                company,
+
+                currentPage:
+                    "history"
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "BATCH HISTORY ERROR:",
+            error
+        );
+
+
+        return res.status(500).send(
+            "Terjadi kesalahan saat membuka Riwayat Batch."
+        );
+
+    }
+
+};
+
+
+// =====================================================
+// HAPUS BATCH ACTIVE
+// =====================================================
+
+exports.deleteBatch = (req, res) => {
+
+    try {
+
+        const company =
+            getCompany(req);
+
+
+        const batchId =
+            Number(
+                req.body.batch_id ||
+                req.query.batch_id
+            );
+
+
+        if (!isValidCompany(company)) {
+
             return res.status(400).json({
+
                 success: false,
+
+                message:
+                    "Company tidak valid."
+
+            });
+
+        }
+
+
+        if (!batchId) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Batch ID tidak valid."
+
+            });
+
+        }
+
+
+        // =================================================
+        // Ambil Batch
+        // =================================================
+
+        const batch =
+            batchService.getBatchById(
+                batchId
+            );
+
+
+        if (!batch) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Batch tidak ditemukan."
+
+            });
+
+        }
+
+
+        // =================================================
+        // SECURITY:
+        // Batch harus milik company user
+        // =================================================
+
+        if (
+            String(batch.company || "")
+                .trim()
+                .toUpperCase() !== company
+        ) {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message:
+                    "Batch bukan milik company aktif."
+
+            });
+
+        }
+
+
+        // =================================================
+        // Hanya ACTIVE
+        // =================================================
+
+        if (
+            batch.status !== "ACTIVE"
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
                 message:
                     "Batch yang dapat dihapus hanya Batch ACTIVE."
+
             });
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Ambil Booking + lokasi Excel
-        // sebelum relasi dihapus
-        // ==========================================
+        // =================================================
 
-        const db = require("../config/database");
-
-        const booking = batch.booking_id
-            ? db.prepare(`
-                SELECT
-                    id,
-                    excel_path,
-                    excel_original_name
-                FROM calendar_booking
-                WHERE id = ?
-                LIMIT 1
-            `).get(batch.booking_id)
-            : null;
+        const db =
+            require("../config/database");
 
 
-        // ==========================================
-        // Hapus Batch dari Database
-        // ==========================================
+        const booking =
+            batch.booking_id
+
+                ? db.prepare(`
+                    SELECT
+                        id,
+                        excel_path,
+                        excel_original_name
+                    FROM calendar_booking
+                    WHERE id = ?
+                    LIMIT 1
+                `).get(
+                    batch.booking_id
+                )
+
+                : null;
+
+
+        // =================================================
+        // Hapus Batch
+        // =================================================
 
         const result =
             batchService.deleteBatch(
@@ -1462,31 +2044,41 @@ exports.deleteBatch = (req, res) => {
                 company
             );
 
+
         if (!result.success) {
-            return res.status(400).json(result);
+
+            return res.status(400).json(
+                result
+            );
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Hapus file Excel fisik
-        // ==========================================
+        // =================================================
 
         if (
             booking &&
             booking.excel_path
         ) {
+
             try {
 
-                const fs = require("fs");
+                const fs =
+                    require("fs");
+
 
                 if (
                     fs.existsSync(
                         booking.excel_path
                     )
                 ) {
+
                     fs.unlinkSync(
                         booking.excel_path
                     );
+
                 }
 
             } catch (fileError) {
@@ -1497,18 +2089,23 @@ exports.deleteBatch = (req, res) => {
                 );
 
             }
+
         }
 
 
-        // ==========================================
+        // =================================================
         // Response
-        // ==========================================
+        // =================================================
 
         return res.json({
+
             success: true,
+
             message:
                 "Batch berhasil dihapus. Booking tetap dipertahankan dan dapat diproses kembali."
+
         });
+
 
     } catch (error) {
 
@@ -1517,10 +2114,16 @@ exports.deleteBatch = (req, res) => {
             error
         );
 
+
         return res.status(500).json({
+
             success: false,
+
             message:
                 "Terjadi kesalahan saat menghapus Batch."
+
         });
+
     }
+
 };

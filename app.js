@@ -87,6 +87,11 @@ const calendarPageRoute =
 const activityRoute =
     require("./routes/activity");
 
+const handoverRoute = require("./routes/handover");
+
+const authRoute =
+    require("./routes/auth");
+
 
 // =====================================
 // MIDDLEWARE
@@ -94,6 +99,10 @@ const activityRoute =
 
 const companyMiddleware =
     require("./middlewares/company");
+
+const {
+    requireAuth
+} = require("./middlewares/auth");
 
 const currentBatch =
     require("./middlewares/currentBatch");
@@ -120,15 +129,6 @@ app.use(
         path.join(__dirname, "public")
     )
 );
-
-
-app.use(
-    "/uploads",
-    express.static(
-        path.join(__dirname, "uploads")
-    )
-);
-
 
 // =====================================
 // VIEW ENGINE
@@ -161,12 +161,30 @@ app.use(
 
 app.use(
     session({
-        secret: "PGI-QC-2026",
+        secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: true
+        saveUninitialized: false,
     })
 );
 
+// =====================================
+// AUTH ROUTES
+// =====================================
+
+app.use(
+    authRoute
+);
+
+
+
+// =====================================
+// AUTHENTICATION
+// Semua halaman aplikasi wajib login
+// =====================================
+
+app.use(
+    requireAuth
+);
 
 // =====================================
 // COMPANY MIDDLEWARE
@@ -229,6 +247,15 @@ app.use(
 app.use(
     "/api/calendar",
     calendarRoute
+);
+
+// -------------------------------------
+// Handover GA → IT
+// -------------------------------------
+
+app.use(
+    "/api/handover",
+    handoverRoute
 );
 
 

@@ -971,6 +971,13 @@ function BookingExcelSection({
 }) {
     const [uploading, setUploading] = useState(false);
 
+    const [handoverLoading, setHandoverLoading] = useState(false);
+    const [handoverStatus, setHandoverStatus] = useState(null);
+    const [receiverName, setReceiverName] = useState("");
+
+    const [signatures, setSignatures] = useState([]);
+    const [loadingSignatures, setLoadingSignatures] = useState(false);
+
     const canManage =
         booking &&
         booking.company === company;
@@ -1210,6 +1217,1010 @@ function BookingExcelSection({
     );
 }
 
+function GaToItHandoverSection({
+    booking,
+    company,
+    onToast
+}) {
+    const [loading, setLoading] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [approving, setApproving] = useState(false);
+
+    const [handoverStatus, setHandoverStatus] = useState(null);
+
+    // ==========================================
+    // CURRENT USER / ROLE
+    // ==========================================
+    const currentUser = window.__CURRENT_USER__ || {};
+
+    const userRole = String(
+        currentUser.role || ""
+    )
+        .trim()
+        .toUpperCase();
+
+    const isGA = userRole === "GA";
+    const isIT = userRole === "IT";
+
+    // ==========================================
+    // DIGITAL SIGNATURE
+    // ==========================================
+    const [signatures, setSignatures] = useState([]);
+    const [loadingSignatures, setLoadingSignatures] =
+        useState(false);
+
+    // Sender = Staff GA saat CREATE
+    const [senderName, setSenderName] = useState("");
+
+    // Receiver = Staff IT saat APPROVAL
+    const [receiverName, setReceiverName] = useState("");
+
+    // ==========================================
+    // LOAD DIGITAL SIGNATURE
+    // ==========================================
+    async function loadSignatures() {
+        try {
+            setLoadingSignatures(true);
+
+            const response = await fetch(
+                "/api/handover/signatures"
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message ||
+                    "Gagal mengambil data digital signature."
+                );
+            }
+
+            const list = Array.isArray(data.signatures)
+                ? data.signatures
+                : [];
+
+            setSignatures(list);
+
+        } catch (error) {
+            console.error(
+                "Load digital signature error:",
+                error
+            );
+
+            onToast(
+                error.message ||
+                "Gagal mengambil data digital signature.",
+                "error",
+                "Gagal Memuat Signature"
+            );
+
+        } finally {
+            setLoadingSignatures(false);
+        }
+    }
+
+    // ==========================================
+    // LOAD HANDOVER STATUS
+    // ==========================================
+    async function loadHandoverStatus() {
+        if (!booking?.batch_id) return;
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                `/api/handover/batch/${booking.batch_id}/status`
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message ||
+                    "Gagal mengambil status tanda terima."
+                );
+            }
+
+            setHandoverStatus(data);
+
+            // Jika sudah ada receiver dari data sebelumnya
+            if (data.ga_to_it?.receiver_name) {
+                setReceiverName(
+                    data.ga_to_it.receiver_name
+                );
+            }
+
+            // Jika sudah ada sender dari data sebelumnya
+            if (data.ga_to_it?.sender_name) {
+                setSenderName(
+                    data.ga_to_it.sender_name
+                );
+            }
+
+        } catch (error) {
+            console.error(
+                "Load handover status error:",
+                error
+            );
+
+            onToast(
+                error.message ||
+                "Gagal mengambil status tanda terima.",
+                "error",
+                "Gagal Memuat Handover"
+            );
+
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // ==========================================
+    // LOAD SAAT BATCH TERSEDIA
+    // ==========================================
+    useEffect(() => {
+        if (
+            company === booking?.company &&
+            booking?.batch_id
+        ) {
+            loadSignatures();
+            loadHandoverStatus();
+        }
+    }, [booking?.batch_id, company]);
+
+    // ==========================================
+    // FILTER STAFF GA BERDASARKAN COMPANY
+    // ==========================================
+
+    const gaStaff = signatures.filter((item) => {
+        const jabatan =
+            String(item.jabatan || "")
+                .trim()
+                .toLowerCase();
+
+        const nama =
+            String(item.nama || "")
+                .trim();
+
+        if (jabatan !== "general affairs") {
+            return false;
+        }
+
+        if (company === "PGI") {
+            return nama === "Sabilal Ihza";
+        }
+
+        if (company === "PEI") {
+            return nama === "Irgi";
+        }
+
+        return false;
+    });
+
+    // ==========================================
+    // FILTER STAFF IT
+    // ==========================================
+    const itStaff = signatures.filter(
+        (item) =>
+            String(item.jabatan || "")
+                .trim()
+                .toLowerCase() === "it support"
+    );
+
+    // ==========================================
+    // SELECTED SENDER
+    // ==========================================
+    const selectedSender = signatures.find(
+        (item) =>
+            String(item.nama || "").trim() ===
+            String(senderName || "").trim()
+    );
+
+    // ==========================================
+    // SELECTED RECEIVER
+    // ==========================================
+    const selectedReceiver = signatures.find(
+        (item) =>
+            String(item.nama || "").trim() ===
+            String(receiverName || "").trim()
+    );
+
+    // ==========================================
+    // CREATE GA → IT
+    // ==========================================
+    async function handleCreateHandover() {
+        const name = String(
+            senderName || ""
+        ).trim();
+
+        if (!name) {
+            onToast(
+                "Silakan pilih Staff GA yang menyerahkan.",
+                "warning",
+                "Data Belum Lengkap"
+            );
+
+            return;
+        }
+
+        if (!selectedSender) {
+            onToast(
+                "Digital signature Staff GA tidak ditemukan.",
+                "warning",
+                "Signature Tidak Ditemukan"
+            );
+
+            return;
+        }
+
+        setCreating(true);
+
+        try {
+            const response = await fetch(
+                "/api/handover/ga-to-it",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        batch_id:
+                            booking.batch_id,
+
+                        sender_name: name
+                    })
+                }
+            );
+
+            const data =
+                await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message ||
+                    "Gagal membuat tanda terima GA → IT."
+                );
+            }
+
+            onToast(
+                "Tanda terima GA → IT berhasil dibuat.",
+                "success",
+                "Berhasil"
+            );
+
+            // Receiver memang kosong saat CREATE
+            setReceiverName("");
+
+            await loadHandoverStatus();
+
+        } catch (error) {
+            console.error(
+                "Create handover error:",
+                error
+            );
+
+            onToast(
+                error.message ||
+                "Gagal membuat tanda terima GA → IT.",
+                "error",
+                "Gagal Membuat Handover"
+            );
+
+        } finally {
+            setCreating(false);
+        }
+    }
+
+    // ==========================================
+    // APPROVE GA → IT
+    // ==========================================
+    async function handleApproveHandover() {
+        const handoverId =
+            handoverStatus?.ga_to_it?.id;
+
+        const receiver =
+            String(receiverName || "").trim();
+
+        if (!handoverId) {
+            return;
+        }
+
+        if (!receiver) {
+            onToast(
+                "Silakan pilih Staff IT yang menerima.",
+                "warning",
+                "Penerima Belum Dipilih"
+            );
+
+            return;
+        }
+
+        if (!selectedReceiver) {
+            onToast(
+                "Digital signature Staff IT tidak ditemukan.",
+                "warning",
+                "Signature Tidak Ditemukan"
+            );
+
+            return;
+        }
+
+        setApproving(true);
+
+        try {
+            const response = await fetch(
+                `/api/handover/ga-to-it/${handoverId}/approve`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        receiver_name: receiver
+                    })
+                }
+            );
+
+            const data =
+                await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message ||
+                    "Gagal melakukan approval."
+                );
+            }
+
+            onToast(
+                "Tanda terima GA → IT berhasil di-approve.",
+                "success",
+                "Approval Berhasil"
+            );
+
+            await loadHandoverStatus();
+
+        } catch (error) {
+            console.error(
+                "Approve handover error:",
+                error
+            );
+
+            onToast(
+                error.message ||
+                "Gagal melakukan approval.",
+                "error",
+                "Approval Gagal"
+            );
+
+        } finally {
+            setApproving(false);
+        }
+    }
+
+    // ==========================================
+    // HANDOVER
+    // ==========================================
+    const handover =
+        handoverStatus?.ga_to_it;
+
+    const approved =
+        handoverStatus?.ga_to_it_approved === true;
+
+    // ==========================================
+    // COMPANY MATCH
+    // ==========================================
+    if (
+        company !== booking?.company ||
+        !booking?.batch_id
+    ) {
+        return null;
+    }
+
+    return (
+        <div
+            style={{
+                marginTop: "18px",
+                padding: "16px",
+                border: "1px solid #dee2e6",
+                borderRadius: "12px",
+                background: "#fff"
+            }}
+        >
+
+            {/* =====================================
+                HEADER
+            ===================================== */}
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                    marginBottom: "14px"
+                }}
+            >
+                <div>
+
+                    <div
+                        style={{
+                            fontWeight: "700",
+                            fontSize: "15px",
+                            color: "#212529"
+                        }}
+                    >
+                        <i className="bi bi-file-earmark-check me-2"></i>
+                        Tanda Terima GA → IT
+                    </div>
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            color: "#6c757d",
+                            marginTop: "3px"
+                        }}
+                    >
+                        Dokumen serah terima sebelum proses QC
+                        Inventaris
+                    </div>
+
+                </div>
+
+                {loading && (
+                    <span
+                        style={{
+                            fontSize: "12px",
+                            color: "#6c757d"
+                        }}
+                    >
+                        <span className="spinner-border spinner-border-sm me-1"></span>
+                        Memuat...
+                    </span>
+                )}
+
+            </div>
+
+            {/* =====================================
+                BELUM ADA HANDOVER
+            ===================================== */}
+            {!loading && !handover && (
+                <>
+                    <div
+                        style={{
+                            padding: "12px",
+                            borderRadius: "8px",
+                            background: "#f8f9fa",
+                            marginBottom: "12px"
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: "12px",
+                                color: "#6c757d",
+                                marginBottom: "5px"
+                            }}
+                        >
+                            Batch
+                        </div>
+
+                        <strong>
+                            {booking.batch_code ||
+                                `Batch #${booking.batch_id}`}
+                        </strong>
+                    </div>
+
+                    {/* =================================
+                        MENYERAHKAN / STAFF GA
+                    ================================= */}
+                    {isGA && (
+                        <>
+                            <div
+                                className="form-group"
+                                style={{
+                                    marginBottom: "12px"
+                                }}
+                            >
+                                <label>
+                                    Menyerahkan / Staff GA
+                                </label>
+
+                                <select
+                                    value={senderName}
+                                    onChange={(e) =>
+                                        setSenderName(
+                                            e.target.value
+                                        )
+                                    }
+                                    disabled={
+                                        creating ||
+                                        loadingSignatures
+                                    }
+                                    style={{
+                                        width: "100%"
+                                    }}
+                                >
+                                    <option value="">
+                                        {loadingSignatures
+                                            ? "Memuat Staff GA..."
+                                            : "-- Pilih Staff GA --"}
+                                    </option>
+
+                                    {gaStaff.map(
+                                        (staff) => (
+                                            <option
+                                                key={
+                                                    staff.id ||
+                                                    staff.nama
+                                                }
+                                                value={
+                                                    staff.nama
+                                                }
+                                            >
+                                                {staff.nama}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                                <div
+                                    style={{
+                                        fontSize: "11px",
+                                        color: "#6c757d",
+                                        marginTop: "5px"
+                                    }}
+                                >
+                                    Pilih Staff GA yang menyerahkan
+                                    inventaris. Digital signature akan
+                                    mengikuti nama Staff GA yang dipilih.
+                                </div>
+
+                            </div>
+
+                            {/* =================================
+                                SIGNATURE PREVIEW SENDER
+                            ================================= */}
+                            {selectedSender && (
+                                <div
+                                    style={{
+                                        padding: "10px",
+                                        marginBottom: "12px",
+                                        borderRadius: "8px",
+                                        background: "#f8f9fa"
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "11px",
+                                            color: "#6c757d",
+                                            marginBottom: "4px"
+                                        }}
+                                    >
+                                        Digital Signature
+                                    </div>
+
+                                    <strong>
+                                        {selectedSender.nama}
+                                    </strong>
+
+                                    <div
+                                        style={{
+                                            fontSize: "11px",
+                                            color: "#6c757d"
+                                        }}
+                                    >
+                                        {selectedSender.jabatan}
+                                    </div>
+                                </div>
+                            )}
+
+                            <button
+                                type="button"
+                                className="btn-primary-custom"
+                                onClick={
+                                    handleCreateHandover
+                                }
+                                disabled={
+                                    creating ||
+                                    loadingSignatures ||
+                                    !senderName
+                                }
+                                style={{
+                                    marginTop: "10px"
+                                }}
+                            >
+                                {creating ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-1"></span>
+                                        Membuat Dokumen...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="bi bi-file-earmark-check me-1"></i>
+                                        Buat Tanda Terima
+                                    </>
+                                )}
+                            </button>
+                        </>
+                    )}
+
+                    {/* =================================
+                        INFO UNTUK IT
+                    ================================= */}
+                    {isIT && (
+                        <div
+                            style={{
+                                marginTop: "12px",
+                                padding: "10px 12px",
+                                borderRadius: "8px",
+                                background: "#fff8e1",
+                                color: "#856404",
+                                fontSize: "12px",
+                                fontWeight: "600"
+                            }}
+                        >
+                            <i className="bi bi-hourglass-split me-1"></i>
+                            Menunggu Staff GA membuat tanda terima
+                            GA → IT.
+                        </div>
+                    )}
+
+                </>
+            )}
+
+            {/* =====================================
+                HANDOVER SUDAH ADA
+            ===================================== */}
+            {!loading && handover && (
+                <>
+
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                                approved
+                                    ? "repeat(4, minmax(0, 1fr))"
+                                    : "repeat(3, minmax(0, 1fr))",
+                            gap: "10px",
+                            marginBottom: "12px"
+                        }}
+                    >
+
+                        {/* MENYERAHKAN */}
+                        <div
+                            style={{
+                                padding: "10px",
+                                background: "#f8f9fa",
+                                borderRadius: "8px"
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "11px",
+                                    color: "#6c757d"
+                                }}
+                            >
+                                Menyerahkan
+                            </div>
+
+                            <strong>
+                                {handover.sender_name ||
+                                    "-"}
+                            </strong>
+                        </div>
+
+                        {/* PENERIMA */}
+                        <div
+                            style={{
+                                padding: "10px",
+                                background: "#f8f9fa",
+                                borderRadius: "8px"
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "11px",
+                                    color: "#6c757d"
+                                }}
+                            >
+                                Menerima
+                            </div>
+
+                            <strong>
+                                {handover.receiver_name ||
+                                    "Menunggu Staff IT"}
+                            </strong>
+                        </div>
+
+                        {/* ASSET */}
+                        <div
+                            style={{
+                                padding: "10px",
+                                background: "#f8f9fa",
+                                borderRadius: "8px"
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "11px",
+                                    color: "#6c757d"
+                                }}
+                            >
+                                Asset
+                            </div>
+
+                            <strong>
+                                {handover.asset_count || 0}
+                            </strong>
+                        </div>
+
+                        {/* STATUS */}
+                        <div
+                            style={{
+                                padding: "10px",
+                                background:
+                                    approved
+                                        ? "#d1fae5"
+                                        : "#fff3cd",
+                                borderRadius: "8px"
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: "11px",
+                                    color: "#6c757d"
+                                }}
+                            >
+                                Status
+                            </div>
+
+                            <strong
+                                style={{
+                                    color:
+                                        approved
+                                            ? "#047857"
+                                            : "#856404"
+                                }}
+                            >
+                                {approved
+                                    ? "APPROVED"
+                                    : "WAITING IT"}
+                            </strong>
+                        </div>
+
+                        {/* APPROVED BY */}
+                        {approved && (
+                            <div
+                                style={{
+                                    padding: "10px",
+                                    background: "#ecfdf5",
+                                    borderRadius: "8px"
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: "11px",
+                                        color: "#6c757d"
+                                    }}
+                                >
+                                    Approved By
+                                </div>
+
+                                <strong>
+                                    {handover.approved_by ||
+                                        "SYSTEM"}
+                                </strong>
+                            </div>
+                        )}
+
+                    </div>
+
+                    {/* =================================
+                        RECEIVER / STAFF IT
+                        HANYA MUNCUL UNTUK IT
+                        ================================= */}
+                    {isIT &&
+                        !approved &&
+                        handover.status === "PENDING" && (
+                            <div
+                                className="form-group"
+                                style={{
+                                    marginBottom: "12px"
+                                }}
+                            >
+                                <label>
+                                    Menerima / Staff IT
+                                </label>
+
+                                <select
+                                    value={receiverName}
+                                    onChange={(e) =>
+                                        setReceiverName(
+                                            e.target.value
+                                        )
+                                    }
+                                    disabled={
+                                        approving ||
+                                        loadingSignatures
+                                    }
+                                    style={{
+                                        width: "100%"
+                                    }}
+                                >
+                                    <option value="">
+                                        {loadingSignatures
+                                            ? "Memuat Staff IT..."
+                                            : "-- Pilih Staff IT --"}
+                                    </option>
+
+                                    {itStaff.map(
+                                        (staff) => (
+                                            <option
+                                                key={
+                                                    staff.id ||
+                                                    staff.nama
+                                                }
+                                                value={
+                                                    staff.nama
+                                                }
+                                            >
+                                                {staff.nama}
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                                <div
+                                    style={{
+                                        fontSize: "11px",
+                                        color: "#6c757d",
+                                        marginTop: "5px"
+                                    }}
+                                >
+                                    Pilih Staff IT yang menerima
+                                    inventaris. Digital signature akan
+                                    mengikuti nama Staff IT yang dipilih.
+                                </div>
+
+                                {selectedReceiver && (
+                                    <div
+                                        style={{
+                                            padding: "10px",
+                                            marginTop: "8px",
+                                            borderRadius: "8px",
+                                            background: "#f8f9fa"
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                fontSize: "11px",
+                                                color: "#6c757d",
+                                                marginBottom: "4px"
+                                            }}
+                                        >
+                                            Digital Signature
+                                        </div>
+
+                                        <strong>
+                                            {selectedReceiver.nama}
+                                        </strong>
+
+                                        <div
+                                            style={{
+                                                fontSize: "11px",
+                                                color: "#6c757d"
+                                            }}
+                                        >
+                                            {selectedReceiver.jabatan}
+                                        </div>
+                                    </div>
+                                )}
+
+                            </div>
+                        )}
+
+                    {/* =================================
+                        ACTION BUTTON
+                    ================================= */}
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: "8px",
+                            flexWrap: "wrap"
+                        }}
+                    >
+
+                        {handover.id && (
+                            <a
+                                href={`/api/handover/${handover.id}/pdf`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-secondary-custom"
+                            >
+                                <i className="bi bi-file-pdf me-1"></i>
+                                Lihat PDF
+                            </a>
+                        )}
+
+                        {/* APPROVE HANYA UNTUK IT */}
+                        {isIT &&
+                            !approved &&
+                            handover.status === "PENDING" && (
+                                <button
+                                    type="button"
+                                    className="btn-primary-custom"
+                                    onClick={
+                                        handleApproveHandover
+                                    }
+                                    disabled={
+                                        approving ||
+                                        loadingSignatures ||
+                                        !receiverName
+                                    }
+                                >
+                                    {approving ? (
+                                        <>
+                                            <span className="spinner-border spinner-border-sm me-1"></span>
+                                            Approving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="bi bi-check-circle me-1"></i>
+                                            Approve IT
+                                        </>
+                                    )}
+                                </button>
+                            )}
+
+                    </div>
+
+                    {/* =================================
+                        INFO
+                    ================================= */}
+                    <div
+                        style={{
+                            marginTop: "12px",
+                            padding: "10px 12px",
+                            borderRadius: "8px",
+                            background: approved
+                                ? "#ecfdf5"
+                                : "#fff8e1",
+                            color: approved
+                                ? "#047857"
+                                : "#856404",
+                            fontSize: "12px",
+                            fontWeight: "600"
+                        }}
+                    >
+                        {approved ? (
+                            <>
+                                <i className="bi bi-check-circle-fill me-1"></i>
+                                Tanda terima telah disetujui.
+                                QC Inventaris dapat dimulai.
+                            </>
+                        ) : (
+                            <>
+                                <i className="bi bi-hourglass-split me-1"></i>
+                                Dokumen telah dibuat oleh Staff GA.
+                                Menunggu Staff IT memilih
+                                penerima dan melakukan approval.
+                            </>
+                        )}
+                    </div>
+
+                </>
+            )}
+
+        </div>
+    );
+}
+
 function DetailModal({
     booking,
     company,
@@ -1312,7 +2323,13 @@ function DetailModal({
                         booking={booking}
                         company={company}
                         onToast={onToast}
-                         onUploaded={onUploaded}
+                        onUploaded={onUploaded}
+                    />
+
+                    <GaToItHandoverSection
+                        booking={booking}
+                        company={company}
+                        onToast={onToast}
                     />
 
                 </div>
@@ -1716,7 +2733,7 @@ function CalendarApp() {
 
             requester: "",
 
-            location: "Head Office Jl. Panjang Arteri",
+            location: "HO Jl. Panjang Arteri",
 
             notes: "",
 
@@ -1847,7 +2864,7 @@ function CalendarApp() {
 
             requester: "",
 
-            location: "Head Office Jl. Panjang Arteri",
+            location: "HO Jl. Panjang Arteri",
 
             notes: "",
 
@@ -1877,7 +2894,7 @@ function CalendarApp() {
             asset_type: booking.asset_type || "",
             asset_count: booking.asset_count || 0,
             requester: booking.requester || "",
-            location: "Head Office Jl. Panjang Arteri",
+            location: "HO Jl. Panjang Arteri",
             notes: booking.notes || "",
             status:
                 booking.status === "CANCELLED"

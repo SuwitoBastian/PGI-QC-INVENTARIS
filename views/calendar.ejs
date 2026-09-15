@@ -89,6 +89,17 @@
             currentPage: currentPage || "calendar"
         }) %>;
 
+
+        // ==========================================
+        // CURRENT LOGIN USER
+        // ==========================================
+
+        window.__CURRENT_USER__ = <%- JSON.stringify(
+            typeof user !== "undefined" && user
+                ? user
+                : {}
+        ) %>;
+
     </script>
 
 
