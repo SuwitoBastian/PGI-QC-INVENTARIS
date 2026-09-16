@@ -10,6 +10,22 @@
 const requireAuth = (req, res, next) => {
 
     // ---------------------------------
+    // INTERNAL FEEDBACK REMINDER
+    // Auth dilakukan oleh route melalui
+    // FEEDBACK_REMINDER_SECRET
+    // ---------------------------------
+
+    if (
+        req.path ===
+        "/internal/feedback-reminder"
+    ) {
+
+        return next();
+
+    }
+
+
+    // ---------------------------------
     // Belum login
     // ---------------------------------
 
@@ -22,8 +38,12 @@ const requireAuth = (req, res, next) => {
         ) {
 
             return res.status(401).json({
+
                 success: false,
-                message: "Unauthorized. Silakan login terlebih dahulu."
+
+                message:
+                    "Unauthorized. Silakan login terlebih dahulu."
+
             });
 
         }
@@ -39,9 +59,11 @@ const requireAuth = (req, res, next) => {
     // User tersedia
     // ---------------------------------
 
-    req.user = req.session.user;
+    req.user =
+        req.session.user;
 
-    res.locals.user = req.user;
+    res.locals.user =
+        req.user;
 
 
     next();
@@ -55,7 +77,10 @@ const requireAuth = (req, res, next) => {
 
 const redirectIfAuthenticated = (req, res, next) => {
 
-    if (req.session && req.session.user) {
+    if (
+        req.session &&
+        req.session.user
+    ) {
 
         return res.redirect("/");
 
