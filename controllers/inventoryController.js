@@ -1,6 +1,9 @@
 const inventoryService = require("../services/inventoryService");
 const activityService = require("../services/activityService");
 const handoverService = require("../services/handoverService");
+const digitalSignatureService =
+    require("../services/digitalSignatureService");
+const labelPdfService = require("../services/labelPdfService");
 
 // ===========================
 // Helper
@@ -139,9 +142,21 @@ exports.detail = (req, res) => {
 
     }
 
+    const signatures =
+        digitalSignatureService.getActiveSignatures();
+
+    const itSignatures = signatures.filter(
+        signature =>
+            String(signature.jabatan || "")
+                .trim()
+                .toLowerCase() === "it support"
+    );
+
     return res.render("detail", {
 
         item,
+
+        signatures: itSignatures,
 
         currentPage:
             "inventaris",
@@ -153,6 +168,120 @@ exports.detail = (req, res) => {
             req.query.error || null
 
     });
+
+};
+
+// ===========================
+// Cetak Label QC
+// ===========================
+
+exports.printLabel = async (req, res) => {
+
+    try {
+
+        const company = getCompany(req);
+
+        if (!isValidCompany(company)) {
+            return res.status(403).send(
+                "Company tidak valid."
+            );
+        }
+
+
+        const item =
+            inventoryService.getById(
+                req.params.id
+            );
+
+
+        if (!item) {
+
+            return res.status(404).send(
+                "Data inventaris tidak ditemukan."
+            );
+
+        }
+
+
+        // =====================================
+        // COMPANY AUTHORIZATION
+        // =====================================
+
+        if (!isAuthorizedItem(item, company)) {
+
+            return res.status(403).send(
+                "Anda tidak memiliki akses ke data inventaris ini."
+            );
+
+        }
+
+
+        // =====================================
+        // LABEL HANYA UNTUK QC SELESAI
+        // =====================================
+
+        if (
+            item.status !== "DONE" &&
+            item.status !== "REJECT"
+        ) {
+
+            return res.status(400).send(
+                "Label hanya dapat dicetak setelah QC selesai."
+            );
+
+        }
+
+
+        // =====================================
+        // VALIDASI DATA QC
+        // =====================================
+
+        if (
+            !item.qc_name ||
+            !item.ssd ||
+            !item.ssd_health ||
+            !item.bh
+        ) {
+
+            return res.status(400).send(
+                "Data detail QC belum lengkap."
+            );
+
+        }
+
+
+        // =====================================
+        // GENERATE LABEL
+        // =====================================
+
+        const result =
+            await labelPdfService.generateLabel(
+                item
+            );
+
+
+        // =====================================
+        // KIRIM PDF
+        // =====================================
+
+        return res.sendFile(
+            result.filePath
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "❌ printLabel error:",
+            error
+        );
+
+
+        return res.status(500).send(
+            "Gagal membuat label QC."
+        );
+
+    }
 
 };
 
@@ -172,6 +301,30 @@ exports.manualQC = (req, res) => {
     const rejectReason =
         (
             req.body.reject_reason ||
+            ""
+        ).trim();
+
+    const qcName =
+    (
+        req.body.qc_name ||
+        ""
+    ).trim();
+
+    const ssd =
+        (
+            req.body.ssd ||
+            ""
+        ).trim();
+
+    const ssdHealth =
+        (
+            req.body.ssd_health ||
+            ""
+        ).trim();
+
+    const bh =
+        (
+            req.body.bh ||
             ""
         ).trim();
 
@@ -212,7 +365,6 @@ exports.manualQC = (req, res) => {
         );
 
     }
-
 
     // =====================================
     // Ambil data inventaris
@@ -286,7 +438,11 @@ exports.manualQC = (req, res) => {
         inventoryService.manualQC(
             id,
             status,
-            rejectReason
+            rejectReason,
+            qcName,
+            ssd,
+            ssdHealth,
+            bh
         );
 
 

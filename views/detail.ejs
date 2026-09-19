@@ -447,11 +447,141 @@ if (item.last_qc) {
 
     </h5>
 
+
     <% if(item.status === "PENDING"){ %>
 
     <form
         action="/inventaris/<%= item.id %>/manual-qc"
         method="POST">
+
+
+        <!-- ===========================
+             DETAIL QC
+        =========================== -->
+
+        <div class="mb-3">
+
+            <label
+                for="qcName"
+                class="form-label fw-semibold">
+
+                Nama QC
+
+            </label>
+
+
+            <select
+                id="qcName"
+                name="qc_name"
+                class="form-select">
+
+                <option value="">
+                    Pilih Nama QC
+                </option>
+
+
+                <% (signatures || []).forEach(signature => { %>
+
+                    <option
+                        value="<%= signature.nama %>"
+                        <%= item.qc_name === signature.nama ? "selected" : "" %>>
+
+                        <%= signature.nama %>
+
+                    </option>
+
+                <% }) %>
+
+            </select>
+
+        </div>
+
+
+        <!-- ===========================
+             SSD / SSD HEALTH / BH
+        =========================== -->
+
+        <div class="row g-3">
+
+
+            <!-- SSD -->
+
+            <div class="col-md-4">
+
+                <label
+                    for="ssd"
+                    class="form-label fw-semibold">
+
+                    SSD
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="ssd"
+                    name="ssd"
+                    class="form-control"
+                    value="<%= item.ssd || '' %>"
+                    placeholder="Contoh: 512 GB">
+
+            </div>
+
+
+            <!-- SSD HEALTH -->
+
+            <div class="col-md-4">
+
+                <label
+                    for="ssdHealth"
+                    class="form-label fw-semibold">
+
+                    SSD Health
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="ssdHealth"
+                    name="ssd_health"
+                    class="form-control"
+                    value="<%= item.ssd_health || '' %>"
+                    placeholder="Contoh: GOOD">
+
+            </div>
+
+
+            <!-- BH -->
+
+            <div class="col-md-4">
+
+                <label
+                    for="bh"
+                    class="form-label fw-semibold">
+
+                    BH
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="bh"
+                    name="bh"
+                    class="form-control"
+                    value="<%= item.bh || '' %>"
+                    placeholder="Contoh: 92%">
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ===========================
+             REJECT REASON
+        =========================== -->
 
         <div class="mb-3">
 
@@ -460,9 +590,11 @@ if (item.last_qc) {
                 class="form-label fw-semibold">
 
                 Reject Reason
+
                 <span class="text-danger">*</span>
 
             </label>
+
 
             <textarea
                 id="rejectReason"
@@ -470,6 +602,7 @@ if (item.last_qc) {
                 rows="4"
                 class="form-control"
                 placeholder="Masukkan alasan reject..."></textarea>
+
 
             <div
                 id="rejectWarning"
@@ -482,6 +615,11 @@ if (item.last_qc) {
             </div>
 
         </div>
+
+
+        <!-- ===========================
+             ACTION BUTTON
+        =========================== -->
 
         <div class="row g-2">
 
@@ -501,6 +639,7 @@ if (item.last_qc) {
                 </button>
 
             </div>
+
 
             <div class="col">
 
@@ -523,41 +662,83 @@ if (item.last_qc) {
 
         </div>
 
+
     </form>
+
 
     <% } else { %>
 
-<div class="alert alert-info mb-3">
 
-    <i class="bi bi-info-circle me-2"></i>
+    <!-- ===========================
+         QC SELESAI
+    =========================== -->
 
-    Inventaris ini sudah selesai QC.
+    <div class="alert alert-info mb-3">
 
-</div>
+        <i class="bi bi-info-circle me-2"></i>
 
-<form
-    id="editQcForm"
-    action="/inventaris/<%= item.id %>/edit-qc"
-    method="POST">
+        Inventaris ini sudah selesai QC.
 
-    <button
-        id="editQcBtn"
-        type="button"
-        class="btn btn-warning w-100">
+    </div>
 
-        <i class="bi bi-check-circle-fill me-2"></i>
 
-        Edit QC
+    <!-- ===========================
+         LABEL LAPTOP SAJA
+    =========================== -->
 
-    </button>
+    <%
+        const jenisLabel =
+            String(item.jenis || "")
+                .trim()
+                .toLowerCase();
+    %>
 
-</form>
 
-<% } %>
+    <% if (jenisLabel === "laptop") { %>
+
+        <a
+            href="/inventaris/<%= item.id %>/label"
+            target="_blank"
+            class="btn btn-primary w-100 mb-3">
+
+            <i class="bi bi-printer-fill me-2"></i>
+
+            Cetak Label 60 × 40 mm
+
+        </a>
+
+    <% } %>
+
+
+    <!-- ===========================
+         EDIT QC
+    =========================== -->
+
+    <form
+        id="editQcForm"
+        action="/inventaris/<%= item.id %>/edit-qc"
+        method="POST">
+
+        <button
+            id="editQcBtn"
+            type="button"
+            class="btn btn-warning w-100">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            Edit QC
+
+        </button>
+
+    </form>
+
+
+    <% } %>
 
 </div>
 
 </div> <!-- END col-lg-8 -->
+
 <!-- ===========================
      RIGHT PANEL
 =========================== -->

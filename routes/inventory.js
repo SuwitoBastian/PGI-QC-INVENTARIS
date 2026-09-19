@@ -7,6 +7,12 @@ const inventoryController = require("../controllers/inventoryController");
 // Daftar Inventaris
 router.get("/", inventoryController.index);
 
+// Cetak Label QC
+router.get(
+    "/:id/label",
+    inventoryController.printLabel
+);
+
 // Detail Inventaris
 router.get("/:id", inventoryController.detail);
 

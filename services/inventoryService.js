@@ -645,7 +645,11 @@ exports.canCloseBatch = (company) => {
 exports.manualQC = (
     id,
     status,
-    rejectReason
+    rejectReason,
+    qcName,
+    ssd,
+    ssdHealth,
+    bh
 ) => {
 
     return db.prepare(`
@@ -653,6 +657,10 @@ exports.manualQC = (
         SET
             status = ?,
             reject_reason = ?,
+            qc_name = ?,
+            ssd = ?,
+            ssd_health = ?,
+            bh = ?,
             last_qc = datetime('now','localtime'),
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
@@ -663,6 +671,11 @@ exports.manualQC = (
         status === "REJECT"
             ? rejectReason
             : "",
+
+        qcName || null,
+        ssd || null,
+        ssdHealth || null,
+        bh || null,
 
         id
 
@@ -680,6 +693,10 @@ exports.resetQC = (id) => {
         SET
             status = 'PENDING',
             reject_reason = '',
+            qc_name = NULL,
+            ssd = NULL,
+            ssd_health = NULL,
+            bh = NULL,
             last_qc = NULL,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
