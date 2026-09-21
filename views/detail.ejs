@@ -694,7 +694,7 @@ if (item.last_qc) {
     %>
 
 
-    <% if (jenisLabel === "laptop") { %>
+    <% if (jenisLabel.includes("laptop")) { %>
 
         <a
             href="/inventaris/<%= item.id %>/label"
