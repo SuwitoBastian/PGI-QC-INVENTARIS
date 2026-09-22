@@ -269,14 +269,30 @@ exports.searchInventaris = (
 
     }
 
-    if (jenis) {
+if (jenis) {
 
-    sql += `
-        AND LOWER(TRIM(jenis)) = LOWER(TRIM(?))
-    `;
+    const jenisFilter = String(jenis)
+        .trim()
+        .toLowerCase();
 
-    params.push(jenis);
+    if (jenisFilter === "laptop") {
 
+        sql += `
+            AND (
+                LOWER(TRIM(jenis)) = 'laptop'
+                OR LOWER(TRIM(jenis)) LIKE 'laptop %'
+            )
+        `;
+
+    } else {
+
+        sql += `
+            AND LOWER(TRIM(jenis)) = LOWER(TRIM(?))
+        `;
+
+        params.push(jenis);
+
+    }
 }
 
     sql += `

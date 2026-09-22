@@ -384,9 +384,12 @@ exports.exportExcel = async (company, res) => {
 
     const laptops = items.filter(item => {
 
-        const jenis = (item.jenis || "").toLowerCase();
+        const jenis = String(item.jenis || "")
+            .trim()
+            .toLowerCase();
 
         return jenis === "laptop"
+            || jenis.startsWith("laptop ")
             || jenis === "pc all in one";
 
     });
@@ -542,9 +545,12 @@ exports.exportBatch = async (batchId, company, res) => {
 
     const laptops = items.filter(item => {
 
-        const jenis = (item.jenis || "").toLowerCase();
+        const jenis = String(item.jenis || "")
+            .trim()
+            .toLowerCase();
 
         return jenis === "laptop"
+            || jenis.startsWith("laptop ")
             || jenis === "pc all in one";
 
     });
