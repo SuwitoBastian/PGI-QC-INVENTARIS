@@ -19,6 +19,12 @@ router.get(
     calendarController.index
 );
 
+// APPROVE BOOKING
+// POST /api/calendar/1/approve
+router.post(
+    "/:id/approve",
+    calendarController.approve
+);
 
 // GET detail booking
 // /api/calendar/1

@@ -64,14 +64,13 @@ function getBookingById(id) {
 // ==================================================
 //
 // RULE:
-// 1 tanggal = hanya boleh 1 booking aktif
-// PGI dan PEI tetap saling bentrok
+// - PGI dan PEI BOLEH booking tanggal yang sama.
+// - WAITING_APPROVAL tidak dianggap conflict.
+// - APPROVED menjadi slot yang sudah terpakai.
+// - Dalam 1 tanggal hanya boleh ada 1 APPROVED.
+// - CANCELLED / REJECTED tidak dianggap conflict.
 //
-// CANCELLED tidak dianggap bentrok.
-//
-// excludeId digunakan saat EDIT,
-// supaya booking yang sedang diedit
-// tidak dianggap bentrok dengan dirinya sendiri.
+// excludeId digunakan saat EDIT.
 //
 // ==================================================
 
@@ -84,7 +83,7 @@ function checkConflict({
         SELECT *
         FROM calendar_booking
         WHERE booking_date = ?
-        AND status != 'CANCELLED'
+        AND status = 'APPROVED'
     `;
 
     const params = [booking_date];
@@ -264,7 +263,7 @@ function createBooking(data) {
 
         data.notes || null,
 
-        data.status || "TENTATIVE"
+        "WAITING_APPROVAL"
 
     );
 
@@ -803,6 +802,133 @@ function findMatchingBooking(company, bookingDate, assetCount) {
     );
 }
 
+// ==================================================
+// APPROVE BOOKING
+// ==================================================
+//
+// RULE:
+// - Hanya booking WAITING_APPROVAL yang bisa di-approve.
+// - Dalam 1 tanggal hanya boleh ada 1 APPROVED.
+// - Booking company lain pada tanggal yang sama
+//   dan masih WAITING_APPROVAL otomatis REJECTED.
+//
+// ==================================================
+
+function approveBooking(id) {
+
+    const booking = getBookingById(id);
+
+    if (!booking) {
+
+        return {
+            success: false,
+            message: "Booking tidak ditemukan."
+        };
+
+    }
+
+    if (booking.status !== "WAITING_APPROVAL") {
+
+        return {
+            success: false,
+            message:
+                "Booking hanya dapat di-approve jika statusnya Menunggu Approval."
+        };
+
+    }
+
+    const transaction = db.transaction(() => {
+
+        // ==========================================
+        // CEK APAKAH SUDAH ADA APPROVED
+        // ==========================================
+
+        const approved = db.prepare(`
+            SELECT *
+            FROM calendar_booking
+            WHERE booking_date = ?
+            AND status = 'APPROVED'
+            AND id != ?
+            LIMIT 1
+        `).get(
+            booking.booking_date,
+            id
+        );
+
+        if (approved) {
+
+            return {
+                success: false,
+                conflict: true,
+                existingApproved: approved,
+                message:
+                    `Tanggal ${booking.booking_date} sudah memiliki ` +
+                    `booking APPROVED dari ${approved.company}.`
+            };
+
+        }
+
+        // ==========================================
+        // APPROVE BOOKING YANG DIPILIH
+        // ==========================================
+
+        db.prepare(`
+            UPDATE calendar_booking
+            SET
+                status = 'APPROVED',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(id);
+
+        // ==========================================
+        // AUTO REJECT COMPANY LAIN
+        // ==========================================
+
+        const rejectedBookings = db.prepare(`
+            SELECT *
+            FROM calendar_booking
+            WHERE booking_date = ?
+            AND status = 'WAITING_APPROVAL'
+            AND id != ?
+        `).all(
+            booking.booking_date,
+            id
+        );
+
+        db.prepare(`
+            UPDATE calendar_booking
+            SET
+                status = 'REJECTED',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE booking_date = ?
+            AND status = 'WAITING_APPROVAL'
+            AND id != ?
+        `).run(
+            booking.booking_date,
+            id
+        );
+
+        return {
+            success: true,
+            rejectedBookings
+        };
+
+    });
+
+    const result = transaction();
+
+    if (!result || result.success === false) {
+        return result;
+    }
+
+    return {
+        success: true,
+        booking: getBookingById(id),
+        rejectedBookings:
+            result.rejectedBookings || []
+    };
+
+}
 
 // ==================================================
 // EXPORT
@@ -832,6 +958,8 @@ module.exports = {
 
     getMonthlySummary,
 
-    findMatchingBooking
+    findMatchingBooking,
+
+    approveBooking
 
 };

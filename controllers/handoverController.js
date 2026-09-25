@@ -202,11 +202,11 @@ exports.createGaToIt = async (req, res) => {
             });
         }
 
-        if (booking.status !== "CONFIRMED") {
+        if (booking.status !== "APPROVED") {
             return res.status(400).json({
                 success: false,
                 message:
-                    "Booking harus berstatus CONFIRMED sebelum Tanda Terima GA → IT dibuat."
+                    "Booking harus berstatus APPROVED sebelum Tanda Terima GA → IT dibuat."
             });
         }
 

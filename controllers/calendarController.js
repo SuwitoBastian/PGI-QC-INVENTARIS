@@ -219,14 +219,10 @@ exports.create = (req, res) => {
         // ==============================
 
         const allowedStatus = [
-            "CONFIRMED",
-            "TENTATIVE",
-            "CANCELLED"
+            "WAITING_APPROVAL"
         ];
 
-
-        const bookingStatus =
-            status || "TENTATIVE";
+        const bookingStatus = "WAITING_APPROVAL";
 
 
         if (!allowedStatus.includes(bookingStatus)) {
@@ -569,11 +565,11 @@ exports.update = (req, res) => {
         // ==============================
 
         const allowedStatus = [
-            "CONFIRMED",
-            "TENTATIVE",
+            "WAITING_APPROVAL",
+            "APPROVED",
+            "REJECTED",
             "CANCELLED"
         ];
-
 
         const bookingStatus =
             status || existing.status;
@@ -882,6 +878,24 @@ exports.uploadExcel = (req, res) => {
 
                 message:
                     "Booking yang sudah dibatalkan tidak dapat menerima file Excel."
+
+            });
+
+        }
+
+
+        // ==========================================
+        // BOOKING HARUS SUDAH APPROVED
+        // ==========================================
+
+        if (existing.status !== "APPROVED") {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Booking belum APPROVED. Excel hanya dapat diupload setelah booking disetujui Staff IT."
 
             });
 
@@ -1476,6 +1490,205 @@ exports.remove = (req, res) => {
             message:
                 error.message ||
                 "Gagal menghapus booking"
+
+        });
+
+    }
+
+};
+// ==================================================
+// POST /api/calendar/:id/approve
+// APPROVE BOOKING
+// HANYA IT
+// ==================================================
+
+exports.approve = (req, res) => {
+
+    try {
+
+        const role =
+            String(req.user?.role || "")
+                .trim()
+                .toUpperCase();
+
+        // ==========================================
+        // HANYA IT
+        // ==========================================
+
+        if (role !== "IT") {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message:
+                    "Hanya Staff IT yang dapat melakukan approval booking."
+
+            });
+
+        }
+
+        const id =
+            Number(req.params.id);
+
+        if (!Number.isInteger(id) || id <= 0) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "ID booking tidak valid."
+
+            });
+
+        }
+
+        const result =
+            calendarService.approveBooking(id);
+
+        if (!result || result.success === false) {
+
+            if (result?.conflict) {
+
+                return res.status(409).json({
+
+                    success: false,
+
+                    conflict: true,
+
+                    message:
+                        result.message ||
+                        "Tanggal tersebut sudah memiliki booking APPROVED.",
+
+                    existingBooking:
+                        result.existingApproved || null
+
+                });
+
+            }
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    result?.message ||
+                    "Booking gagal di-approve."
+
+            });
+
+        }
+
+        // ==========================================
+        // ACTIVITY - APPROVED
+        // ==========================================
+
+        try {
+
+            activityService.createActivity({
+
+                company:
+                    result.booking.company,
+
+                type:
+                    "BOOKING_APPROVED",
+
+                title:
+                    "Booking QC Approved",
+
+                message:
+                    `${result.booking.company} mendapat approval ` +
+                    `booking QC untuk tanggal ` +
+                    `${result.booking.booking_date}.`,
+
+                reference_id:
+                    result.booking.id
+
+            });
+
+        } catch (activityError) {
+
+            console.error(
+                "⚠️ Gagal membuat activity BOOKING_APPROVED:",
+                activityError
+            );
+
+        }
+
+        // ==========================================
+        // ACTIVITY - AUTO REJECT
+        // ==========================================
+
+        for (
+            const rejected
+            of result.rejectedBookings || []
+        ) {
+
+            try {
+
+                activityService.createActivity({
+
+                    company:
+                        rejected.company,
+
+                    type:
+                        "BOOKING_AUTO_REJECTED",
+
+                    title:
+                        "Booking QC Ditolak Otomatis",
+
+                    message:
+                        `${rejected.company} ditolak otomatis karena ` +
+                        `booking ${result.booking.company} ` +
+                        `telah disetujui untuk tanggal ` +
+                        `${rejected.booking_date}.`,
+
+                    reference_id:
+                        rejected.id
+
+                });
+
+            } catch (activityError) {
+
+                console.error(
+                    "⚠️ Gagal membuat activity BOOKING_AUTO_REJECTED:",
+                    activityError
+                );
+
+            }
+
+        }
+
+        return res.json({
+
+            success: true,
+
+            message:
+                "Booking berhasil di-approve. Booking lain pada tanggal yang sama otomatis ditolak.",
+
+            booking:
+                result.booking,
+
+            rejectedBookings:
+                result.rejectedBookings || []
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "❌ Calendar approve error:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                error.message ||
+                "Gagal melakukan approval booking."
 
         });
 

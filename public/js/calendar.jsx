@@ -10,14 +10,16 @@ const CALENDAR_CONFIG = window.__CALENDAR_DATA__ || {
 };
 
 const STATUS_LABEL = {
-    CONFIRMED: "Terjadwal",
-    TENTATIVE: "Tentatif",
+    WAITING_APPROVAL: "Menunggu Approval",
+    APPROVED: "Approved",
+    REJECTED: "Rejected",
     CANCELLED: "Dibatalkan"
 };
 
 const STATUS_CLASS = {
-    CONFIRMED: "confirmed",
-    TENTATIVE: "tentative",
+    WAITING_APPROVAL: "waiting-approval",
+    APPROVED: "approved",
+    REJECTED: "rejected",
     CANCELLED: "cancelled"
 };
 
@@ -531,7 +533,7 @@ function Calendar({
                             className="legend-dot"
                             style={{ background: "#f59e0b" }}
                         ></i>
-                        Terjadwal
+                        Menunggu Approval
                     </span>
 
                     <span>
@@ -539,7 +541,7 @@ function Calendar({
                             className="legend-dot"
                             style={{ background: "#10b981" }}
                         ></i>
-                        Selesai
+                        Approved
                     </span>
 
                     <span>
@@ -547,7 +549,23 @@ function Calendar({
                             className="legend-dot"
                             style={{ background: "#ef4444" }}
                         ></i>
+                        Rejected
+                    </span>
+
+                    <span>
+                        <i
+                            className="legend-dot"
+                            style={{ background: "#6b7280" }}
+                        ></i>
                         Dibatalkan
+                    </span>
+
+                    <span>
+                        <i
+                            className="legend-dot"
+                            style={{ background: "#3b82f6" }}
+                        ></i>
+                        Selesai
                     </span>
 
                 </div>
@@ -857,36 +875,6 @@ function BookingModal({
 
                         </div>
 
-
-                        <div className="form-group">
-
-                            <label>
-                                Status
-                            </label>
-
-                            <select
-                                value={form.status}
-                                onChange={(e) =>
-                                    updateField(
-                                        "status",
-                                        e.target.value
-                                    )
-                                }
-                            >
-
-                                <option value="CONFIRMED">
-                                    Terjadwal
-                                </option>
-
-                                <option value="CANCELLED">
-                                    Dibatalkan
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
                         <div className="form-group">
 
                             <label>
@@ -1094,6 +1082,44 @@ function BookingExcelSection({
 
             </div>
 
+            {!hasExcel &&
+                booking.status === "WAITING_APPROVAL" && (
+                    <div
+                        style={{
+                            padding: "12px 14px",
+                            marginBottom: "12px",
+                            borderRadius: "10px",
+                            background: "#fff8e1",
+                            color: "#856404",
+                            fontSize: "13px",
+                            fontWeight: "600"
+                        }}
+                    >
+                        <i className="bi bi-hourglass-split me-2"></i>
+                        Booking sedang menunggu approval Staff IT.
+                        Upload Excel dapat dilakukan setelah booking disetujui.
+                    </div>
+                )}
+
+            {!hasExcel &&
+                booking.status === "REJECTED" && (
+                    <div
+                        style={{
+                            padding: "12px 14px",
+                            marginBottom: "12px",
+                            borderRadius: "10px",
+                            background: "#fee2e2",
+                            color: "#b42318",
+                            fontSize: "13px",
+                            fontWeight: "600"
+                        }}
+                    >
+                        <i className="bi bi-x-circle me-2"></i>
+                        Booking ditolak karena tanggal tersebut telah
+                        disetujui untuk company lain.
+                    </div>
+                )}
+
 
             {hasExcel ? (
 
@@ -1117,7 +1143,7 @@ function BookingExcelSection({
                     </div>
 
                     {canManage &&
-                        booking.status !== "CANCELLED" &&
+                        booking.status === "APPROVED" &&
                         !hasBatch && (
                             <label className="booking-excel-upload-again">
 
@@ -1147,9 +1173,8 @@ function BookingExcelSection({
                 </div>
 
             ) : (
-
                 canManage &&
-                booking.status !== "CANCELLED" && (
+                booking.status === "APPROVED" && (
 
                     <label className="booking-excel-upload">
 
@@ -2227,6 +2252,7 @@ function DetailModal({
     onClose,
     onEdit,
     onCancel,
+    onApprove,
     onToast,
     onUploaded
 }) {
@@ -2234,6 +2260,17 @@ function DetailModal({
 
     const canManage =
         booking.company === company;
+
+    const currentUser =
+    window.__CURRENT_USER__ || {};
+
+    const userRole =
+        String(currentUser.role || "")
+            .trim()
+            .toUpperCase();
+
+    const isIT =
+        userRole === "IT";
 
     return (
         <div className="modal-backdrop-custom">
@@ -2335,6 +2372,24 @@ function DetailModal({
                 </div>
 
                 <div className="modal-footer-custom">
+
+                    {isIT &&
+                        booking.status === "WAITING_APPROVAL" && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="btn-primary-custom"
+                                    onClick={() =>
+                                        onApprove(booking)
+                                    }
+                                >
+                                    <i className="bi bi-check-circle me-1"></i>
+                                    Approve Booking
+                                </button>
+
+                                <div className="detail-footer-spacer"></div>
+                            </>
+                    )}
 
                     {booking.status !== "CANCELLED" &&
                         canManage &&
@@ -2513,28 +2568,15 @@ function UpcomingBookings({
                                 </div>
 
                                 <span
-                                    className="status-badge"
-                                    style={{
-                                        background:
-                                            item.batch_status === "FINISHED"
-                                                ? "#d1fae5"
-                                                : item.status === "CANCELLED"
-                                                    ? "#fee2e2"
-                                                    : "#fef3c7",
-                                        color:
-                                            item.batch_status === "FINISHED"
-                                                ? "#047857"
-                                                : item.status === "CANCELLED"
-                                                    ? "#dc2626"
-                                                    : "#b45309",
-                                        textDecoration: "none"
-                                    }}
+                                    className={`status-badge ${
+                                        item.batch_status === "FINISHED"
+                                            ? "completed"
+                                            : STATUS_CLASS[item.status] || ""
+                                    }`}
                                 >
                                     {item.batch_status === "FINISHED"
                                         ? "Selesai"
-                                        : item.status === "CANCELLED"
-                                            ? "Dibatalkan"
-                                            : "Terjadwal"}
+                                        : STATUS_LABEL[item.status] || item.status}
                                 </span>
 
                             </div>
@@ -2650,6 +2692,20 @@ function CalendarApp() {
     const initialCompany =
         CALENDAR_CONFIG.company || "PGI";
 
+    const currentUser =
+    window.__CURRENT_USER__ || {};
+
+    const userRole =
+        String(currentUser.role || "")
+            .trim()
+            .toUpperCase();
+
+    const isIT =
+        userRole === "IT";
+
+    const isGA =
+        userRole === "GA";
+
     const [company, setCompany] =
         useState(initialCompany);
 
@@ -2737,7 +2793,7 @@ function CalendarApp() {
 
             notes: "",
 
-            status: "CONFIRMED"
+            status: "WAITING_APPROVAL"
         });
 
     const monthString =
@@ -2868,7 +2924,7 @@ function CalendarApp() {
 
             notes: "",
 
-            status: "CONFIRMED"
+            status: "WAITING_APPROVAL"
         });
 
         setFormOpen(true);
@@ -2896,10 +2952,6 @@ function CalendarApp() {
             requester: booking.requester || "",
             location: "HO Jl. Panjang Arteri",
             notes: booking.notes || "",
-            status:
-                booking.status === "CANCELLED"
-                    ? "CANCELLED"
-                    : "CONFIRMED"
         });
 
         setEditingId(booking.id);
@@ -3002,6 +3054,93 @@ function CalendarApp() {
         }
     }
 
+    async function handleApproveBooking(booking) {
+
+    if (!isIT) {
+        showToast(
+            "Hanya Staff IT yang dapat melakukan approval booking.",
+            "warning",
+            "Akses Ditolak"
+        );
+        return;
+    }
+
+    if (!booking?.id) {
+        return;
+    }
+
+    if (booking.status !== "WAITING_APPROVAL") {
+        showToast(
+            "Booking ini sudah tidak menunggu approval.",
+            "warning",
+            "Approval Tidak Tersedia"
+        );
+        return;
+    }
+
+    showConfirm(
+        `Approve booking ${booking.company} untuk tanggal ${formatDate(booking.booking_date)}?`,
+        async () => {
+
+            try {
+
+                const response = await fetch(
+                    `/api/calendar/${booking.id}/approve`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.message ||
+                        "Gagal melakukan approval booking."
+                    );
+                }
+
+                // Refresh kalender supaya:
+                // booking terpilih = APPROVED
+                // booking lain di tanggal sama = REJECTED
+                await loadCalendar();
+
+                // Update detail yang sedang terbuka
+                if (data.booking) {
+                    setDetailBooking(
+                        data.booking
+                    );
+                }
+
+                showToast(
+                    `${booking.company} berhasil di-approve. Booking lain pada tanggal yang sama otomatis ditolak.`,
+                    "success",
+                    "Booking Approved"
+                );
+
+            } catch (err) {
+
+                console.error(
+                    "Approve booking error:",
+                    err
+                );
+
+                showToast(
+                    err.message ||
+                    "Gagal melakukan approval booking.",
+                    "error",
+                    "Approval Gagal"
+                );
+
+            }
+
+        },
+        "Approve Booking",
+        "Ya, Approve"
+    );
+}
+
     function handleCancel() {
         if (!detailBooking) return;
 
@@ -3073,7 +3212,13 @@ function CalendarApp() {
                 item.booking_date === dateKey
         );
 
-        if (dayBookings.length === 0 && isHoliday(date, dateKey)) {
+        if (
+            dayBookings.length === 0 &&
+            isHoliday(
+                new Date(`${dateKey}T00:00:00`),
+                dateKey
+            )
+        ) {
             showToast(
                 `Tanggal ${formatDate(dateKey)} tidak dapat dibooking karena merupakan hari libur/tanggal merah.`,
                 "warning",
@@ -3192,6 +3337,7 @@ function CalendarApp() {
                     openEditForm(detailBooking)
                 }
                 onCancel={handleCancel}
+                onApprove={handleApproveBooking}
                 onToast={showToast}
                 onUploaded={refreshBookingAfterUpload}
             />
