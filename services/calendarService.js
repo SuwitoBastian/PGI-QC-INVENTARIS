@@ -147,7 +147,7 @@ function getUpcomingBookings(
         LEFT JOIN batch b
             ON b.booking_id = cb.id
         WHERE cb.booking_date >= ?
-        AND cb.status != 'CANCELLED'
+        AND cb.status = 'APPROVED'
         AND (b.status IS NULL OR b.status != 'FINISHED')
     `;
 
@@ -745,7 +745,7 @@ function getMonthlySummary(month, company = "ALL") {
             COALESCE(
                 SUM(
                     CASE
-                        WHEN status = 'CANCELLED'
+                        WHEN status IN ('CANCELLED', 'REJECTED')
                         THEN 1
                         ELSE 0
                     END

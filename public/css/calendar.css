@@ -414,13 +414,18 @@
     background: #fef3f2 !important;
     color: #b42318 !important;
     border-left: 3px solid #f04438 !important;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: #f04438;
 }
 
 .calendar-event.cancelled {
     background: #f2f4f7 !important;
-    color: #475467 !important;
+    color: #667085 !important;
     border-left: 3px solid #98a2b3 !important;
-    text-decoration: none;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: #667085;
 }
 
 .calendar-event.completed {
@@ -1252,25 +1257,6 @@
     color: #c9972c !important;
 }
 
-/* Booking dibatalkan */
-.calendar-event.company-pgi.cancelled,
-.calendar-event.company-pei.cancelled {
-    background: #fff1f3 !important;
-    color: #b42318 !important;
-    border-left: 3px solid #f04438 !important;
-    opacity: 1 !important;
-    text-decoration: none !important;
-}
-
-.calendar-event.company-pgi.cancelled .event-company,
-.calendar-event.company-pgi.cancelled .event-text,
-.calendar-event.company-pei.cancelled .event-company,
-.calendar-event.company-pei.cancelled .event-text {
-    color: #b42318 !important;
-    text-decoration: line-through !important;
-    text-decoration-thickness: 1px;
-    text-decoration-color: #b42318;
-}
 /* =========================================================
    SUMMARY CARD - 3 KOLOM SEJAJAR DENGAN CALENDAR
    ========================================================= */
@@ -1828,3 +1814,52 @@ body[data-theme="dark"] .booking-batch-text span {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+/* =========================================================
+   FINAL STATUS OVERRIDE
+   REJECTED = MERAH + CORET
+   CANCELLED = ABU-ABU + CORET
+   ========================================================= */
+
+/* REJECTED */
+.calendar-event.company-pgi.rejected,
+.calendar-event.company-pei.rejected {
+    background: #fef3f2 !important;
+    color: #b42318 !important;
+    border-left: 3px solid #f04438 !important;
+    text-decoration: line-through !important;
+    text-decoration-thickness: 1.5px !important;
+    text-decoration-color: #f04438 !important;
+}
+
+.calendar-event.company-pgi.rejected .event-company,
+.calendar-event.company-pgi.rejected .event-text,
+.calendar-event.company-pei.rejected .event-company,
+.calendar-event.company-pei.rejected .event-text {
+    color: #b42318 !important;
+    text-decoration: line-through !important;
+    text-decoration-thickness: 1.5px !important;
+    text-decoration-color: #f04438 !important;
+}
+
+
+/* CANCELLED */
+.calendar-event.company-pgi.cancelled,
+.calendar-event.company-pei.cancelled {
+    background: #f2f4f7 !important;
+    color: #667085 !important;
+    border-left: 3px solid #98a2b3 !important;
+    text-decoration: line-through !important;
+    text-decoration-thickness: 1.5px !important;
+    text-decoration-color: #667085 !important;
+}
+
+.calendar-event.company-pgi.cancelled .event-company,
+.calendar-event.company-pgi.cancelled .event-text,
+.calendar-event.company-pei.cancelled .event-company,
+.calendar-event.company-pei.cancelled .event-text {
+    color: #667085 !important;
+    text-decoration: line-through !important;
+    text-decoration-thickness: 1.5px !important;
+    text-decoration-color: #667085 !important;
+}
+

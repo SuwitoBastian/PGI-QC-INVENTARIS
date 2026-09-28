@@ -400,7 +400,7 @@ function Summary({
 
             <SummaryCard
                 icon="bi bi-x-circle"
-                title="Dibatalkan"
+                title="Dibatalkan/Rejected"
                 value={summary.cancelled || 0}
                 className="summary-cancelled"
             />
@@ -417,6 +417,9 @@ function CalendarCell({ date, currentMonth, bookings, onClick }) {
     const holidayName = getHolidayName(date, dateKey);
     const holiday = isHoliday(date, dateKey);
     const dayBookings = bookings.filter(item => item.booking_date === dateKey);
+    const hasRejectedBooking = dayBookings.some(
+    item => item.status === "REJECTED"
+    );
     return (
         <div className={["calendar-cell",!isCurrentMonth?"other-month":"",isToday?"today":"",isPast?"past-date":"",holiday?"holiday":"",isSunday(date)?"sunday":"",dayBookings.length>0?"has-booking":""].join(" ")} onClick={() => { if (!isPast || dayBookings.length>0) onClick(dateKey); }} title={isPast?"Tanggal sudah lewat":holidayName}>
             <div className="calendar-date-number">{date.getDate()}</div>
@@ -425,23 +428,13 @@ function CalendarCell({ date, currentMonth, bookings, onClick }) {
                 {dayBookings.slice(0,3).map(item => (
                     <div
                         key={item.id}
-                       className={`calendar-event ${
-                        item.status === "CANCELLED"
-                            ? "cancelled"
-                            : item.batch_status === "FINISHED"
-                                ? "completed"
-                                : STATUS_CLASS[item.status] || ""
-                    } company-${String(item.company || "").toLowerCase()}`}
-                     style={
-                        item.status === "CANCELLED"
-                            ? {
-                                background: "#fff1f3",
-                                color: "#b42318",
-                                borderLeft: "3px solid #f04438",
-                                textDecoration: "none"
-                            }
-                            : undefined
-                    }
+                        className={`calendar-event ${
+                            item.status === "CANCELLED"
+                                ? "cancelled"
+                                : item.batch_status === "FINISHED"
+                                    ? "completed"
+                                    : STATUS_CLASS[item.status] || ""
+                        } company-${String(item.company || "").toLowerCase()}`}
                         title={`${item.company} - ${item.requester||"-"}`}
                         onClick={(e) => {
                         e.stopPropagation();
