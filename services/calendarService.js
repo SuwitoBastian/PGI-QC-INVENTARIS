@@ -173,6 +173,30 @@ function getUpcomingBookings(
     return db.prepare(sql).all(...params);
 }
 
+// ==================================================
+// GET MAX ASSET LIMIT
+// ==================================================
+
+function getAssetLimit(assetType) {
+
+    const type =
+        String(assetType || "")
+            .trim()
+            .toLowerCase();
+
+    if (type === "handphone") {
+        return 100;
+    }
+
+    if (
+        type === "laptop" ||
+        type === "laptop & handphone"
+    ) {
+        return 50;
+    }
+
+    return 50;
+}
 
 // ==================================================
 // CREATE BOOKING
@@ -217,13 +241,16 @@ function createBooking(data) {
 
     }
 
-    if (assetCount > 50) {
+    const maxAsset =
+        getAssetLimit(data.asset_type);
+
+    if (assetCount > maxAsset) {
 
         return {
             success: false,
             limitReached: true,
             message:
-                "Jumlah aset dalam 1 booking maksimal 50 aset."
+                `Jumlah aset untuk ${data.asset_type || "jenis aset ini"} maksimal ${maxAsset} aset.`
         };
 
     }
@@ -367,6 +394,40 @@ function updateBooking(id, data) {
             existingBookings:
                 conflict
 
+        };
+
+    }
+
+    // ==============================
+    // CHECK JUMLAH ASET
+    // ==============================
+
+    const assetCount =
+        Number(data.asset_count);
+
+    if (
+        !Number.isInteger(assetCount) ||
+        assetCount < 1
+    ) {
+
+        return {
+            success: false,
+            message:
+                "Jumlah aset harus diisi minimal 1."
+        };
+
+    }
+
+    const maxAsset =
+        getAssetLimit(data.asset_type);
+
+    if (assetCount > maxAsset) {
+
+        return {
+            success: false,
+            limitReached: true,
+            message:
+                `Jumlah aset untuk ${data.asset_type || "jenis aset ini"} maksimal ${maxAsset} aset.`
         };
 
     }
@@ -960,6 +1021,8 @@ module.exports = {
 
     findMatchingBooking,
 
-    approveBooking
+    approveBooking,
+    
+    getAssetLimit
 
 };

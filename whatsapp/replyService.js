@@ -1,4 +1,42 @@
-exports.success = async (msg, item, status) => {
+exports.success = async (msg, item, status, qc = {}) => {
+
+    // =========================================
+    // DATA QC
+    // =========================================
+
+    const hasQC =
+        qc &&
+        (
+            qc.nama ||
+            qc.ssd ||
+            qc.sh ||
+            qc.bh
+        );
+
+    let qcText = "";
+
+    if (hasQC) {
+
+        qcText =
+`
+👤 *QC*
+${qc.nama || "-"}
+
+💾 *SSD*
+${qc.ssd || "-"}
+
+💿 *SSD Health*
+${qc.sh || "-"}
+
+🔋 *Battery Health*
+${qc.bh || "-"}
+`;
+
+    }
+
+    // =========================================
+    // REPLY
+    // =========================================
 
     const text =
 `✅ *QC BERHASIL*
@@ -8,7 +46,7 @@ ${item.merk} ${item.type}
 
 🔢 *NF*
 ${item.nf}
-
+${qcText}
 📋 *Status*
 ${status}
 
@@ -18,6 +56,10 @@ Data inventaris berhasil diperbarui.`;
 
 };
 
+
+// =========================================
+// REJECT
+// =========================================
 
 exports.reject = async (msg, item, reason) => {
 
@@ -43,6 +85,10 @@ Data inventaris berhasil diperbarui.`;
 };
 
 
+// =========================================
+// NOT FOUND
+// =========================================
+
 exports.notFound = async (msg, nf) => {
 
     const text =
@@ -61,6 +107,10 @@ Silakan hubungi Admin IT.`;
 
 };
 
+
+// =========================================
+// OCR FAILED
+// =========================================
 
 exports.ocrFailed = async (msg) => {
 

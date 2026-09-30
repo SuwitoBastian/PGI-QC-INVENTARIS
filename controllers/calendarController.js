@@ -1046,11 +1046,18 @@ exports.uploadExcel = (req, res) => {
         }
 
 
-        // ==============================
-        // LIMIT MAKSIMAL 50 ASET
-        // ==============================
+        // ==========================================
+        // VALIDASI JUMLAH DATA EXCEL
+        // TIDAK BOLEH MELEBIHI JUMLAH BOOKING
+        // ==========================================
 
-        if (mappedData.length > 50) {
+        const bookingAssetCount =
+            Number(existing.asset_count);
+
+        const excelAssetCount =
+            mappedData.length;
+
+        if (excelAssetCount > bookingAssetCount) {
 
             return res.status(400).json({
 
@@ -1059,7 +1066,9 @@ exports.uploadExcel = (req, res) => {
                 limitReached: true,
 
                 message:
-                    "Jumlah aset dalam Excel maksimal 50 aset."
+                    `Jumlah aset di Excel (${excelAssetCount}) ` +
+                    `melebihi jumlah aset pada booking ` +
+                    `(${bookingAssetCount}).`
 
             });
 

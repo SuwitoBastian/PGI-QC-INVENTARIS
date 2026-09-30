@@ -442,11 +442,16 @@ exports.findByCandidates = (candidates) => {
 // OCR - Update Status QC berdasarkan ID
 // =====================================
 
+// =====================================
+// OCR - Update Status + QC berdasarkan ID
+// =====================================
+
 exports.updateStatusById = (
     id,
     status,
     rejectReason,
-    photoPath
+    photoPath,
+    qc = {}
 ) => {
 
     if (!id) {
@@ -460,23 +465,49 @@ exports.updateStatusById = (
         SET
             status = ?,
             reject_reason = ?,
+            qc_name = ?,
+            ssd = ?,
+            ssd_health = ?,
+            bh = ?,
             photo_path = ?,
             last_qc = datetime('now','localtime'),
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
         AND status = 'PENDING'
     `).run(
+
         status,
+
         rejectReason || "",
+
+        // ==========================
+        // DATA QC
+        // ==========================
+
+        qc.nama || null,
+
+        qc.ssd || null,
+
+        qc.sh || null,
+
+        qc.bh || null,
+
+        // ==========================
+        // FOTO BARCODE
+        // ==========================
+
         photoPath || null,
+
         id
     );
 
     if (result.changes === 0) {
+
         throw new Error(
             "Inventaris tidak dapat diupdate. " +
             "Data mungkin sudah diproses."
         );
+
     }
 
     return result;

@@ -382,6 +382,52 @@ exports.importExcel = (req, res) => {
 
 
         // =================================================
+        // VALIDASI JUMLAH ASET BOOKING
+        // =================================================
+
+        if (booking) {
+
+            const bookingAssetCount =
+                Number(booking.asset_count);
+
+            const excelAssetCount =
+                mappedData.length;
+
+            if (
+                excelAssetCount > bookingAssetCount
+            ) {
+
+                return res.status(400).send(`
+                    <h2>Jumlah aset melebihi booking.</h2>
+
+                    <p>
+                        Excel berisi
+                        <strong>${excelAssetCount} aset</strong>.
+                    </p>
+
+                    <p>
+                        Jumlah aset pada booking adalah
+                        <strong>${bookingAssetCount} aset</strong>.
+                    </p>
+
+                    <p>
+                        Jumlah aset di Excel tidak boleh
+                        melebihi jumlah aset pada booking.
+                    </p>
+
+                    <br>
+
+                    <a href="/kalender">
+                        Kembali ke Kalender
+                    </a>
+                `);
+
+            }
+
+        }
+
+
+        // =================================================
         // Set Company
         // SECURITY:
         // Tidak mengambil company dari Excel
@@ -1248,24 +1294,35 @@ exports.runBooking = (req, res) => {
 
 
         // =================================================
-        // LIMIT MAKSIMAL 50 ASET
+        // VALIDASI JUMLAH ASET BOOKING
         // =================================================
 
+        const bookingAssetCount =
+            Number(booking.asset_count);
+
+        const excelAssetCount =
+            mappedData.length;
+
         if (
-            mappedData.length > 50
+            excelAssetCount > bookingAssetCount
         ) {
 
             return res.status(400).send(`
-                <h2>Jumlah aset melebihi batas.</h2>
+                <h2>Jumlah aset melebihi booking.</h2>
 
                 <p>
                     Excel berisi
-                    <strong>${mappedData.length} aset</strong>.
+                    <strong>${excelAssetCount} aset</strong>.
                 </p>
 
                 <p>
-                    Maksimal aset dalam 1 booking adalah
-                    <strong>50 aset</strong>.
+                    Jumlah aset pada booking adalah
+                    <strong>${bookingAssetCount} aset</strong>.
+                </p>
+
+                <p>
+                    Jumlah aset di Excel tidak boleh
+                    melebihi jumlah aset pada booking.
                 </p>
 
                 <br>

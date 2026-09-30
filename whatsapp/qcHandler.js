@@ -273,7 +273,8 @@ Tidak ada perubahan pada database.`
             item.id,
             result.status,
             result.rejectReason,
-            relativePhotoPath
+            relativePhotoPath,
+            result.qc
         );
 
     } catch (err) {
@@ -360,7 +361,8 @@ Silakan coba kembali atau hubungi Admin IT Support.`
             await replyService.success(
                 msg,
                 item,
-                "DONE"
+                "DONE",
+                result.qc
             );
 
         } else {

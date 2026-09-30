@@ -608,21 +608,31 @@ function BookingModal({
     const assetCount =
         Number(form.asset_count);
 
+    const assetType =
+        String(form.asset_type || "")
+            .trim()
+            .toLowerCase();
+
+    const maxAsset =
+        assetType === "handphone"
+            ? 100
+            : 50;
+
     const assetCountInvalid =
         !Number.isInteger(assetCount) ||
         assetCount < 1 ||
-        assetCount > 50;
+        assetCount > maxAsset;
 
     const assetCountOverLimit =
         Number.isFinite(assetCount) &&
-        assetCount > 50;
+        assetCount > maxAsset;
 
     const bookingFormInvalid =
-    !form.asset_type ||
-    !form.asset_count ||
-    !Number.isInteger(assetCount) ||
-    assetCount < 1 ||
-    assetCount > 50 ||
+        !form.asset_type ||
+        !form.asset_count ||
+        !Number.isInteger(assetCount) ||
+        assetCount < 1 ||
+        assetCount > maxAsset;
     !String(form.requester || "").trim();
 
     function updateField(field, value) {
@@ -772,7 +782,7 @@ function BookingModal({
                                 <input
                                     type="number"
                                     min="1"
-                                    max="50"
+                                    max={maxAsset}
                                     value={form.asset_count}
                                     onChange={(e) =>
                                         updateField(
@@ -804,7 +814,7 @@ function BookingModal({
                                         }}
                                     >
                                         <i className="bi bi-exclamation-circle me-1"></i>
-                                        Jumlah aset maksimal 50 unit.
+                                        Jumlah aset maksimal {maxAsset} unit.
                                     </div>
                                 )}
 
