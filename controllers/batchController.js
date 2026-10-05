@@ -23,6 +23,51 @@ function isValidCompany(company) {
 }
 
 
+function validateBookingAssetType(booking, mappedData) {
+    const bookingType = String(booking.asset_type || "")
+        .trim()
+        .toLowerCase();
+
+    const allowedTypes = {
+        "laptop": ["laptop"],
+        "handphone": ["handphone"],
+        "laptop & handphone": ["laptop", "handphone"]
+    };
+
+    const allowed = allowedTypes[bookingType];
+
+    if (!allowed) {
+        return {
+            valid: false,
+            message: `Tipe aset booking "${booking.asset_type}" belum didukung untuk validasi Excel.`
+        };
+    }
+
+    const invalidItems = mappedData
+        .map((item, index) => ({
+            row: index + 2,
+            jenis: String(item.jenis || "").trim().toLowerCase()
+        }))
+        .filter(item => !allowed.includes(item.jenis));
+
+    if (invalidItems.length > 0) {
+        const details = invalidItems
+            .map(item =>
+                `Baris ${item.row}: ${item.jenis || "Jenis kosong"}`
+            )
+            .join("<br>");
+
+        return {
+            valid: false,
+            message:
+                `Jenis aset dalam Excel tidak sesuai dengan booking "${booking.asset_type}".<br>${details}`
+        };
+    }
+
+    return { valid: true };
+}
+
+
 // =====================================================
 // HALAMAN BATCH / IMPORT
 // =====================================================
@@ -257,7 +302,10 @@ exports.importExcel = (req, res) => {
             // BOOKING SUDAH MEMILIKI BATCH
             // =================================================
 
-            if (booking.batch_id) {
+            if (
+                booking.batch_id &&
+                req.body.importType !== "append"
+            ) {
 
                 // =============================================
                 // Batch sudah selesai
@@ -341,6 +389,29 @@ exports.importExcel = (req, res) => {
         const activeBatch =
             batchService.getActiveBatch(company);
 
+        // Pastikan append dari booking hanya masuk ke batch miliknya
+        if (
+            req.body.importType === "append" &&
+            booking &&
+            (
+                !activeBatch ||
+                Number(booking.batch_id) !== Number(activeBatch.id)
+            )
+        ) {
+            return res.status(400).send(`
+                <h2>Batch tidak sesuai.</h2>
+
+                <p>
+                    Booking ini tidak terhubung dengan Batch Aktif
+                    yang akan menerima data.
+                </p>
+
+                <br>
+
+                <a href="/batch">Kembali ke Import</a>
+            `);
+        }
+
 
         // =================================================
         // Baca Excel
@@ -385,7 +456,8 @@ exports.importExcel = (req, res) => {
         // VALIDASI JUMLAH ASET BOOKING
         // =================================================
 
-        if (booking) {
+
+        if (booking && req.body.importType !== "append") {
 
             const bookingAssetCount =
                 Number(booking.asset_count);
@@ -393,9 +465,7 @@ exports.importExcel = (req, res) => {
             const excelAssetCount =
                 mappedData.length;
 
-            if (
-                excelAssetCount > bookingAssetCount
-            ) {
+            if (excelAssetCount > bookingAssetCount) {
 
                 return res.status(400).send(`
                     <h2>Jumlah aset melebihi booking.</h2>
@@ -424,7 +494,27 @@ exports.importExcel = (req, res) => {
 
             }
 
+            const typeValidation =
+                validateBookingAssetType(booking, mappedData);
+
+            if (!typeValidation.valid) {
+
+                return res.status(400).send(`
+                    <h2>Jenis aset tidak sesuai booking.</h2>
+
+                    <p>${typeValidation.message}</p>
+
+                    <br>
+
+                    <a href="/kalender">
+                        Kembali ke Kalender
+                    </a>
+                `);
+
+            }
+
         }
+
 
 
         // =================================================
@@ -537,9 +627,9 @@ exports.importExcel = (req, res) => {
                         "Inventaris Ditambahkan",
 
                     message:
-                        `${mappedData.length} data inventaris ` +
-                        `berhasil ditambahkan ke batch ` +
-                        `${activeBatch.batch_code}.`,
+                        `${result.inserted} data inventaris berhasil ditambahkan ` +
+                        `ke batch ${activeBatch.batch_code}. ` +
+                        `${result.duplicate} data duplikat dilewati.`,
 
                     reference_id:
                         activeBatch.id
@@ -887,10 +977,10 @@ exports.importExcel = (req, res) => {
         // =================================================
         // Simpan Inventaris
         // =================================================
-
-        inventoryService.insertInventaris(
-            mappedData
-        );
+        const result =
+            inventoryService.insertInventaris(
+                mappedData
+            );
 
 
         console.table(
@@ -916,7 +1006,8 @@ exports.importExcel = (req, res) => {
 
                 message:
                     `Batch ${batchCode} berhasil dibuat ` +
-                    `dengan ${mappedData.length} data inventaris.`,
+                    `dengan ${result.inserted} data inventaris ` +
+                    `(${result.duplicate} duplikat dilewati).`,
 
                 reference_id:
                     batchId
@@ -935,8 +1026,9 @@ exports.importExcel = (req, res) => {
                     "Import Inventaris Berhasil",
 
                 message:
-                    `${mappedData.length} data inventaris ` +
-                    `berhasil diimport ke batch ${batchCode}.`,
+                    `${result.inserted} data inventaris ` +
+                    `berhasil diimport ke batch ${batchCode}. ` +
+                    `${result.duplicate} data duplikat dilewati.`,
 
                 reference_id:
                     batchId
@@ -978,15 +1070,7 @@ exports.importExcel = (req, res) => {
 
                 },
 
-                result: {
-
-                    inserted:
-                        mappedData.length,
-
-                    duplicate:
-                        0
-
-                },
+                result,
 
                 currentPage:
                     "batch"
@@ -1303,9 +1387,7 @@ exports.runBooking = (req, res) => {
         const excelAssetCount =
             mappedData.length;
 
-        if (
-            excelAssetCount > bookingAssetCount
-        ) {
+        if (excelAssetCount > bookingAssetCount) {
 
             return res.status(400).send(`
                 <h2>Jumlah aset melebihi booking.</h2>
@@ -1333,6 +1415,27 @@ exports.runBooking = (req, res) => {
             `);
 
         }
+
+        // Validasi jenis aset harus sesuai dengan booking
+        const typeValidation =
+            validateBookingAssetType(booking, mappedData);
+
+        if (!typeValidation.valid) {
+
+            return res.status(400).send(`
+                <h2>Jenis aset tidak sesuai booking.</h2>
+
+                <p>${typeValidation.message}</p>
+
+                <br>
+
+                <a href="/kalender">
+                    Kembali ke Kalender
+                </a>
+            `);
+
+        }
+
 
 
         // =================================================

@@ -65,34 +65,108 @@ exports.insertInventaris = (items) => {
         )
     `);
 
+    let inserted = 0;
+    let duplicate = 0;
+
+    const seenNF = new Set();
+    const seenIMEI = new Set();
+
     const insertMany = db.transaction((rows) => {
 
         for (const item of rows) {
 
-        stmt.run(
+            const nf = String(item.nf || "").trim();
+            const imei = String(item.imei || "").trim();
 
-            item.batch_id,
-            item.no,
-            item.tanggal_masuk,
-            item.jenis,
-            item.merk,
-            item.type,
-            item.nf,
-            item.gen,
-            item.ram,
-            item.imei,
-            item.status,
-            item.reject_reason,
-            item.company || "PGI"
+            // ==========================================
+            // CEK DUPLIKAT DALAM FILE EXCEL YANG SAMA
+            // ==========================================
 
-);
+            const duplicateNF =
+                nf !== "" &&
+                seenNF.has(nf);
 
+            const duplicateIMEI =
+                imei !== "" &&
+                seenIMEI.has(imei);
+
+            if (duplicateNF || duplicateIMEI) {
+                duplicate++;
+                continue;
+            }
+
+            // ==========================================
+            // CEK DUPLIKAT DI BATCH YANG SAMA
+            // ==========================================
+
+            const exist = exports.findNFInBatch(
+                item.batch_id,
+                nf,
+                imei
+            );
+
+            if (exist) {
+                duplicate++;
+                continue;
+            }
+
+            // ==========================================
+            // SIMPAN DATA
+            // ==========================================
+
+            stmt.run(
+                item.batch_id,
+                item.no,
+                item.tanggal_masuk,
+                item.jenis,
+                item.merk,
+                item.type,
+                nf,
+                item.gen,
+                item.ram,
+                imei,
+                item.status,
+                item.reject_reason,
+                item.company || "PGI"
+            );
+
+            // Catat identitas yang sudah berhasil masuk.
+            if (nf !== "") {
+                seenNF.add(nf);
+            }
+
+            if (imei !== "") {
+                seenIMEI.add(imei);
+            }
+
+            inserted++;
         }
-
     });
 
     insertMany(items);
 
+    // Sinkronkan total item berdasarkan data
+    // yang benar-benar berhasil masuk.
+    if (items.length > 0 && items[0].batch_id) {
+
+        db.prepare(`
+            UPDATE batch
+            SET total_item = (
+                SELECT COUNT(*)
+                FROM inventaris
+                WHERE batch_id = ?
+            )
+            WHERE id = ?
+        `).run(
+            items[0].batch_id,
+            items[0].batch_id
+        );
+    }
+
+    return {
+        inserted,
+        duplicate
+    };
 };
 
 /**
@@ -516,24 +590,35 @@ exports.updateStatusById = (
 // Cek NF pada Batch
 // =====================================
 
+
 exports.findNFInBatch = (batchId, nf, imei) => {
+    const normalizedNF = String(nf || "").trim();
+    const normalizedIMEI = String(imei || "").trim();
+
+    // Jangan mencari identitas yang kosong.
+    if (!normalizedNF && !normalizedIMEI) {
+        return undefined;
+    }
 
     return db.prepare(`
         SELECT id
         FROM inventaris
         WHERE batch_id = ?
         AND (
-            nf = ?
-            OR imei = ?
+            (? <> '' AND TRIM(nf) = ?)
+            OR
+            (? <> '' AND TRIM(COALESCE(imei, '')) = ?)
         )
         LIMIT 1
     `).get(
         batchId,
-        nf,
-        imei
+        normalizedNF,
+        normalizedNF,
+        normalizedIMEI,
+        normalizedIMEI
     );
-
 };
+
 // =====================================
 // Ambil Nomor Urut Terakhir
 // =====================================
@@ -553,11 +638,10 @@ exports.getLastNo = (batchId) => {
 // Import Tambahan (Append)
 // =====================================
 
-exports.insertInventarisAppend = (batchId, items) => {
 
+exports.insertInventarisAppend = (batchId, items) => {
     const stmt = db.prepare(`
-        INSERT INTO inventaris
-        (
+        INSERT INTO inventaris (
             batch_id,
             no,
             tanggal_masuk,
@@ -573,36 +657,31 @@ exports.insertInventarisAppend = (batchId, items) => {
             company,
             updated_at
         )
-        VALUES
-        (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            CURRENT_TIMESTAMP
-        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
     let inserted = 0;
     let duplicate = 0;
-
-    let nextNo =
-    exports.getLastNo(batchId) + 1;
+    let nextNo = exports.getLastNo(batchId) + 1;
 
     const insertMany = db.transaction((rows) => {
-
         for (const item of rows) {
+            const nf = String(item.nf || "").trim();
+            const imei = String(item.imei || "").trim();
 
+            // Periksa identitas yang sudah ada di batch.
             const exist = exports.findNFInBatch(
                 batchId,
-                item.nf,
-                item.imei
+                nf,
+                imei
             );
 
             if (exist) {
-
                 duplicate++;
                 continue;
-
             }
 
+            // Simpan nilai yang sudah dibersihkan.
             stmt.run(
                 batchId,
                 nextNo,
@@ -610,32 +689,35 @@ exports.insertInventarisAppend = (batchId, items) => {
                 item.jenis,
                 item.merk,
                 item.type,
-                item.nf,
+                nf,
                 item.gen,
                 item.ram,
-                item.imei,
+                imei,
                 "PENDING",
                 "",
                 item.company || "PGI"
-);
+            );
 
             inserted++;
             nextNo++;
-
         }
-
     });
 
     insertMany(items);
 
-    return {
+    db.prepare(`
+        UPDATE batch
+        SET total_item = (
+            SELECT COUNT(*)
+            FROM inventaris
+            WHERE batch_id = ?
+        )
+        WHERE id = ?
+    `).run(batchId, batchId);
 
-        inserted,
-        duplicate
-
-    };
-
+    return { inserted, duplicate };
 };
+
 // =====================================
 // Tutup Batch Aktif
 // =====================================
