@@ -128,6 +128,97 @@ exports.getHistory = (company) => {
     `).all(company);
 
 };
+
+// ==========================================
+// Global Search Inventaris Riwayat
+// ==========================================
+exports.searchInventoryHistory = (
+    company,
+    keyword = "",
+    status = "",
+    jenis = ""
+) => {
+
+    const search = String(keyword || "").trim();
+    const searchLike = `%${search}%`;
+
+    let sql = `
+        SELECT
+            i.id,
+            i.no,
+            i.tanggal_masuk,
+            i.jenis,
+            i.merk,
+            i.type,
+            i.nf,
+            i.gen,
+            i.ram,
+            i.imei,
+            i.status,
+            i.reject_reason,
+            i.qc_name,
+            i.ssd,
+            i.ssd_health,
+            i.bh,
+            i.last_qc,
+            i.company,
+
+            b.id AS batch_id,
+            b.batch_code,
+            b.batch_name,
+            b.closed_at
+
+        FROM inventaris i
+
+        INNER JOIN batch b
+            ON b.id = i.batch_id
+
+        WHERE b.company = ?
+        AND b.status = 'FINISHED'
+
+        AND (
+            i.nf LIKE ?
+            OR i.imei LIKE ?
+            OR i.merk LIKE ?
+            OR i.type LIKE ?
+        )
+    `;
+
+    const params = [
+        company,
+        searchLike,
+        searchLike,
+        searchLike,
+        searchLike
+    ];
+
+    if (status) {
+
+        sql += `
+            AND i.status = ?
+        `;
+
+        params.push(status);
+    }
+
+    if (jenis) {
+
+        sql += `
+            AND i.jenis = ?
+        `;
+
+        params.push(jenis);
+    }
+
+    sql += `
+        ORDER BY
+            b.closed_at DESC,
+            i.no ASC
+    `;
+
+    return db.prepare(sql).all(...params);
+};
+
 // =========================
 // Ambil Batch berdasarkan ID
 // =========================

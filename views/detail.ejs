@@ -746,74 +746,257 @@ if (item.last_qc) {
 
 <div class="col-lg-4">
 
+<%
+    const jenisRight = String(item.jenis || "")
+        .trim()
+        .toLowerCase();
+
+    const isLaptop = jenisRight.includes("laptop");
+    const isPcAllInOne =
+        jenisRight.includes("pc all in one") ||
+        jenisRight.includes("all in one") ||
+        jenisRight.includes("aio");
+
+    const showQcSummary =
+        item.status === "DONE" &&
+        (isLaptop || isPcAllInOne);
+
+    const isMobile =
+        jenisRight.includes("handphone") ||
+        jenisRight.includes("tablet");
+
+    const showLargePhoto =
+        item.status === "REJECT" ||
+        isMobile;
+%>
+
+<% if (showQcSummary) { %>
+
+    <!-- ===========================
+         RINGKASAN QC LAPTOP / AIO
+    =========================== -->
+
+    <div class="device-card">
+
+        <h5 class="mb-4">
+            <i class="bi bi-clipboard-check-fill me-2"></i>
+            Ringkasan QC
+        </h5>
+
+        <div class="row g-3">
+
+            <div class="col-12">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-person-check-fill"></i>
+                        Nama QC
+                    </div>
+                    <div class="info-value">
+                        <%= item.qc_name || "-" %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-device-ssd-fill"></i>
+                        SSD Storage
+                    </div>
+                    <div class="info-value">
+                        <%= item.ssd || "-" %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-speedometer2"></i>
+                        SSD Health
+                    </div>
+                    <div class="info-value">
+                        <%= item.ssd_health || "-" %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-battery-charging"></i>
+                        Battery Health (BH)
+                    </div>
+                    <div class="info-value">
+                        <%= item.bh || "-" %>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FOTO QC tetap ditampilkan -->
+
+    <div class="device-card mt-4">
+
+        <h5 class="mb-4">
+            <i class="bi bi-camera-fill me-2"></i>
+            Foto QC
+        </h5>
+
+        <% if(item.photo_path){ %>
+
+            <img
+                src="<%= item.photo_path %>"
+                class="photo-preview w-100"
+                style="cursor:pointer"
+                data-bs-toggle="modal"
+                data-bs-target="#photoModal">
+
+            <button
+                class="btn btn-success w-100 mt-3"
+                data-bs-toggle="modal"
+                data-bs-target="#photoModal">
+
+                <i class="bi bi-image-fill me-2"></i>
+                Lihat Foto QC
+
+            </button>
+
+        <% }else{ %>
+
+            <div class="empty-photo">
+                <i class="bi bi-image fs-1"></i>
+                <p class="mt-3 mb-0">
+                    Belum ada Foto QC
+                </p>
+            </div>
+
+        <% } %>
+
+    </div>
+
+<% } else if (showLargePhoto) { %>
+
+    <!-- ===========================
+         FOTO QC BESAR
+         HP / TABLET DONE + REJECT
+    =========================== -->
+
+    <div class="device-card">
+
+        <h5 class="mb-4">
+            <i class="bi bi-camera-fill me-2"></i>
+            Foto QC
+        </h5>
+
+        <% if(item.photo_path){ %>
+
+            <img
+                src="<%= item.photo_path %>"
+                class="photo-preview w-100"
+                style="cursor:pointer; max-height:560px; object-fit:contain;"
+                data-bs-toggle="modal"
+                data-bs-target="#photoModal">
+
+            <button
+                class="btn btn-success w-100 mt-3"
+                data-bs-toggle="modal"
+                data-bs-target="#photoModal">
+
+                <i class="bi bi-image-fill me-2"></i>
+                Lihat Foto QC
+
+            </button>
+
+        <% }else{ %>
+
+            <div class="empty-photo">
+                <i class="bi bi-image fs-1"></i>
+                <p class="mt-3 mb-0">
+                    Belum ada Foto QC
+                </p>
+            </div>
+
+        <% } %>
+
+    </div>
+
+<% } else { %>
+
+    <!-- ===========================
+         DEVICE CARD
+         PENDING / STATUS LAIN
+    =========================== -->
+
     <div class="device-card">
 
         <div class="device-image">
 
-    <%
-    let deviceImage = "default.png";
+            <%
+            let deviceImage = "default.png";
+            const jenis = (item.jenis || "").toLowerCase();
+            const merk = (item.merk || "").toLowerCase();
 
-    const jenis = (item.jenis || "").toLowerCase();
-    const merk = (item.merk || "").toLowerCase();
+            // ===== HANDPHONE =====
+            if(jenis === "handphone"){
 
-    // ===== HANDPHONE =====
-// ===== HANDPHONE =====
-    if(jenis === "handphone"){
+                deviceImage = "defaulthp.png";
 
-        deviceImage = "defaulthp.png";
+                if(merk.includes("oppo")){
+                    deviceImage = "oppo.png";
+                }
+                else if(merk.includes("samsung")){
+                    deviceImage = "samsung.png";
+                }
+                else if(merk.includes("apple")){
+                    deviceImage = "apple.png";
+                }
 
-        if(merk.includes("oppo")){
-            deviceImage = "oppo.png";
-        }
-        else if(merk.includes("samsung")){
-            deviceImage = "samsung.png";
-        }
-        else if(merk.includes("apple")){
-            deviceImage = "apple.png";
-        }
+            // ===== TABLET =====
+            }else if(jenis === "tablet"){
 
-    // ===== TABLET =====
-    }else if(jenis === "tablet"){
+                deviceImage = "default.png";
 
-        deviceImage = "default.png";
+                if(merk.includes("samsung")){
+                    deviceImage = "samsung-tablet.png";
+                }
+                else if(merk.includes("apple")){
+                    deviceImage = "apple.png";
+                }
 
-        if(merk.includes("samsung")){
-            deviceImage = "samsung-tablet.png";
-        }
-        else if(merk.includes("apple")){
-            deviceImage = "apple.png";
-        }
+            // ===== LAPTOP / PC ALL IN ONE =====
+            }else{
 
-    // ===== LAPTOP / PC ALL IN ONE =====
-    }else{
+                if(merk.includes("apple macbook")){
+                    deviceImage = "apple-macbook.png";
+                }
+                else if(merk.includes("apple")){
+                    deviceImage = "apple.png";
+                }
+                else if(merk.includes("dell")){
+                    deviceImage = "dell.png";
+                }
+                else if(merk.includes("hp")){
+                    deviceImage = "hp.png";
+                }
+                else if(merk.includes("lenovo")){
+                    deviceImage = "lenovo.png";
+                }
+                else if(merk.includes("asus")){
+                    deviceImage = "asus.png";
+                }
+                else if(merk.includes("acer")){
+                    deviceImage = "acer.png";
+                }
+                else if(merk.includes("axioo")){
+                    deviceImage = "axioo.png";
+                }
 
-        if(merk.includes("apple macbook")){
-            deviceImage = "apple-macbook.png";
-        }
-        else if(merk.includes("apple")){
-            deviceImage = "apple.png";
-        }
-        else if(merk.includes("dell")){
-            deviceImage = "dell.png";
-        }
-        else if(merk.includes("hp")){
-            deviceImage = "hp.png";
-        }
-        else if(merk.includes("lenovo")){
-            deviceImage = "lenovo.png";
-        }
-        else if(merk.includes("asus")){
-            deviceImage = "asus.png";
-        }
-        else if(merk.includes("acer")){
-            deviceImage = "acer.png";
-        }
-        else if(merk.includes("axioo")){
-            deviceImage = "axioo.png";
-        }
-
-    }
-    %>
+            }
+            %>
 
             <img
                 src="/images/device/<%= deviceImage %>"
@@ -822,15 +1005,11 @@ if (item.last_qc) {
         </div>
 
         <h4 class="mt-4 mb-1">
-
             <%= item.merk %>
-
         </h4>
 
         <p class="text-muted">
-
             <%= item.type %>
-
         </p>
 
     </div>
@@ -838,37 +1017,25 @@ if (item.last_qc) {
     <div class="device-card mt-4">
 
         <h5 class="mb-4">
-
             <i class="bi bi-camera-fill me-2"></i>
-
             Foto QC
-
         </h5>
 
         <% if(item.photo_path){ %>
 
             <img
-
                 src="<%= item.photo_path %>"
-
                 class="photo-preview w-100"
-
                 style="cursor:pointer"
-
                 data-bs-toggle="modal"
-
                 data-bs-target="#photoModal">
 
             <button
-
                 class="btn btn-success w-100 mt-3"
-
                 data-bs-toggle="modal"
-
                 data-bs-target="#photoModal">
 
                 <i class="bi bi-image-fill me-2"></i>
-
                 Lihat Foto QC
 
             </button>
@@ -876,20 +1043,17 @@ if (item.last_qc) {
         <% }else{ %>
 
             <div class="empty-photo">
-
                 <i class="bi bi-image fs-1"></i>
-
                 <p class="mt-3 mb-0">
-
                     Belum ada Foto QC
-
                 </p>
-
             </div>
 
         <% } %>
 
     </div>
+
+<% } %>
 
 </div>
 
@@ -904,7 +1068,6 @@ if (item.last_qc) {
         class="btn btn-outline-secondary px-4">
 
         <i class="bi bi-arrow-left me-2"></i>
-
         Kembali ke Inventaris
 
     </a>
@@ -914,19 +1077,15 @@ if (item.last_qc) {
         <span class="badge bg-primary fs-6 px-3 py-2">
 
             <i class="bi bi-upc-scan me-2"></i>
-
             <%= item.nf %>
 
         </span>
 
         <button
-
             class="btn btn-primary ms-2"
-
             onclick="copyNF()">
 
             <i class="bi bi-copy me-2"></i>
-
             Copy NF
 
         </button>
@@ -938,6 +1097,7 @@ if (item.last_qc) {
 </div>
 
 </div>
+
 <!-- ===========================
      PHOTO MODAL
 =========================== -->

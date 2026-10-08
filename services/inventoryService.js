@@ -290,6 +290,93 @@ exports.getDashboardSummary = (company = "PGI") => {
     };
 
 };
+
+exports.getDashboardOverallStats = (company = "PGI") => {
+    const totalInventaris = db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM inventaris
+        WHERE company = ?
+    `).get(company).total;
+
+    const batchSelesai = db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM batch
+        WHERE company = ?
+        AND status = 'FINISHED'
+    `).get(company).total;
+
+    const qcDone = db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM inventaris
+        WHERE company = ?
+        AND status = 'DONE'
+    `).get(company).total;
+
+    const qcReject = db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM inventaris
+        WHERE company = ?
+        AND status = 'REJECT'
+    `).get(company).total;
+
+    const ringkasanJenis = db.prepare(`
+        SELECT
+            CASE
+                WHEN LOWER(TRIM(jenis)) = 'laptop'
+                    OR LOWER(TRIM(jenis)) LIKE 'laptop %'
+                    THEN 'Laptop'
+                ELSE TRIM(jenis)
+            END AS jenis,
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'DONE' THEN 1 ELSE 0 END) AS done,
+            SUM(CASE WHEN status = 'REJECT' THEN 1 ELSE 0 END) AS reject
+        FROM inventaris
+        WHERE company = ?
+        GROUP BY
+            CASE
+                WHEN LOWER(TRIM(jenis)) = 'laptop'
+                    OR LOWER(TRIM(jenis)) LIKE 'laptop %'
+                    THEN 'Laptop'
+                ELSE TRIM(jenis)
+            END
+        ORDER BY total DESC
+    `).all(company);
+
+    const qcTrend = db.prepare(`
+        WITH RECURSIVE dates(periode) AS (
+            SELECT date('now', 'localtime', '-29 days')
+
+            UNION ALL
+
+            SELECT date(periode, '+1 day')
+            FROM dates
+            WHERE periode < date('now', 'localtime')
+        )
+
+        SELECT
+            dates.periode,
+            COUNT(i.id) AS total
+        FROM dates
+
+        LEFT JOIN inventaris i
+            ON date(i.last_qc) = dates.periode
+            AND i.company = ?
+            AND i.status IN ('DONE', 'REJECT')
+
+        GROUP BY dates.periode
+        ORDER BY dates.periode ASC
+    `).all(company);
+
+    return {
+        totalInventaris,
+        batchSelesai,
+        qcDone,
+        qcReject,
+        ringkasanJenis,
+        qcTrend
+    };
+};
+
 exports.getInventarisByBatch = (batchId) => {
 
     return db.prepare(`

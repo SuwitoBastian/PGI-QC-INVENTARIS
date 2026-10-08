@@ -24,33 +24,67 @@ function isValidCompany(company) {
 
 
 function validateBookingAssetType(booking, mappedData) {
+
     const bookingType = String(booking.asset_type || "")
         .trim()
         .toLowerCase();
 
-    const allowedTypes = {
-        "laptop": ["laptop"],
-        "handphone": ["handphone"],
-        "laptop & handphone": ["laptop", "handphone"]
+    // PC All in One dianggap sebagai kategori Laptop
+    const isAllowedForLaptop = (jenis) => {
+        const value = String(jenis || "")
+            .trim()
+            .toLowerCase();
+
+        return (
+            value === "laptop" ||
+            value === "pc all in one" ||
+            value === "pc all-in-one" ||
+            value === "all in one" ||
+            value === "aio"
+        );
     };
 
-    const allowed = allowedTypes[bookingType];
+    const isAllowedForHandphone = (jenis) => {
+        const value = String(jenis || "")
+            .trim()
+            .toLowerCase();
 
-    if (!allowed) {
-        return {
-            valid: false,
-            message: `Tipe aset booking "${booking.asset_type}" belum didukung untuk validasi Excel.`
-        };
-    }
+        return value === "handphone";
+    };
 
     const invalidItems = mappedData
         .map((item, index) => ({
             row: index + 2,
-            jenis: String(item.jenis || "").trim().toLowerCase()
+            jenis: String(item.jenis || "")
+                .trim()
+                .toLowerCase()
         }))
-        .filter(item => !allowed.includes(item.jenis));
+        .filter(item => {
+
+            // Booking Laptop
+            if (bookingType === "laptop") {
+                return !isAllowedForLaptop(item.jenis);
+            }
+
+            // Booking Handphone
+            if (bookingType === "handphone") {
+                return !isAllowedForHandphone(item.jenis);
+            }
+
+            // Booking Laptop & Handphone
+            if (bookingType === "laptop & handphone") {
+                return (
+                    !isAllowedForLaptop(item.jenis) &&
+                    !isAllowedForHandphone(item.jenis)
+                );
+            }
+
+            // Booking type lainnya belum didukung
+            return true;
+        });
 
     if (invalidItems.length > 0) {
+
         const details = invalidItems
             .map(item =>
                 `Baris ${item.row}: ${item.jenis || "Jenis kosong"}`
@@ -2048,6 +2082,72 @@ exports.history = (req, res) => {
         return res.status(500).send(
             "Terjadi kesalahan saat membuka Riwayat Batch."
         );
+
+    }
+
+};
+
+// =====================================================
+// GLOBAL SEARCH RIWAYAT INVENTARIS
+// =====================================================
+
+exports.searchHistory = (req, res) => {
+
+    try {
+
+        const company = getCompany(req);
+
+        if (!isValidCompany(company)) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Company tidak valid."
+            });
+
+        }
+
+        const keyword =
+            String(req.query.q || "").trim();
+
+        const status =
+            String(req.query.status || "").trim().toUpperCase();
+
+        const jenis =
+            String(req.query.jenis || "").trim();
+
+        if (!keyword) {
+
+            return res.json({
+                success: true,
+                data: []
+            });
+
+        }
+
+        const results =
+            batchService.searchInventoryHistory(
+                company,
+                keyword,
+                status,
+                jenis
+            );
+
+        return res.json({
+            success: true,
+            data: results
+        });
+
+    } catch (error) {
+
+        console.error(
+            "GLOBAL HISTORY SEARCH ERROR:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan saat mencari inventaris."
+        });
 
     }
 

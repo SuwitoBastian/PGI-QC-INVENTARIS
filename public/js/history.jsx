@@ -1601,6 +1601,430 @@ function ItToGaModal({
     );
 }
 // =====================================================
+// GLOBAL HISTORY SEARCH RESULT
+// =====================================================
+
+function SearchResultCard({ item }) {
+
+    const status = String(item.status || "")
+        .trim()
+        .toUpperCase();
+
+    const statusClass =
+        status === "DONE"
+            ? "bg-success"
+            : status === "REJECT"
+                ? "bg-secondary"
+                : "bg-warning text-dark";
+
+    const jenis = String(item.jenis || "")
+        .trim()
+        .toLowerCase();
+
+    // Ringkasan QC hanya untuk Laptop yang sudah DONE
+    const showLaptopQc =
+        status === "DONE" &&
+        jenis === "laptop";
+
+    // Untuk REJECT tampilkan alasan reject + Last QC
+    const showRejectInfo =
+        status === "REJECT";
+
+    const lastQc =
+        item.last_qc || "-";
+
+    return (
+        <article
+            style={{
+                background: "#fff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "12px",
+                padding: "18px",
+                boxShadow: "0 3px 12px rgba(15, 23, 42, 0.05)",
+                marginBottom: "12px"
+            }}
+        >
+
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: "12px",
+                    marginBottom: "14px",
+                    flexWrap: "wrap"
+                }}
+            >
+
+                <div>
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            color: "#6b7280",
+                            marginBottom: "4px"
+                        }}
+                    >
+                        <i className="bi bi-box-seam me-1"></i>
+                        {item.batch_code || "-"}
+                    </div>
+
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: "16px",
+                            fontWeight: 700,
+                            color: "#111827"
+                        }}
+                    >
+                        {item.merk || "Merk tidak tersedia"}
+                        {item.type ? ` • ${item.type}` : ""}
+                    </h3>
+
+                    <div
+                        style={{
+                            marginTop: "4px",
+                            fontSize: "12px",
+                            color: "#6b7280"
+                        }}
+                    >
+                        {item.batch_name || "Nama batch tidak tersedia"}
+                    </div>
+                </div>
+
+                <span className={`badge ${statusClass}`}>
+                    {status || "-"}
+                </span>
+
+            </div>
+
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                    gap: "10px"
+                }}
+            >
+
+                <div
+                    style={{
+                        background: "#f8fafc",
+                        borderRadius: "8px",
+                        padding: "10px 12px"
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: "10px",
+                            color: "#6b7280",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em"
+                        }}
+                    >
+                        NF
+                    </div>
+                    <strong
+                        style={{
+                            display: "block",
+                            marginTop: "3px",
+                            fontSize: "13px",
+                            wordBreak: "break-all"
+                        }}
+                    >
+                        {item.nf || "-"}
+                    </strong>
+                </div>
+
+                <div
+                    style={{
+                        background: "#f8fafc",
+                        borderRadius: "8px",
+                        padding: "10px 12px"
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: "10px",
+                            color: "#6b7280",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em"
+                        }}
+                    >
+                        IMEI
+                    </div>
+                    <strong
+                        style={{
+                            display: "block",
+                            marginTop: "3px",
+                            fontSize: "13px",
+                            wordBreak: "break-all"
+                        }}
+                    >
+                        {item.imei || "-"}
+                    </strong>
+                </div>
+
+                <div
+                    style={{
+                        background: "#f8fafc",
+                        borderRadius: "8px",
+                        padding: "10px 12px"
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: "10px",
+                            color: "#6b7280",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em"
+                        }}
+                    >
+                        Jenis
+                    </div>
+                    <strong
+                        style={{
+                            display: "block",
+                            marginTop: "3px",
+                            fontSize: "13px"
+                        }}
+                    >
+                        {item.jenis || "-"}
+                    </strong>
+                </div>
+
+                <div
+                    style={{
+                        background: "#f8fafc",
+                        borderRadius: "8px",
+                        padding: "10px 12px"
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: "10px",
+                            color: "#6b7280",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em"
+                        }}
+                    >
+                        Batch
+                    </div>
+                    <strong
+                        style={{
+                            display: "block",
+                            marginTop: "3px",
+                            fontSize: "13px"
+                        }}
+                    >
+                        {item.batch_code || "-"}
+                    </strong>
+                </div>
+
+            </div>
+
+            {/* =====================================
+                QC SUMMARY - LAPTOP DONE
+            ===================================== */}
+
+            {showLaptopQc && (
+
+                <div
+                    style={{
+                        marginTop: "12px",
+                        padding: "12px",
+                        background: "#f8fafc",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "9px"
+                    }}
+                >
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: "#111827",
+                            marginBottom: "9px"
+                        }}
+                    >
+                        <i className="bi bi-clipboard-check me-1"></i>
+                        Ringkasan QC
+                    </div>
+
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                            gap: "8px"
+                        }}
+                    >
+
+                        <div
+                            style={{
+                                background: "#fff",
+                                border: "1px solid #edf0f3",
+                                borderRadius: "7px",
+                                padding: "8px 10px"
+                            }}
+                        >
+                            <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase" }}>
+                                Nama QC
+                            </div>
+                            <strong style={{ display: "block", marginTop: "2px", fontSize: "12px" }}>
+                                {item.qc_name || "-"}
+                            </strong>
+                        </div>
+
+                        <div
+                            style={{
+                                background: "#fff",
+                                border: "1px solid #edf0f3",
+                                borderRadius: "7px",
+                                padding: "8px 10px"
+                            }}
+                        >
+                            <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase" }}>
+                                SSD Storage
+                            </div>
+                            <strong style={{ display: "block", marginTop: "2px", fontSize: "12px" }}>
+                                {item.ssd || "-"}
+                            </strong>
+                        </div>
+
+                        <div
+                            style={{
+                                background: "#fff",
+                                border: "1px solid #edf0f3",
+                                borderRadius: "7px",
+                                padding: "8px 10px"
+                            }}
+                        >
+                            <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase" }}>
+                                SSD Health
+                            </div>
+                            <strong style={{ display: "block", marginTop: "2px", fontSize: "12px" }}>
+                                {item.ssd_health || "-"}
+                            </strong>
+                        </div>
+
+                        <div
+                            style={{
+                                background: "#fff",
+                                border: "1px solid #edf0f3",
+                                borderRadius: "7px",
+                                padding: "8px 10px"
+                            }}
+                        >
+                            <div style={{ fontSize: "9px", color: "#6b7280", textTransform: "uppercase" }}>
+                                Battery Health (BH)
+                            </div>
+                            <strong style={{ display: "block", marginTop: "2px", fontSize: "12px" }}>
+                                {item.bh || "-"}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            paddingTop: "8px",
+                            borderTop: "1px solid #e5e7eb",
+                            fontSize: "10px",
+                            color: "#6b7280"
+                        }}
+                    >
+                        <i className="bi bi-clock-history me-1"></i>
+                        Last QC: <strong style={{ color: "#374151" }}>{lastQc}</strong>
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =====================================
+                REJECT INFO
+            ===================================== */}
+
+            {showRejectInfo && (
+
+                <div
+                    style={{
+                        marginTop: "12px",
+                        padding: "12px",
+                        background: "#fff7f7",
+                        border: "1px solid #f1d2d2",
+                        borderRadius: "9px"
+                    }}
+                >
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            color: "#b42318",
+                            marginBottom: "7px"
+                        }}
+                    >
+                        <i className="bi bi-exclamation-octagon-fill me-1"></i>
+                        Alasan Reject
+                    </div>
+
+                    <div
+                        style={{
+                            fontSize: "12px",
+                            color: "#7f1d1d",
+                            lineHeight: "1.5"
+                        }}
+                    >
+                        {item.reject_reason || "-"}
+                    </div>
+
+                    <div
+                        style={{
+                            marginTop: "8px",
+                            paddingTop: "8px",
+                            borderTop: "1px solid #f1d2d2",
+                            fontSize: "10px",
+                            color: "#6b7280"
+                        }}
+                    >
+                        <i className="bi bi-clock-history me-1"></i>
+                        Last QC: <strong style={{ color: "#374151" }}>{lastQc}</strong>
+                    </div>
+
+                </div>
+
+            )}
+
+
+            <div
+                style={{
+                    marginTop: "12px",
+                    paddingTop: "10px",
+                    borderTop: "1px solid #f0f2f5",
+                    fontSize: "11px",
+                    color: "#6b7280",
+                    display: "flex",
+                    gap: "16px",
+                    flexWrap: "wrap"
+                }}
+            >
+                <span>
+                    <i className="bi bi-calendar-check me-1"></i>
+                    Ditutup: {item.closed_at || "-"}
+                </span>
+
+                <span>
+                    <i className="bi bi-building me-1"></i>
+                    Company: {item.company || "-"}
+                </span>
+            </div>
+
+        </article>
+    );
+}
+
+// =====================================================
 // HISTORY APP
 // =====================================================
 
@@ -1633,6 +2057,32 @@ function HistoryApp() {
         useState(null);
 
 
+    // ==========================================
+    // GLOBAL SEARCH
+    // ==========================================
+
+    const [searchKeyword, setSearchKeyword] =
+        useState("");
+
+    const [searchStatus, setSearchStatus] =
+        useState("");
+
+    const [searchJenis, setSearchJenis] =
+        useState("");
+
+    const [searchResults, setSearchResults] =
+        useState([]);
+
+    const [searchLoading, setSearchLoading] =
+        useState(false);
+
+    const [searchMode, setSearchMode] =
+        useState(false);
+
+    const [searchError, setSearchError] =
+        useState("");
+
+
     const pageSize = 5;
 
 
@@ -1657,6 +2107,132 @@ function HistoryApp() {
             (currentPage - 1) * pageSize,
             currentPage * pageSize
         );
+
+
+    // ==========================================
+    // GLOBAL SEARCH HANDLER
+    // ==========================================
+
+    const handleSearch = async () => {
+
+        const keyword =
+            String(searchKeyword || "").trim();
+
+        if (!keyword) {
+
+            setSearchError(
+                "Masukkan NF, IMEI, Merk, atau Type terlebih dahulu."
+            );
+
+            setSearchMode(false);
+            setSearchResults([]);
+
+            return;
+
+        }
+
+        setSearchLoading(true);
+        setSearchError("");
+
+        try {
+
+            const params =
+                new URLSearchParams();
+
+            params.set("q", keyword);
+
+            if (searchStatus) {
+                params.set(
+                    "status",
+                    searchStatus
+                );
+            }
+
+            if (searchJenis) {
+                params.set(
+                    "jenis",
+                    searchJenis
+                );
+            }
+
+            const response =
+                await fetch(
+                    `/batch/history/search?${params.toString()}`,
+                    {
+                        headers: {
+                            Accept: "application/json"
+                        }
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+                throw new Error(
+                    result.message ||
+                    "Gagal melakukan pencarian riwayat."
+                );
+            }
+
+            setSearchResults(
+                Array.isArray(result.data)
+                    ? result.data
+                    : []
+            );
+
+            setSearchMode(true);
+            setPage(1);
+
+        } catch (error) {
+
+            setSearchResults([]);
+            setSearchMode(true);
+            setSearchError(
+                error.message ||
+                "Gagal melakukan pencarian riwayat."
+            );
+
+        } finally {
+
+            setSearchLoading(false);
+
+        }
+
+    };
+
+
+    // ==========================================
+    // RESET GLOBAL SEARCH
+    // ==========================================
+
+    const handleResetSearch = () => {
+
+        setSearchKeyword("");
+        setSearchStatus("");
+        setSearchJenis("");
+        setSearchResults([]);
+        setSearchMode(false);
+        setSearchError("");
+        setPage(1);
+
+    };
+
+
+    // ==========================================
+    // SEARCH ENTER KEY
+    // ==========================================
+
+    const handleSearchKeyDown = (event) => {
+
+        if (event.key === "Enter") {
+            handleSearch();
+        }
+
+    };
 
 
     // ==========================================
@@ -2085,7 +2661,296 @@ const approveItToGa = async (
                 </header>
 
 
-                {visible.length ? (
+                {/* GLOBAL SEARCH */}
+
+                <section
+                    style={{
+                        marginBottom: "18px"
+                    }}
+                >
+
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "minmax(0, 1fr) 220px 220px 120px 120px",
+                                alignItems: "center",
+                                gap: "10px",
+                                width: "100%"
+                            }}
+                        >
+
+                        <div
+                            style={{
+                                minWidth: 0,
+                                position: "relative"
+                            }}
+                        >
+
+                            <i
+                                className="bi bi-search"
+                                style={{
+                                    position: "absolute",
+                                    left: "9px",
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    color: "#607080",
+                                    fontSize: "12px",
+                                    zIndex: 2
+                                }}
+                            ></i>
+
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={searchKeyword}
+                                onChange={(event) =>
+                                    setSearchKeyword(
+                                        event.target.value
+                                    )
+                                }
+                                onKeyDown={handleSearchKeyDown}
+                                placeholder="Cari NF / Merk / Type..."
+                                style={{
+                                    height: "50px",
+                                    paddingLeft: "29px",
+                                    fontSize: "14px",
+                                    borderColor: "#d8dee7",
+                                    borderRadius: "4px",
+                                    boxShadow: "none"
+                                }}
+                            />
+
+                        </div>
+
+
+                        <select
+                            className="form-select"
+                            value={searchStatus}
+                            onChange={(event) =>
+                                setSearchStatus(
+                                    event.target.value
+                                )
+                            }
+                            style={{
+                                width: "100%",
+                                height: "50px",
+                                fontSize: "14px",
+                                borderColor: "#d8dee7",
+                                borderRadius: "4px",
+                                boxShadow: "none"
+                            }}
+                        >
+
+                            <option value="">
+                                Semua Status
+                            </option>
+
+                            <option value="PENDING">
+                                Pending
+                            </option>
+
+                            <option value="DONE">
+                                Done
+                            </option>
+
+                            <option value="REJECT">
+                                Reject
+                            </option>
+
+                        </select>
+
+
+                        <select
+                            className="form-select"
+                            value={searchJenis}
+                            onChange={(event) =>
+                                setSearchJenis(
+                                    event.target.value
+                                )
+                            }
+                            style={{
+                                width: "100%",
+                                height: "50px",
+                                fontSize: "14px",
+                                borderColor: "#d8dee7",
+                                borderRadius: "4px",
+                                boxShadow: "none"
+                            }}
+                        >
+
+                            <option value="">
+                                Semua Jenis
+                            </option>
+
+                            <option value="Laptop">
+                                Laptop
+                            </option>
+
+                            <option value="Handphone">
+                                Handphone
+                            </option>
+
+                            <option value="PC All in One">
+                                PC All in One
+                            </option>
+
+                            <option value="Tablet">
+                                Tablet
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={handleSearch}
+                            disabled={searchLoading}
+                            style={{
+                                height: "50px",
+                                minWidth: "100%",
+                                padding: "0 11px",
+                                fontSize: "14px",
+                                borderRadius: "4px",
+                                whiteSpace: "nowrap"
+                            }}
+                        >
+
+                            <i className="bi bi-funnel-fill me-1"></i>
+
+                            {searchLoading
+                                ? "..."
+                                : "Filter"}
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            className="btn btn-light"
+                            onClick={handleResetSearch}
+                            disabled={searchLoading}
+                            style={{
+                                height: "50px",
+                                minWidth: "100%",
+                                padding: "0 11px",
+                                fontSize: "14px",
+                                borderRadius: "4px",
+                                border: "1px solid #d8dee7",
+                                whiteSpace: "nowrap"
+                            }}
+                        >
+
+                            <i className="bi bi-arrow-counterclockwise me-1"></i>
+                            Reset
+
+                        </button>
+
+                    </div>
+
+
+                    {searchError && (
+                        <div
+                            className="alert alert-warning mt-2 mb-0 py-2"
+                            style={{
+                                fontSize: "12px"
+                            }}
+                        >
+                            <i className="bi bi-exclamation-circle me-1"></i>
+                            {searchError}
+                        </div>
+                    )}
+
+                </section>
+
+
+                {searchMode ? (
+
+                    <section>
+
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "10px",
+                                marginBottom: "12px",
+                                flexWrap: "wrap"
+                            }}
+                        >
+
+                            <div>
+                                <strong
+                                    style={{
+                                        fontSize: "15px"
+                                    }}
+                                >
+                                    Hasil Pencarian
+                                </strong>
+
+                                <span
+                                    style={{
+                                        color: "#6b7280",
+                                        fontSize: "12px",
+                                        marginLeft: "8px"
+                                    }}
+                                >
+                                    {searchResults.length} data ditemukan
+                                </span>
+                            </div>
+
+                            <small
+                                style={{
+                                    color: "#6b7280"
+                                }}
+                            >
+                                Kata kunci: <strong>{searchKeyword.trim()}</strong>
+                            </small>
+
+                        </div>
+
+
+                        {searchResults.length ? (
+
+                            <div>
+                                {searchResults.map(
+                                    (item) => (
+                                        <SearchResultCard
+                                            key={`${item.batch_id}-${item.id}`}
+                                            item={item}
+                                        />
+                                    )
+                                )}
+                            </div>
+
+                        ) : (
+
+                            <div
+                                className="history-empty"
+                                style={{
+                                    marginTop: "0"
+                                }}
+                            >
+
+                                <i className="bi bi-search"></i>
+
+                                <h2>
+                                    Data Tidak Ditemukan
+                                </h2>
+
+                                <p>
+                                    Tidak ada inventaris yang cocok dengan pencarian dan filter yang dipilih.
+                                </p>
+
+                            </div>
+
+                        )}
+
+                    </section>
+
+                ) : (
+
+                visible.length ? (
 
                     <>
 
@@ -2256,6 +3121,8 @@ const approveItToGa = async (
                         </a>
 
                     </div>
+
+                )
 
                 )}
 

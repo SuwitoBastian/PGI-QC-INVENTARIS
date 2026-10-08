@@ -16,6 +16,11 @@ router.get(
     batchController.history
 );
 
+router.get(
+    "/history/search",
+    batchController.searchHistory
+);
+
 router.post(
     "/import",
     upload.single("excel"),

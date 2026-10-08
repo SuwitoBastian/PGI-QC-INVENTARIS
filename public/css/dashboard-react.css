@@ -102,6 +102,11 @@ body.PEI{
 .history-empty h2{margin:15px 0 8px;font-size:24px;}
 .history-empty p{color:var(--dashboard-muted);}
 @media(max-width:991.98px){
+   .dashboard-analytics-grid{
+        grid-template-columns: 1fr;
+    }
+
+
     .history-shell{
         display:block;
         height:auto;
@@ -382,6 +387,264 @@ body.PEI{
     margin-bottom: 18px;
 }
 
+.dashboard-overall-grid{
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    align-items: stretch;
+}
+
+.dashboard-overall-grid .metric-card:first-child{
+    min-width: 0;
+}
+
+.dashboard-analytics-grid{
+    display: grid;
+    grid-template-columns: minmax(210px, 0.7fr) minmax(0, 2.3fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: stretch;
+}
+
+.dashboard-analytics-grid > .content-card{
+    min-width: 0;
+}
+
+.inventory-type-card,
+.qc-trend-card{
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.inventory-type-list{
+    display: grid;
+    gap: 15px;
+}
+
+.inventory-type-row{
+    position: relative;
+    display: grid;
+    gap: 7px;
+}
+
+.inventory-type-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.inventory-type-name{
+    font-weight: 700;
+    color: #334155;
+}
+
+.inventory-type-value{
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.inventory-type-track{
+    width: 100%;
+    height: 9px;
+    border-radius: 999px;
+    background: #e8edf6;
+    overflow: hidden;
+}
+
+.inventory-type-bar{
+    height: 100%;
+    border-radius: inherit;
+    background: var(--dashboard-brand);
+    transition: width .25s ease;
+}
+
+.inventory-type-empty,
+.qc-trend-empty{
+    color: var(--dashboard-muted);
+    font-size: 13px;
+}
+
+.inventory-type-tooltip{
+    position: absolute;
+    z-index: 30;
+    left: 0;
+    top: calc(100% + 8px);
+    width: 190px;
+    padding: 11px 12px;
+    border: 1px solid rgba(15, 23, 42, .10);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, .16);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+    pointer-events: none;
+}
+
+.inventory-type-tooltip-wrap:hover .inventory-type-tooltip{
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.inventory-type-tooltip-title{
+    margin-bottom: 7px;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.inventory-type-tooltip-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: #64748b;
+    padding-top: 4px;
+}
+
+.inventory-type-tooltip-row strong{
+    color: #334155;
+}
+
+.inventory-type-tooltip-row .tooltip-done{
+    color: #16a34a;
+}
+
+.inventory-type-tooltip-row .tooltip-reject{
+    color: #dc2626;
+}
+
+.qc-trend-card{
+    overflow: hidden;
+}
+
+.qc-trend-header{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.qc-trend-heading{
+    margin: 0;
+    color: #111827;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.qc-trend-subtitle{
+    margin: 3px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.qc-trend-badge{
+    flex: 0 0 auto;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.qc-trend-chart-wrap{
+    width: 100%;
+    overflow: hidden;
+}
+
+.qc-trend-chart{
+    display: block;
+    width: 100%;
+    height: 300px;
+}
+.qc-trend-range{
+    flex: 0 0 auto;
+    height: 32px;
+    padding: 0 30px 0 11px;
+    border: 1px solid #dbe3ef;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    outline: none;
+}
+
+.qc-trend-range:focus{
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+.trend-grid-line{
+    stroke: #e8edf6;
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+}
+
+.trend-axis-label{
+    fill: #64748b;
+    font-size: 10px;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.trend-line{
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.trend-line-done{
+    stroke: #2563eb;
+}
+
+.trend-point{
+    fill: #fff;
+    stroke: #2563eb;
+    stroke-width: 3;
+}
+
+body[data-theme="dark"] .qc-trend-heading{
+    color: #f8fafc;
+}
+
+body[data-theme="dark"] .qc-trend-subtitle,
+body[data-theme="dark"] .trend-axis-label{
+    color: #94a3b8;
+}
+
+body[data-theme="dark"] .qc-trend-badge{
+    background: rgba(37,99,235,.15);
+    color: #60a5fa;
+}
+
+body[data-theme="dark"] .inventory-type-name,
+body[data-theme="dark"] .inventory-type-tooltip-title{
+    color: #e5e7eb;
+}
+
+body[data-theme="dark"] .inventory-type-tooltip{
+    background: #111827;
+    border-color: rgba(255,255,255,.08);
+}
+
+body[data-theme="dark"] .inventory-type-tooltip-row{
+    color: #94a3b8;
+}
+
+body[data-theme="dark"] .inventory-type-tooltip-row strong{
+    color: #e5e7eb;
+}
+
 .metric-card,
 .content-card{
     background: var(--dashboard-surface);
@@ -438,7 +701,7 @@ body.PEI{
 
 .content-grid{
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-columns: minmax(210px, 0.7fr) minmax(0, 2.3fr);
     gap: 16px;
 }
 
@@ -739,6 +1002,10 @@ body.PEI{
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .dashboard-overall-grid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .content-grid{
         grid-template-columns: 1fr;
     }
@@ -820,6 +1087,10 @@ body.PEI{
 
 @media (max-width: 767.98px){
     .summary-grid{
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-overall-grid{
         grid-template-columns: 1fr;
     }
 
@@ -1734,4 +2005,25 @@ body[data-theme="dark"] .account-logout-button:hover {
         width: min(250px, calc(100vw - 36px));
     }
 
+}
+.trend-tooltip{
+    pointer-events: none;
+}
+
+.trend-tooltip-box{
+    fill: #fff;
+    stroke: #d1d5db;
+    stroke-width: 1;
+}
+
+.trend-tooltip-date{
+    fill: #111827;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.trend-tooltip-value{
+    fill: #2563eb;
+    font-size: 12px;
+    font-weight: 500;
 }

@@ -17,6 +17,9 @@ exports.index = (req, res) => {
             req.company
         );
 
+    const overallStats =
+        inventoryService.getDashboardOverallStats(req.company);
+
 
     const upcomingBookings =
         calendarService.getUpcomingBookings(
@@ -38,6 +41,8 @@ exports.index = (req, res) => {
     res.render("dashboard", {
 
         summary,
+
+        overallStats,
 
         totalInventarisKeseluruhan,
 

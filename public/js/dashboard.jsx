@@ -28,6 +28,18 @@ const upcomingBookingPaginationStyles = `
         cursor: not-allowed;
     }
 
+    /* Jarak antara Status Batch dan Upcoming Booking */
+    .dashboard-no-batch-section {
+        margin-bottom: 24px;
+    }
+
+    /* Jarak antar card booking */
+    .upcoming-booking-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
     body[data-theme="dark"] .upcoming-booking-page-info {
         color: #94a3b8;
     }
@@ -43,6 +55,10 @@ const upcomingBookingPaginationStyles = `
 
     .dashboard-empty-summary-grid {
         align-items: stretch;
+    }
+
+    .dashboard-no-batch-section {
+        width: 100%;
     }
 
     .dashboard-no-batch-card {
@@ -169,6 +185,300 @@ function SummaryCard({ title, value, meta, icon, iconClass, valueClass }) {
         </div>
     );
 }
+
+function InventoryTypeDistribution({ items, total }) {
+    const rows = Array.isArray(items) ? items : [];
+    const safeTotal = Number(total || 0);
+
+    return (
+        <section className="content-card inventory-type-card">
+            <div className="section-title">
+                <span>
+                    <i className="bi bi-boxes text-primary"></i>
+                    {" "}Ringkasan Jenis Inventaris
+                </span>
+            </div>
+
+            {rows.length === 0 ? (
+                <div className="inventory-type-empty">
+                    Belum ada data inventaris.
+                </div>
+            ) : (
+                <div className="inventory-type-list">
+                    {rows.map((item, index) => {
+                        const value = Number(item.total || 0);
+                        const done = Number(item.done || 0);
+                        const reject = Number(item.reject || 0);
+                        const percent = safeTotal
+                            ? ((value / safeTotal) * 100).toFixed(1)
+                            : "0.0";
+
+                        return (
+                            <div
+                                className="inventory-type-row inventory-type-tooltip-wrap"
+                                key={`${item.jenis || "jenis"}-${index}`}
+                            >
+                                <div className="inventory-type-head">
+                                    <span className="inventory-type-name">
+                                        {item.jenis || "Tidak diketahui"}
+                                    </span>
+                                    <span className="inventory-type-value">
+                                        {formatNumber(value)} ({percent}%)
+                                    </span>
+                                </div>
+
+                                <div className="inventory-type-track">
+                                    <div
+                                        className="inventory-type-bar"
+                                        style={{ width: `${Math.min(Number(percent), 100)}%` }}
+                                    ></div>
+                                </div>
+
+                                <div className="inventory-type-tooltip">
+                                    <div className="inventory-type-tooltip-title">
+                                        {item.jenis || "Tidak diketahui"}
+                                    </div>
+                                    <div className="inventory-type-tooltip-row">
+                                        <span>Total</span>
+                                        <strong>{formatNumber(value)}</strong>
+                                    </div>
+                                    <div className="inventory-type-tooltip-row">
+                                        <span>QC DONE</span>
+                                        <strong className="tooltip-done">
+                                            {formatNumber(done)}
+                                        </strong>
+                                    </div>
+                                    <div className="inventory-type-tooltip-row">
+                                        <span>QC REJECT</span>
+                                        <strong className="tooltip-reject">
+                                            {formatNumber(reject)}
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </section>
+    );
+}
+
+function formatTrendDate(dateString) {
+    if (!dateString) return "-";
+
+    const date = new Date(`${dateString}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return dateString;
+
+    return date.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short"
+    });
+}
+
+function QcTrendChart({ items }) {
+    const rows = Array.isArray(items) ? items : [];
+
+    const [trendRange, setTrendRange] = React.useState(30);
+    const [hoveredIndex, setHoveredIndex] = React.useState(null);
+
+    const chartRows =
+        trendRange === 7
+            ? rows.slice(-7)
+            : rows.slice(-30);
+
+    if (!rows.length) {
+        return (
+            <section className="content-card qc-trend-card">
+                <div className="qc-trend-header">
+                    <div>
+                        <h3 className="qc-trend-heading">Trend QC</h3>
+                        <p className="qc-trend-subtitle">
+                            Jumlah QC per hari
+                        </p>
+                    </div>
+
+                    <select
+                        className="qc-trend-range"
+                        value={trendRange}
+                        onChange={e =>
+                            setTrendRange(Number(e.target.value))
+                        }
+                    >
+                        <option value={7}>7 Hari</option>
+                        <option value={30}>30 Hari</option>
+                    </select>
+                </div>
+
+                <div className="qc-trend-empty">
+                    Belum ada data trend QC.
+                </div>
+            </section>
+        );
+    }
+
+    const maxDataValue = Math.max(
+        0,
+        ...chartRows.map(item => Number(item.total || 0))
+    );
+
+    const chartMax = Math.max(
+        20,
+        Math.ceil(maxDataValue / 20) * 20
+    );
+
+    const width = 1000;
+    const height = 300;
+    const left = 42;
+    const right = 14;
+    const top = 18;
+    const bottom = 42;
+    const chartWidth = width - left - right;
+    const chartHeight = height - top - bottom;
+
+    const x = index =>
+        chartRows.length === 1
+            ? left + chartWidth / 2
+            : left + (index / (chartRows.length - 1)) * chartWidth;
+
+    const y = value =>
+        top +
+        chartHeight -
+        (Number(value || 0) / chartMax) * chartHeight;
+
+    const buildPoints = () =>
+        chartRows
+            .map((item, index) => `${x(index)},${y(item.total)}`)
+            .join(" ");
+
+    const gridRatios = [0, 0.25, 0.5, 0.75, 1];
+
+    return (
+        <section className="content-card qc-trend-card">
+            <div className="qc-trend-header">
+                <div>
+                    <h3 className="qc-trend-heading">Trend QC</h3>
+                    <p className="qc-trend-subtitle">Jumlah QC per hari</p>
+                </div>
+
+                <select
+                    className="qc-trend-range"
+                    value={trendRange}
+                    onChange={e =>
+                        setTrendRange(Number(e.target.value))
+                    }
+                >
+                    <option value={7}>7 Hari</option>
+                    <option value={30}>30 Hari</option>
+                </select>
+            </div>
+
+            <div className="qc-trend-chart-wrap">
+                <svg
+                    className="qc-trend-chart"
+                    viewBox={`0 0 ${width} ${height}`}
+                    preserveAspectRatio="none"
+                    role="img"
+                    aria-label="Trend jumlah QC per hari"
+                >
+                    {gridRatios.map((ratio, index) => {
+                        const gy = top + chartHeight - ratio * chartHeight;
+                        const label = Math.round(chartMax * ratio);
+
+                        return (
+                            <g key={index}>
+                                <line
+                                    x1={left}
+                                    y1={gy}
+                                    x2={width - right}
+                                    y2={gy}
+                                    className="trend-grid-line"
+                                />
+                                <text
+                                    x={left - 9}
+                                    y={gy + 4}
+                                    textAnchor="end"
+                                    className="trend-axis-label"
+                                >
+                                    {formatNumber(label)}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    <polyline
+                        points={buildPoints()}
+                        className="trend-line trend-line-done"
+                    />
+
+                    {chartRows.map((item, index) => (
+                        <g key={`${item.periode}-${index}`}>
+                            <circle
+                                cx={x(index)}
+                                cy={y(item.total)}
+                                r="4.5"
+                                className="trend-point trend-point-done"
+                                onMouseEnter={() => setHoveredIndex(index)}
+                                onMouseLeave={() => setHoveredIndex(null)}
+                            >
+                            </circle>
+
+                            {hoveredIndex === index && (
+                                <g className="trend-tooltip">
+                                    <rect
+                                        x={Math.min(
+                                            Math.max(x(index) + 10, 55),
+                                            width - 125
+                                        )}
+                                        y={Math.max(y(item.total) - 45, 8)}
+                                        width="116"
+                                        height="52"
+                                        rx="6"
+                                        className="trend-tooltip-box"
+                                    />
+
+                                    <text
+                                        x={Math.min(
+                                            Math.max(x(index) + 20, 65),
+                                            width - 115
+                                        )}
+                                        y={Math.max(y(item.total) - 24, 29)}
+                                        className="trend-tooltip-date"
+                                    >
+                                        {formatTrendDate(item.periode)}
+                                    </text>
+
+                                    <text
+                                        x={Math.min(
+                                            Math.max(x(index) + 20, 65),
+                                            width - 115
+                                        )}
+                                        y={Math.max(y(item.total) - 5, 48)}
+                                        className="trend-tooltip-value"
+                                    >
+                                        Total: {formatNumber(item.total)} QC
+                                    </text>
+                                </g>
+                            )}
+
+                            {(index % 2 === 0 || index === chartRows.length - 1) && (
+                                <text
+                                    x={x(index)}
+                                    y={height - 14}
+                                    textAnchor="middle"
+                                    className="trend-axis-label"
+                                >
+                                    {formatTrendDate(item.periode)}
+                                </text>
+                            )}
+                        </g>
+                    ))}
+                </svg>
+            </div>
+        </section>
+    );
+}
+
 
 function SidebarLink({ href, icon, children, active, onClick }) {
     return (
@@ -1143,6 +1453,7 @@ function ActivityNotification() {
 function DashboardApp() {
     const data = dashboardData;
     const summary = data.summary;
+    const overallStats = data.overallStats || {};
     const totalInventarisKeseluruhan =
         data.totalInventarisKeseluruhan || 0;
 
@@ -1289,9 +1600,9 @@ function DashboardApp() {
                         <section className="summary-grid dashboard-summary-grid">
 
                             <SummaryCard
-                                title="Total Inventaris"
+                                title="Total Inventaris Batch Aktif"
                                 value={summary.total}
-                                meta="Semua data"
+                                meta="Batch aktif"
                                 icon="bi bi-box-seam"
                                 iconClass="bg-primary"
                                 valueClass="text-primary"
@@ -1327,12 +1638,64 @@ function DashboardApp() {
                             <SummaryCard
                                 title="Total Inventaris Keseluruhan"
                                 value={totalInventarisKeseluruhan}
-                                meta="Seluruh periode"
+                                meta="SELURUH PERIODE"
                                 icon="bi bi-archive-fill"
                                 iconClass="bg-info"
                                 valueClass="text-info"
                             />
 
+                        </section>
+
+                        {/* STATISTIK KESELURUHAN */}
+                        <section className="summary-grid dashboard-summary-grid dashboard-overall-grid">
+
+                            <SummaryCard
+                                title="Total Inventaris"
+                                value={overallStats.totalInventaris}
+                                meta="SELURUH PERIODE"
+                                icon="bi bi-box-seam-fill"
+                                iconClass="bg-primary"
+                                valueClass="text-primary"
+                            />
+
+                            <SummaryCard
+                                title="Batch Selesai"
+                                value={overallStats.batchSelesai}
+                                meta="Batch FINISHED"
+                                icon="bi bi-check2-square"
+                                iconClass="bg-success"
+                                valueClass="text-success"
+                            />
+
+                            <SummaryCard
+                                title="QC DONE"
+                                value={overallStats.qcDone}
+                                meta="SELURUH PERIODE"
+                                icon="bi bi-check-circle-fill"
+                                iconClass="bg-success"
+                                valueClass="text-success"
+                            />
+
+                            <SummaryCard
+                                title="QC REJECT"
+                                value={overallStats.qcReject}
+                                meta="SELURUH PERIODE"
+                                icon="bi bi-x-circle-fill"
+                                iconClass="bg-danger"
+                                valueClass="text-danger"
+                            />
+
+                        </section>
+
+                        <section className="dashboard-analytics-grid">
+                            <InventoryTypeDistribution
+                                items={overallStats.ringkasanJenis}
+                                total={overallStats.totalInventaris}
+                            />
+
+                            <QcTrendChart
+                                items={overallStats.qcTrend}
+                            />
                         </section>
 
                         {/* UPCOMING BOOKING - HANYA UNTUK TIDAK ADA BATCH AKTIF */}
@@ -1756,17 +2119,45 @@ function DashboardApp() {
 
                         </div>
 
-                        {/* STATUS UTAMA */}
-                        <section className="summary-grid dashboard-summary-grid dashboard-empty-summary-grid">
+                        {/* STATISTIK KESELURUHAN */}
+                        <section className="summary-grid dashboard-summary-grid dashboard-overall-grid" style={{ marginBottom: "24px" }}>
 
                             <SummaryCard
-                                title="Total Inventaris Keseluruhan"
-                                value={totalInventarisKeseluruhan}
-                                meta="Seluruh periode"
-                                icon="bi bi-archive-fill"
-                                iconClass="bg-info"
-                                valueClass="text-info"
+                                title="Total Inventaris"
+                                value={overallStats.totalInventaris || 0}
+                                meta="SELURUH PERIODE"
                             />
+
+                            <SummaryCard
+                                title="Batch Selesai"
+                                value={overallStats.batchSelesai || 0}
+                            />
+
+                            <SummaryCard
+                                title="QC DONE"
+                                value={overallStats.qcDone || 0}
+                            />
+
+                            <SummaryCard
+                                title="QC REJECT"
+                                value={overallStats.qcReject || 0}
+                            />
+
+                        </section>
+
+                        <section className="dashboard-analytics-grid">
+                            <InventoryTypeDistribution
+                                items={overallStats.ringkasanJenis}
+                                total={overallStats.totalInventaris}
+                            />
+
+                            <QcTrendChart
+                                items={overallStats.qcTrend}
+                            />
+                        </section>
+
+                        {/* STATUS UTAMA */}
+                        <section className="dashboard-no-batch-section" style={{ marginTop: "24px" }}>
 
                             <div className="metric-card dashboard-no-batch-card">
                                 <div className="dashboard-no-batch-inner">
