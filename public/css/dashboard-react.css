@@ -701,8 +701,9 @@ body[data-theme="dark"] .inventory-type-tooltip-row strong{
 
 .content-grid{
     display: grid;
-    grid-template-columns: minmax(210px, 0.7fr) minmax(0, 2.3fr);
+    grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.1fr);
     gap: 16px;
+    align-items: stretch;
 }
 
 .content-card{

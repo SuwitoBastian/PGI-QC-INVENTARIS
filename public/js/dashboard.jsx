@@ -1465,7 +1465,7 @@ function DashboardApp() {
         [summary]
     );
 
-    const hasSummary = Boolean(summary);
+    const hasActiveBatch = Boolean(summary?.batch);
 
     // =====================================
     // UPCOMING BOOKING PAGINATION
@@ -1555,7 +1555,7 @@ function DashboardApp() {
                 {/* =====================================
                     DASHBOARD CONTENT
                 ===================================== */}
-                {hasSummary ? (
+                {hasActiveBatch ? (
                     <>
 
                         {/* HERO */}
@@ -1644,58 +1644,6 @@ function DashboardApp() {
                                 valueClass="text-info"
                             />
 
-                        </section>
-
-                        {/* STATISTIK KESELURUHAN */}
-                        <section className="summary-grid dashboard-summary-grid dashboard-overall-grid">
-
-                            <SummaryCard
-                                title="Total Inventaris"
-                                value={overallStats.totalInventaris}
-                                meta="SELURUH PERIODE"
-                                icon="bi bi-box-seam-fill"
-                                iconClass="bg-primary"
-                                valueClass="text-primary"
-                            />
-
-                            <SummaryCard
-                                title="Batch Selesai"
-                                value={overallStats.batchSelesai}
-                                meta="Batch FINISHED"
-                                icon="bi bi-check2-square"
-                                iconClass="bg-success"
-                                valueClass="text-success"
-                            />
-
-                            <SummaryCard
-                                title="QC DONE"
-                                value={overallStats.qcDone}
-                                meta="SELURUH PERIODE"
-                                icon="bi bi-check-circle-fill"
-                                iconClass="bg-success"
-                                valueClass="text-success"
-                            />
-
-                            <SummaryCard
-                                title="QC REJECT"
-                                value={overallStats.qcReject}
-                                meta="SELURUH PERIODE"
-                                icon="bi bi-x-circle-fill"
-                                iconClass="bg-danger"
-                                valueClass="text-danger"
-                            />
-
-                        </section>
-
-                        <section className="dashboard-analytics-grid">
-                            <InventoryTypeDistribution
-                                items={overallStats.ringkasanJenis}
-                                total={overallStats.totalInventaris}
-                            />
-
-                            <QcTrendChart
-                                items={overallStats.qcTrend}
-                            />
                         </section>
 
                         {/* UPCOMING BOOKING - HANYA UNTUK TIDAK ADA BATCH AKTIF */}
