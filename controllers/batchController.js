@@ -23,20 +23,22 @@ function isValidCompany(company) {
 }
 
 
-function validateBookingAssetType(booking, mappedData) {
 
+function validateBookingAssetType(booking, mappedData) {
     const bookingType = String(booking.asset_type || "")
         .trim()
         .toLowerCase();
 
-    // PC All in One dianggap sebagai kategori Laptop
+    const normalize = (jenis) =>
+        String(jenis || "").trim().toLowerCase();
+
+    // Laptop dan PC All in One
     const isAllowedForLaptop = (jenis) => {
-        const value = String(jenis || "")
-            .trim()
-            .toLowerCase();
+        const value = normalize(jenis);
 
         return (
             value === "laptop" ||
+            value.startsWith("laptop ") ||
             value === "pc all in one" ||
             value === "pc all-in-one" ||
             value === "all in one" ||
@@ -44,50 +46,58 @@ function validateBookingAssetType(booking, mappedData) {
         );
     };
 
-    const isAllowedForHandphone = (jenis) => {
-        const value = String(jenis || "")
-            .trim()
-            .toLowerCase();
+    // Handphone tetap kategori tersendiri
+    const isAllowedForHandphone = (jenis) =>
+        normalize(jenis) === "handphone";
 
-        return value === "handphone";
+    // Tablet tetap kategori tersendiri
+    const isAllowedForTablet = (jenis) => {
+        const value = normalize(jenis);
+        return value === "tablet" || value === "tab";
     };
 
     const invalidItems = mappedData
         .map((item, index) => ({
             row: index + 2,
-            jenis: String(item.jenis || "")
-                .trim()
-                .toLowerCase()
+            jenis: String(item.jenis || "").trim()
         }))
-        .filter(item => {
+        .filter((item) => {
+            const jenis = item.jenis;
 
-            // Booking Laptop
+            // Booking Laptop:
+            // Laptop, PC All in One, dan Tablet diperbolehkan.
             if (bookingType === "laptop") {
-                return !isAllowedForLaptop(item.jenis);
-            }
-
-            // Booking Handphone
-            if (bookingType === "handphone") {
-                return !isAllowedForHandphone(item.jenis);
-            }
-
-            // Booking Laptop & Handphone
-            if (bookingType === "laptop & handphone") {
-                return (
-                    !isAllowedForLaptop(item.jenis) &&
-                    !isAllowedForHandphone(item.jenis)
+                return !(
+                    isAllowedForLaptop(jenis) ||
+                    isAllowedForTablet(jenis)
                 );
             }
 
-            // Booking type lainnya belum didukung
+            // Booking Handphone:
+            // Hanya Handphone yang diperbolehkan.
+            if (bookingType === "handphone") {
+                return !isAllowedForHandphone(jenis);
+            }
+
+            // Booking Laptop & Handphone:
+            // Laptop, PC All in One, Handphone, dan Tablet.
+            if (bookingType === "laptop & handphone") {
+                return !(
+                    isAllowedForLaptop(jenis) ||
+                    isAllowedForHandphone(jenis) ||
+                    isAllowedForTablet(jenis)
+                );
+            }
+
+            // Booking type lainnya belum didukung.
             return true;
         });
 
     if (invalidItems.length > 0) {
-
         const details = invalidItems
-            .map(item =>
-                `Baris ${item.row}: ${item.jenis || "Jenis kosong"}`
+            .map(
+                (item) =>
+                    `Baris ${item.row}: ${item.jenis || "Jenis kosong"}`
             )
             .join("<br>");
 
@@ -100,6 +110,7 @@ function validateBookingAssetType(booking, mappedData) {
 
     return { valid: true };
 }
+
 
 
 // =====================================================

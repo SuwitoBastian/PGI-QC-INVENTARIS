@@ -325,22 +325,47 @@ exports.getDashboardOverallStats = (company = "PGI") => {
                 WHEN LOWER(TRIM(jenis)) = 'laptop'
                     OR LOWER(TRIM(jenis)) LIKE 'laptop %'
                     THEN 'Laptop'
+
+                WHEN LOWER(TRIM(jenis)) = 'handphone'
+                    THEN 'Handphone'
+
+                WHEN LOWER(TRIM(jenis)) IN ('tablet', 'tab')
+                    THEN 'Tablet'
+
                 ELSE TRIM(jenis)
             END AS jenis,
+
             COUNT(*) AS total,
-            SUM(CASE WHEN status = 'DONE' THEN 1 ELSE 0 END) AS done,
-            SUM(CASE WHEN status = 'REJECT' THEN 1 ELSE 0 END) AS reject
+
+            SUM(
+                CASE WHEN status = 'DONE' THEN 1 ELSE 0 END
+            ) AS done,
+
+            SUM(
+                CASE WHEN status = 'REJECT' THEN 1 ELSE 0 END
+            ) AS reject
+
         FROM inventaris
         WHERE company = ?
+
         GROUP BY
             CASE
                 WHEN LOWER(TRIM(jenis)) = 'laptop'
                     OR LOWER(TRIM(jenis)) LIKE 'laptop %'
                     THEN 'Laptop'
+
+                WHEN LOWER(TRIM(jenis)) = 'handphone'
+                    THEN 'Handphone'
+
+                WHEN LOWER(TRIM(jenis)) IN ('tablet', 'tab')
+                    THEN 'Tablet'
+
                 ELSE TRIM(jenis)
             END
+
         ORDER BY total DESC
     `).all(company);
+
 
     const qcTrend = db.prepare(`
         WITH RECURSIVE dates(periode) AS (

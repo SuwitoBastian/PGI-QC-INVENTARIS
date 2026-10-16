@@ -115,19 +115,28 @@ function normalizeStatus(status){
     return "PENDING";
 
 }
-function normalizeJenis(jenis){
 
-    if(!jenis) return "";
+function normalizeJenis(jenis) {
+    if (!jenis) return "";
 
-    jenis = jenis.toString().trim().toLowerCase();
+    const value = jenis.toString().trim().toLowerCase();
 
-    if(jenis === "laptop") return "Laptop";
+    if (value === "laptop" || value.startsWith("laptop ")) {
+        return "Laptop";
+    }
 
-    if(jenis === "handphone") return "Handphone";
+    if (value === "handphone") {
+        return "Handphone";
+    }
 
-    return jenis;
+    if (value === "tablet" || value === "tab") {
+        return "Tablet";
+    }
 
+    // Jenis lain tetap dipertahankan, hanya dirapikan spasinya.
+    return jenis.toString().trim();
 }
+
 // ===========================
 // Validasi Isi Data
 // ===========================
