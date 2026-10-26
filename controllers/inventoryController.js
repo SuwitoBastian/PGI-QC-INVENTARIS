@@ -328,6 +328,8 @@ exports.manualQC = (req, res) => {
             ""
         ).trim();
 
+    const submittedRam = String(req.body.ram || "").trim();
+
     const company = getCompany(req);
 
     if (!isValidCompany(company)) {
@@ -398,6 +400,23 @@ exports.manualQC = (req, res) => {
 
 
     // =====================================
+    // VALIDASI RAM MANUAL
+    // RAM dari Excel tidak boleh diubah. Jika RAM kosong,
+    // input manual hanya boleh berupa angka atau tanda '-'.
+    // =====================================
+
+    const existingRam = String(item.ram || "").trim();
+    const ramIsFilled = existingRam !== "" && existingRam !== "-";
+
+    if (!ramIsFilled && submittedRam !== "" && !/^(?:[0-9]+|-)$/ .test(submittedRam)) {
+        return res.redirect(`/inventaris/${id}?error=invalid-ram`);
+    }
+
+    // Nilai '-' di database diperlakukan sebagai placeholder kosong,
+    // sehingga petugas tetap dapat mengisi RAM secara manual.
+    const ram = ramIsFilled ? existingRam : submittedRam;
+
+    // =====================================
     // GATE TANDA TERIMA GA → IT
     // =====================================
 
@@ -442,7 +461,8 @@ exports.manualQC = (req, res) => {
             qcName,
             ssd,
             ssdHealth,
-            bh
+            bh,
+            ram
         );
 
 

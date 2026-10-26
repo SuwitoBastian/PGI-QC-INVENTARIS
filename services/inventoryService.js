@@ -890,12 +890,45 @@ exports.manualQC = (
     qcName,
     ssd,
     ssdHealth,
-    bh
+    bh,
+    ram = ""
 ) => {
+
+    const normalizedRam = String(ram || "").trim();
+
+    // Validasi hanya RAM yang akan diisi manual. Jika RAM dari Excel
+    // sudah ada (misalnya "8 GB"), jangan validasi atau ubah nilainya.
+    const currentItem = db.prepare(`
+        SELECT ram
+        FROM inventaris
+        WHERE id = ?
+    `).get(id);
+
+    if (!currentItem) {
+        throw new Error("Data inventaris tidak ditemukan.");
+    }
+
+    const currentRam = String(currentItem.ram || "").trim();
+    const currentRamIsFilled = currentRam !== "" && currentRam !== "-";
+
+    if (
+        !currentRamIsFilled &&
+        normalizedRam !== "" &&
+        !/^(?:[0-9]+|-)$/ .test(normalizedRam)
+    ) {
+        throw new Error("RAM hanya boleh berisi angka atau tanda -.");
+    }
+
+    // Jika RAM sudah ada dari Excel, pertahankan apa adanya.
+    const ramToSave = currentRamIsFilled ? currentRam : normalizedRam;
 
     return db.prepare(`
         UPDATE inventaris
         SET
+            ram = CASE
+                WHEN TRIM(COALESCE(ram, '')) IN ('', '-') THEN ?
+                ELSE ram
+            END,
             status = ?,
             reject_reason = ?,
             qc_name = ?,
@@ -907,6 +940,7 @@ exports.manualQC = (
         WHERE id = ?
     `).run(
 
+        ramToSave,
         status,
 
         status === "REJECT"

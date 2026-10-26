@@ -41,6 +41,21 @@ const LOGO_PATH = path.join(
 // HELPER
 // =====================================================
 
+function formatUnit(value, unit) {
+    const text = String(value ?? "").trim();
+    if (!text || text === "-") return "-";
+
+    // Remove an existing unit first to avoid output such as "512 GB GB".
+    const normalized = text.replace(new RegExp(`\\s*${unit}\\s*`, "ig"), "").trim();
+    if (!normalized || normalized === "-") return "-";
+
+    return `${normalized} ${unit}`;
+}
+
+function formatRam(value) {
+    return formatUnit(value, "GB");
+}
+
 function ensureOutputDir() {
 
     if (!fs.existsSync(OUTPUT_DIR)) {
@@ -479,22 +494,22 @@ exports.generateLabel = async (item) => {
 
         [
             "RAM",
-            item.ram
+            formatRam(item.ram)
         ],
 
         [
             "SSD",
-            item.ssd
+            formatUnit(item.ssd, "GB")
         ],
 
         [
             "BH",
-            item.bh
+            formatUnit(item.bh, "%")
         ],
 
         [
             "SSD HEALTH",
-            item.ssd_health
+            formatUnit(item.ssd_health, "%")
         ]
 
     ];

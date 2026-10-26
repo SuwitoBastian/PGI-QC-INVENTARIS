@@ -266,7 +266,13 @@ if (item.last_qc) {
 
                                 <div class="info-value">
 
-                                    <%= item.ram || "-" %>
+                                    <%= (() => {
+                                        const ramValue = String(item.ram || "").trim();
+                                        if (!ramValue || ramValue === "-") return "-";
+                                        return /\bGB\b/i.test(ramValue)
+                                            ? ramValue.replace(/\s*GB\s*/ig, "").trim() + " GB"
+                                            : ramValue + " GB";
+                                    })() %>
 
                                 </div>
 
@@ -499,86 +505,97 @@ if (item.last_qc) {
 
 
         <!-- ===========================
-             SSD / SSD HEALTH / BH
+             RAM / SSD / SSD HEALTH / BH
         =========================== -->
 
-        <div class="row g-3">
+        <div class="row g-3 mb-3">
 
+            <!-- RAM -->
+            <div class="col-md-3">
+                <label for="ram" class="form-label fw-semibold">RAM</label>
+                <% const ramFromExcel = String(item.ram || "").trim(); %>
+                <% const ramIsFilled = ramFromExcel !== "" && ramFromExcel !== "-"; %>
+                <% if (ramIsFilled) { %>
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="ram"
+                            class="form-control"
+                            value="<%= ramFromExcel.replace(/\s*GB\s*/ig, '').trim() %>"
+                            readonly
+                            aria-readonly="true">
+                        <span class="input-group-text">GB</span>
+                    </div>
+                    <div class="form-text">RAM dari Excel tidak dapat diubah.</div>
+                <% } else { %>
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="ram"
+                            name="ram"
+                            class="form-control"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            pattern="(?:[0-9]+|-)"
+                            maxlength="10"
+                            placeholder="Contoh: 8 atau -"
+                            aria-describedby="ramHelp">
+                        <span class="input-group-text">GB</span>
+                    </div>
+                    <div id="ramHelp" class="form-text">Masukkan angka atau -.</div>
+                    <div id="ramError" class="text-danger small mt-1" style="display:none">RAM hanya boleh berisi angka atau tanda -.</div>
+                <% } %>
+            </div>
 
             <!-- SSD -->
-
-            <div class="col-md-4">
-
-                <label
-                    for="ssd"
-                    class="form-label fw-semibold">
-
-                    SSD
-
-                </label>
-
-
-                <input
-                    type="text"
-                    id="ssd"
-                    name="ssd"
-                    class="form-control"
-                    value="<%= item.ssd || '' %>"
-                    placeholder="Contoh: 512 GB">
-
+            <div class="col-md-3">
+                <label for="ssd" class="form-label fw-semibold">SSD</label>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="ssd"
+                        name="ssd"
+                        class="form-control"
+                        inputmode="numeric"
+                        value="<%= String(item.ssd || '').replace(/\s*GB\s*/ig, '').trim() %>"
+                        placeholder="Contoh: 512">
+                    <span class="input-group-text">GB</span>
+                </div>
             </div>
-
 
             <!-- SSD HEALTH -->
-
-            <div class="col-md-4">
-
-                <label
-                    for="ssdHealth"
-                    class="form-label fw-semibold">
-
-                    SSD Health
-
-                </label>
-
-
-                <input
-                    type="text"
-                    id="ssdHealth"
-                    name="ssd_health"
-                    class="form-control"
-                    value="<%= item.ssd_health || '' %>"
-                    placeholder="Contoh: GOOD">
-
+            <div class="col-md-3">
+                <label for="ssdHealth" class="form-label fw-semibold">SSD Health</label>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="ssdHealth"
+                        name="ssd_health"
+                        class="form-control"
+                        inputmode="decimal"
+                        value="<%= String(item.ssd_health || '').replace(/\s*%\s*/g, '').trim() %>"
+                        placeholder="Contoh: 100">
+                    <span class="input-group-text">%</span>
+                </div>
             </div>
-
 
             <!-- BH -->
-
-            <div class="col-md-4">
-
-                <label
-                    for="bh"
-                    class="form-label fw-semibold">
-
-                    BH
-
-                </label>
-
-
-                <input
-                    type="text"
-                    id="bh"
-                    name="bh"
-                    class="form-control"
-                    value="<%= item.bh || '' %>"
-                    placeholder="Contoh: 92%">
-
+            <div class="col-md-3">
+                <label for="bh" class="form-label fw-semibold">BH</label>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="bh"
+                        name="bh"
+                        class="form-control"
+                        inputmode="decimal"
+                        value="<%= String(item.bh || '').replace(/\s*%\s*/g, '').trim() %>"
+                        placeholder="Contoh: 92">
+                    <span class="input-group-text">%</span>
+                </div>
             </div>
 
-
         </div>
-
 
         <!-- ===========================
              REJECT REASON
@@ -1492,6 +1509,31 @@ function copyNF(){
     },2200);
 
 }
+const ramInput = document.getElementById("ram");
+const ramError = document.getElementById("ramError");
+const ramForm = ramInput?.name === "ram" ? ramInput.closest("form") : null;
+
+if (ramInput && ramForm) {
+    ramInput.addEventListener("input", () => {
+        // Hanya izinkan angka dan tanda minus; hapus karakter lain saat diketik.
+        ramInput.value = ramInput.value.replace(/[^0-9-]/g, "");
+        const valid = ramInput.value === "" || /^[0-9]+$/.test(ramInput.value) || ramInput.value === "-";
+        ramInput.setCustomValidity(valid ? "" : "RAM hanya boleh berisi angka atau tanda -.");
+        if (ramError) ramError.style.display = valid ? "none" : "block";
+    });
+
+    ramForm.addEventListener("submit", (event) => {
+        const value = ramInput.value.trim();
+        const valid = value === "" || /^[0-9]+$/.test(value) || value === "-";
+        if (!valid) {
+            event.preventDefault();
+            ramInput.setCustomValidity("RAM hanya boleh berisi angka atau tanda -.");
+            ramInput.reportValidity();
+            if (ramError) ramError.style.display = "block";
+        }
+    });
+}
+
 const rejectReason = document.getElementById("rejectReason");
 const rejectBtn = document.getElementById("rejectBtn");
 const rejectWarning = document.getElementById("rejectWarning");
