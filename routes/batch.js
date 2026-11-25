@@ -33,6 +33,19 @@ router.post(
 );
 
 // ===========================
+// Laporan QC WhatsApp
+// ===========================
+router.get(
+    "/:id/report",
+    batchController.getBatchReport
+);
+
+router.post(
+    "/:id/report/retry",
+    batchController.retryBatchReport
+);
+
+// ===========================
 // Jalankan Booking → Batch
 // ===========================
 router.post(

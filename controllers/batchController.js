@@ -6,6 +6,8 @@ const batchService = require("../services/batchService");
 const calendarService = require("../services/calendarService");
 const activityService = require("../services/activityService");
 const handoverService = require("../services/handoverService");
+const qcReportService = require("../services/qcReportService");
+const qcReportDeliveryService = require("../services/qcReportDeliveryService");
 
 
 // =====================================================
@@ -1690,138 +1692,176 @@ exports.runBooking = (req, res) => {
 // TUTUP BATCH
 // =====================================================
 
-exports.closeBatch = (req, res) => {
+exports.closeBatch = async (req, res) => {
 
     try {
 
-        const company =
-            getCompany(req);
-
+        const company = getCompany(req);
 
         if (!isValidCompany(company)) {
-
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    "Company tidak valid."
-
+                message: "Company tidak valid."
             });
-
         }
 
+        // Ambil batch aktif yang akan ditutup. Seluruh proses berikutnya
+        // menggunakan ID batch ini, bukan menutup semua batch per company.
+        const activeBatch = batchService.getActiveBatch(company);
 
-        // =================================================
-        // Cek apakah batch boleh ditutup
-        // =================================================
-
-        const result =
-            batchService.canCloseBatch(
-                company
-            );
-
-
-        if (!result.canClose) {
-
+        if (!activeBatch) {
             return res.status(400).json({
-
                 success: false,
-
-                message:
-                    `Masih ada ${result.pending} inventaris yang berstatus PENDING.`
-
+                message: "Batch ACTIVE tidak ditemukan."
             });
-
         }
 
-
-        // =================================================
-        // Ambil Batch Aktif sebelum ditutup
-        // =================================================
-
-        const activeBatch =
-            batchService.getActiveBatch(
-                company
-            );
-
-
-        // =================================================
-        // Tutup Batch
-        // =================================================
-
-        batchService.closeBatch(
+        // Penutupan batch dan penyimpanan snapshot laporan dilakukan
+        // dalam satu transaksi SQLite. Pengiriman WA dilakukan setelah commit.
+        const result = qcReportService.closeBatchAndCreateReport(
+            activeBatch.id,
             company
         );
 
-
-        // =================================================
-        // Activity Log
-        // =================================================
-
         try {
-
-            if (activeBatch) {
-
-                activityService.createActivity({
-
-                    company:
-                        activeBatch.company,
-
-                    type:
-                        "BATCH_CLOSED",
-
-                    title:
-                        "Batch Ditutup",
-
-                    message:
-                        `Batch ${activeBatch.batch_code} ` +
-                        `telah ditutup.`,
-
-                    reference_id:
-                        activeBatch.id
-
-                });
-
-            }
-
+            activityService.createActivity({
+                company: result.batch.company,
+                type: "BATCH_CLOSED",
+                title: "Batch Ditutup",
+                message: `Batch ${result.batch.batch_code} telah ditutup.`,
+                reference_id: result.batch.id
+            });
         } catch (activityError) {
-
-            console.error(
-                "⚠️ Gagal membuat activity log close batch:",
-                activityError
-            );
-
+            console.error("⚠️ Gagal membuat activity log close batch:", activityError);
         }
 
+        // Kegagalan WhatsApp tidak membatalkan penutupan batch.
+        const delivery = await qcReportDeliveryService.sendBatchReport(
+            result.batch.id
+        );
 
         return res.json({
-
             success: true,
-
-            message:
-                "Batch berhasil ditutup."
-
+            batchClosed: true,
+            batchId: result.batch.id,
+            reportStatus: delivery.status,
+            message: delivery.sent
+                ? "Batch berhasil ditutup dan laporan berhasil dikirim ke grup WhatsApp."
+                : `Batch berhasil ditutup, tetapi laporan belum terkirim. Status: ${delivery.status}. Admin dapat melakukan retry.`
         });
-
 
     } catch (err) {
 
-        console.error(
-            "CLOSE BATCH ERROR :",
-            err
-        );
+        console.error("CLOSE BATCH ERROR:", err);
 
+        if (err.code === "BATCH_PENDING") {
+            return res.status(400).json({
+                success: false,
+                message: err.message,
+                pending: err.pending
+            });
+        }
 
         return res.status(500).json({
-
             success: false,
-
-            message:
-                err.message
-
+            message: err.message
         });
 
+    }
+
+};
+
+
+// =====================================================
+// RETRY KIRIM LAPORAN QC KE WHATSAPP
+// =====================================================
+
+exports.retryBatchReport = async (req, res) => {
+
+    try {
+
+        const company = getCompany(req);
+        const batchId = Number(req.params.id);
+
+        if (!isValidCompany(company)) {
+            return res.status(400).json({ success: false, message: "Company tidak valid." });
+        }
+
+        if (!Number.isInteger(batchId) || batchId <= 0) {
+            return res.status(400).json({ success: false, message: "Batch ID tidak valid." });
+        }
+
+        const batch = batchService.getBatchById(batchId);
+        if (!batch) {
+            return res.status(404).json({ success: false, message: "Batch tidak ditemukan." });
+        }
+
+        if (String(batch.company || "").trim().toUpperCase() !== company) {
+            return res.status(403).json({ success: false, message: "Batch bukan milik company aktif." });
+        }
+
+        if (batch.status !== "FINISHED") {
+            return res.status(400).json({ success: false, message: "Laporan hanya dapat dikirim untuk batch yang sudah ditutup." });
+        }
+
+        const report = qcReportService.getReportForCompany(batchId, company);
+        if (!report) {
+            return res.status(404).json({ success: false, message: "Laporan untuk batch ini tidak ditemukan." });
+        }
+
+        const delivery = await qcReportDeliveryService.sendBatchReport(batchId);
+
+        return res.status(delivery.sent ? 200 : 502).json({
+            success: delivery.sent,
+            status: delivery.status,
+            message: delivery.sent
+                ? (delivery.alreadySent ? "Laporan sudah pernah terkirim. Tidak ada pengiriman ulang." : "Laporan berhasil dikirim ke grup WhatsApp.")
+                : (delivery.message || delivery.error || "Laporan belum berhasil dikirim.")
+        });
+
+    } catch (error) {
+        console.error("RETRY QC REPORT ERROR:", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+
+};
+
+
+// =====================================================
+// STATUS + ISI LAPORAN QC BATCH
+// =====================================================
+
+exports.getBatchReport = (req, res) => {
+
+    try {
+
+        const company = getCompany(req);
+        const batchId = Number(req.params.id);
+
+        if (!isValidCompany(company)) {
+            return res.status(400).json({ success: false, message: "Company tidak valid." });
+        }
+
+        const report = qcReportService.getReportForCompany(batchId, company);
+        if (!report) {
+            return res.status(404).json({ success: false, message: "Laporan untuk batch ini tidak ditemukan." });
+        }
+
+        return res.json({
+            success: true,
+            data: {
+                batchId: report.batch_id,
+                status: report.status,
+                attempts: report.attempts,
+                sentAt: report.sent_at,
+                lastError: report.last_error,
+                reportText: report.report_text
+            }
+        });
+
+    } catch (error) {
+        console.error("GET QC REPORT ERROR:", error);
+        return res.status(500).json({ success: false, message: error.message });
     }
 
 };
