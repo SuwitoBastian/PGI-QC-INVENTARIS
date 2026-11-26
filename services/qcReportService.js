@@ -202,39 +202,119 @@ function formatDate(value) {
     }).format(date);
 }
 
+
 function buildReport(batch, items) {
-    const done = items.filter((item) => String(item.status || "").toUpperCase() === "DONE");
-    const rejected = items.filter((item) => String(item.status || "").toUpperCase() === "REJECT");
+    const done = items.filter(
+        item => String(item.status || "").toUpperCase() === "DONE"
+    );
+
+    const rejected = items.filter(
+        item => String(item.status || "").toUpperCase() === "REJECT"
+    );
+
     const lines = [
-        "📊 LAPORAN HASIL QC INVENTARIS",
+        "*📊 LAPORAN HASIL QC INVENTARIS*",
         "",
         `Company: ${text(batch.company).toUpperCase()}`,
         `Batch: ${text(batch.batch_code)}`,
         `Tanggal Closing: ${formatDate(batch.closed_at)}`,
         "",
-        "1. RINGKASAN HASIL QC",
+        "*1. RINGKASAN HASIL QC*",
         "",
         `Total Inventaris: ${items.length} Unit`,
-        "",
-        `DONE: ${done.length} Unit`
+        ""
     ];
 
-    const doneProcessors = countProcessors(items, "DONE");
-    for (const item of doneProcessors) lines.push(`- ${item.family}: ${item.total} Unit`);
+    // Kelompokkan seluruh inventaris berdasarkan jenis perangkat.
+    const byDeviceType = new Map();
 
-    lines.push("", `REJECT: ${rejected.length} Unit`);
-    const rejectProcessors = countProcessors(items, "REJECT");
-    for (const item of rejectProcessors) lines.push(`- ${item.family}: ${item.total} Unit`);
+    for (const item of items) {
+        const type = normalizeDeviceType(item.jenis);
 
-    lines.push("", "2. RINGKASAN REJECT BERDASARKAN JENIS", "");
+        if (!byDeviceType.has(type)) {
+            byDeviceType.set(type, []);
+        }
+
+        byDeviceType.get(type).push(item);
+    }
+
+    const typeOrder = [
+        "LAPTOP",
+        "HANDPHONE",
+        "TABLET",
+        "PC ALL-IN-ONE"
+    ];
+
+    const types = [...byDeviceType.keys()].sort((a, b) => {
+        const ai = typeOrder.indexOf(a);
+        const bi = typeOrder.indexOf(b);
+
+        if (ai === -1 && bi === -1) return a.localeCompare(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+
+        return ai - bi;
+    });
+
+    for (const type of types) {
+        const typeItems = byDeviceType.get(type);
+
+        const typeDone = typeItems.filter(
+            item => String(item.status || "").toUpperCase() === "DONE"
+        );
+
+        const typeRejected = typeItems.filter(
+            item => String(item.status || "").toUpperCase() === "REJECT"
+        );
+
+        lines.push(type);
+
+        lines.push(`DONE: ${typeDone.length} Unit`);
+
+        // Detail processor hanya ditampilkan untuk Laptop.
+        if (type === "LAPTOP") {
+            const doneProcessors = countProcessors(typeItems, "DONE");
+
+            for (const processor of doneProcessors) {
+                lines.push(`- ${processor.family}: ${processor.total} Unit`);
+            }
+        }
+
+        lines.push(`REJECT: ${typeRejected.length} Unit`);
+
+        // Detail processor REJECT hanya untuk Laptop.
+        if (type === "LAPTOP") {
+            const rejectProcessors = countProcessors(typeItems, "REJECT");
+
+            for (const processor of rejectProcessors) {
+                lines.push(`- ${processor.family}: ${processor.total} Unit`);
+            }
+        }
+
+        lines.push("");
+    }
+
+    lines.push(
+        "*2. RINGKASAN KATEGORI REJECT BERDASARKAN JENIS*",
+        ""
+    );
 
     const byType = new Map();
+
     for (const item of rejected) {
         const type = normalizeDeviceType(item.jenis);
-        if (!byType.has(type)) byType.set(type, new Map());
+
+        if (!byType.has(type)) {
+            byType.set(type, new Map());
+        }
+
         const categoryMap = byType.get(type);
+
         for (const category of classifyReject(item)) {
-            if (!categoryMap.has(category)) categoryMap.set(category, new Set());
+            if (!categoryMap.has(category)) {
+                categoryMap.set(category, new Set());
+            }
+
             categoryMap.get(category).add(item.id);
         }
     }
@@ -242,25 +322,38 @@ function buildReport(batch, items) {
     if (byType.size === 0) {
         lines.push("Tidak ada inventaris REJECT.");
     } else {
-        const typeOrder = ["LAPTOP", "HANDPHONE", "TABLET", "PC ALL-IN-ONE"];
-        const types = [...byType.keys()].sort((a, b) => {
+        const rejectTypes = [...byType.keys()].sort((a, b) => {
             const ai = typeOrder.indexOf(a);
             const bi = typeOrder.indexOf(b);
+
             if (ai === -1 && bi === -1) return a.localeCompare(b);
             if (ai === -1) return 1;
             if (bi === -1) return -1;
+
             return ai - bi;
         });
 
-        for (const type of types) {
-            lines.push(type, ...CATEGORY_ORDER
-                .filter((category) => byType.get(type).has(category))
-                .map((category) => `- ${category}: ${byType.get(type).get(category).size} Unit`), "");
+        for (const type of rejectTypes) {
+            lines.push(
+                type,
+                ...CATEGORY_ORDER
+                    .filter(category => byType.get(type).has(category))
+                    .map(category =>
+                        `- ${category}: ${byType.get(type).get(category).size} Unit`
+                    ),
+                ""
+            );
         }
     }
 
+    lines.push(
+        "",
+        "_PESAN INI OTOMATIS DIKIRIM MELALUI qc.itshelpdesk.my.id_"
+    );
+
     return lines.join("\n").trim();
 }
+
 
 /**
  * Menutup satu batch tertentu dan menyimpan snapshot teks laporan dalam
